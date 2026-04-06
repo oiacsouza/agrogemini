@@ -1,16 +1,33 @@
-# React + Vite
+# AgroGemini Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este é o diretório raiz do Frontend da plataforma web de Gestão Agronômica **AgroGemini**. A aplicação é construída com foco em alta responsividade (Mobile-First) e extensibilidade global.
 
-Currently, two official plugins are available:
+## 🚀 Tecnologias Utilizadas
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **[React](https://react.dev/)** + **[Vite](https://vitejs.dev/)**: Framework visual e Build-Tool de altíssima performance.
+- **[Framer Motion](https://www.framer.com/motion/)**: Utilizado para animações robustas de intersecção (scroll) e interatividade suave.
+- **[Lucide React](https://lucide.dev/)**: Biblioteca de ícones modernos em conjunto com o design nativo da aplicação.
+- **CSS Puro (Variáveis)**: Seguindo uma estrutura modularizada no arquivo base `index.css`, abstendo bibliotecas pesadas e optando por flex/grid robustos.
 
-## React Compiler
+## 🌍 Arquitetura Multilíngue (i18n)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+A Landing Page principal possui um motor de tradução embutido via state hook. 
+O gerenciamento dos idiomas (Português, Inglês e Espanhol) concentra-se dentro de:
+`src/locales.js`
 
-## Expanding the ESLint configuration
+Para adicionar um novo idioma ou editar um texto, **modifique o objeto `translations` naquele diretório**. O Frontend refletirá magicamente a alteração usando a aba com o ícone do globo.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 📦 Como rodar este projeto
+
+1. Tenha o [Node.js](https://nodejs.org/) instalado.
+2. Certifique-se de estar dentro desta pasta `/frontend`.
+3. Instale os repositórios vitais:
+   ```bash
+   npm install
+   ```
+4. Suba o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+
+O site será executado imediatamente. Devido à presença de ferramentas do host (como o plugin `mkcert` injetado via roteamento web para domínios), consulte o README raiz na pasta mãe para configurações avançadas de hosts.
