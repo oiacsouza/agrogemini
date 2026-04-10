@@ -31,10 +31,14 @@ Para uma melhor experiência de desenvolvimento, recomendamos a instalação das
 - **Pylance (Microsoft)**: Suporte avançado de tipagem e autocompletar ao Python. (ID: `ms-python.vscode-pylance`)
 - **Prettier - Code formatter**: Para formatação automática do código do Frontend. (ID: `esbenp.prettier-vscode`)
 - **ESLint**: Linter para encontrar problemas na sintaxe e padrão do código JavaScript/TypeScript. (ID: `dbaeumer.vscode-eslint`)
+- **Tailwind CSS IntelliSense**: Suporte oficial para autocompletar e linting das classes do Tailwind v4. (ID: `bradlc.vscode-tailwindcss`)
 
 *Como instalar:* Abra a aba "Extensions" (Ctrl+Shift+X) no menu esquerdo do VS Code e pesquise pelos nomes (ou IDs) acima, em seguida clique em **Install**. 
 
 Se você trabalha pelo WSL e utiliza a versão Ubuntu pelo Windows, o VS Code solicitará para que as extensões acima sejam instaladas no formato de "Install in WSL: Ubuntu". 
+
+> [!NOTE]
+> **Aviso sobre Tailwind v4 (`@custom-variant`)**: Devido ao uso da versão mais recente do Tailwind, o arquivo `index.css` possui diretivas avançadas. O VSCode pode apontar erro ("Unknown at rule"). Isso é apenas cosmético. Para parar de ver o sublinhado amarelo, adicione a regra `"css.lint.unknownAtRules": "ignore"` nas configurações globais do seu VSCode (`.vscode/settings.json`). 
 
 ---
 

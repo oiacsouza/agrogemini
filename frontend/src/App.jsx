@@ -1,15 +1,34 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Leaf, FileSpreadsheet, Calculator, Eye, Activity, Smartphone, Sprout, CheckCircle2, ChevronDown, Globe } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, useScroll } from 'framer-motion';
+import { Leaf, FileSpreadsheet, Calculator, Eye, Activity, Smartphone, Sprout, CheckCircle2, ChevronDown, Globe, Sun, Moon } from 'lucide-react';
 import tractorImg from './assets/tractor.png';
 import laptopImg from './assets/laptop.png';
 import { translations } from './locales';
+import { MeshBackground } from './components/MeshBackground';
+import { ProcessingSkeleton } from './components/ProcessingSkeleton';
+import { GrowingCrop } from './components/GrowingCrop';
+import { LogoCarousel } from './components/LogoCarousel';
 
 function App() {
   const [lang, setLang] = useState('pt');
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false); // Claro por padrão
+
+  const labSectionRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: labSectionRef,
+    offset: ["start end", "end start"]
+  });
 
   const t = translations[lang];
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   const handleLangChange = (newLang) => {
     setLang(newLang);
@@ -31,6 +50,7 @@ function App() {
 
   return (
     <>
+      <MeshBackground />
       <header>
         <div className="container">
           <div className="logo brand-font">
@@ -62,6 +82,14 @@ function App() {
                 </div>
               )}
             </div>
+            
+            <button 
+              className="lang-btn" 
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              aria-label="Toggle Dark Mode"
+            >
+              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             
             <button className="sign-in">{t.actions.signIn}</button>
             <button className="btn-primary">
@@ -98,18 +126,18 @@ function App() {
             </motion.div>
             
             <motion.div 
-              className="hero-image"
+              className="hero-image hidden lg:flex justify-center items-center"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <img src={tractorImg} alt="Agro machine" />
+              <ProcessingSkeleton />
             </motion.div>
           </div>
         </section>
 
-        <section id="lab" className="lab-section">
+        <section id="lab" className="lab-section" ref={labSectionRef}>
           <div className="container">
             <motion.div 
               className="section-header"
@@ -125,13 +153,13 @@ function App() {
             
             <div className="lab-content">
               <motion.div 
-                className="lab-image"
+                className="lab-image hidden lg:flex items-center justify-center"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.5 }}
                 viewport={{ once: true }}
               >
-                <img src={laptopImg} alt="Dashboard system" />
+                <GrowingCrop progress={scrollYProgress} />
               </motion.div>
               
               <motion.div 
@@ -213,6 +241,8 @@ function App() {
             </motion.div>
           </div>
         </section>
+
+        <LogoCarousel />
 
         <section className="cta-section">
           <motion.div 
