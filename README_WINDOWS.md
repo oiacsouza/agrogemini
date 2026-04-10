@@ -16,8 +16,12 @@ Para uma melhor experiência de desenvolvimento, recomendamos a instalação das
 - **Pylance (Microsoft)**: Suporte avançado de tipagem e autocompletar ao Python. (ID: `ms-python.vscode-pylance`)
 - **Prettier - Code formatter**: Para formatação automática do código do Frontend. (ID: `esbenp.prettier-vscode`)
 - **ESLint**: Linter para encontrar problemas na sintaxe e padrão do código JavaScript/TypeScript. (ID: `dbaeumer.vscode-eslint`)
+- **Tailwind CSS IntelliSense**: Suporte oficial para autocompletar e linting das classes do Tailwind v4. (ID: `bradlc.vscode-tailwindcss`)
 
 *Como instalar:* Abra a aba "Extensions" (Ctrl+Shift+X) no menu esquerdo do VS Code e pesquise pelos nomes (ou IDs) acima, em seguida clique em **Install**.
+
+> [!NOTE]
+> **Aviso sobre Tailwind v4 (`@custom-variant`)**: O VSCode nativo pode sublinhar de vermelho diretivas modernas como `@custom-variant dark` no `index.css`. Isso não é um erro de compilação. Para silenciar o linter nativo (caso não utilize a extensão), abra as configurações do seu projeto (`.vscode/settings.json`) e adicione: `"css.lint.unknownAtRules": "ignore"`.
 
 ---
 
