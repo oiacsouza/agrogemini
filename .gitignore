@@ -162,3 +162,4 @@ backend/venv/
 # Arquivos temporários e de OS
 .DS_Store
 Thumbs.db
+.vercel
