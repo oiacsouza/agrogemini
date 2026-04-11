@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   server: {
     host: 'agrogemini.com',
-    port: 443,
+    port: 8443,
     strictPort: true,
     https: true
   },
