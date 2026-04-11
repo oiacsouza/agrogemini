@@ -163,3 +163,8 @@ backend/venv/
 .DS_Store
 Thumbs.db
 .vercel
+
+
+
+# Codex
+.codex
