@@ -8,11 +8,15 @@ import { MeshBackground } from './components/MeshBackground';
 import { ProcessingSkeleton } from './components/ProcessingSkeleton';
 import { GrowingCrop } from './components/GrowingCrop';
 import { LogoCarousel } from './components/LogoCarousel';
+import { Login } from './components/Login';
+import { Register } from './components/Register';
+import { LabPortal } from './components/LabPortal';
 
 function App() {
   const [lang, setLang] = useState('pt');
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false); // Claro por padrão
+  const [currentView, setCurrentView] = useState('landing');
 
   const labSectionRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -47,6 +51,18 @@ function App() {
       transition: { staggerChildren: 0.1 }
     }
   };
+
+  if (currentView === 'login') {
+    return <Login onBack={() => setCurrentView('landing')} onRegister={() => setCurrentView('register')} onLogin={() => setCurrentView('lab')} t={t} />;
+  }
+
+  if (currentView === 'register') {
+    return <Register onBack={() => setCurrentView('landing')} onLogin={() => setCurrentView('login')} t={t} />;
+  }
+
+  if (currentView === 'lab') {
+    return <LabPortal onLogout={() => setCurrentView('landing')} t={t} />;
+  }
 
   return (
     <>
@@ -91,8 +107,8 @@ function App() {
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             
-            <button className="sign-in">{t.actions.signIn}</button>
-            <button className="btn-primary">
+            <button className="sign-in" onClick={() => setCurrentView('login')}>{t.actions.signIn}</button>
+            <button className="btn-primary" onClick={() => setCurrentView('register')}>
               <span className="hide-mobile">{t.actions.signUp}</span>
               <span className="show-mobile-only" style={{display: 'none'}}>{t.actions.signUpShort}</span>
             </button>
@@ -254,7 +270,7 @@ function App() {
           >
             <h2>{t.cta.title}</h2>
             <p>{t.cta.description}</p>
-            <button className="btn-primary">{t.actions.signUp}</button>
+            <button className="btn-primary" onClick={() => setCurrentView('register')}>{t.actions.signUp}</button>
           </motion.div>
         </section>
       </main>
