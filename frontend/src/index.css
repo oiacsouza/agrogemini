@@ -211,6 +211,7 @@ header .btn-primary {
   top: calc(100% + 5px);
   right: -10px;
   background: var(--bg-card);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -387,6 +388,7 @@ header .btn-primary {
 
 .farmer-card {
   background: var(--bg-card);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
   border-radius: 12px;
