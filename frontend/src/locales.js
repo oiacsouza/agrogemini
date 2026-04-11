@@ -114,10 +114,20 @@ export const translations = {
         samples: "Amostras",
         help: "Precisa de ajuda?",
         helpText: "Acesse nossos documentos de suporte",
-        documentation: "Documentação"
+        documentation: "Documentação",
+        branches: "Filiais",
+        employees: "Funcionários",
+        clients: "Clientes",
+        sectionMain: "Principal",
+        sectionManage: "Gestão"
       },
       topbar: {
         searchPlaceholder: "Procurar Amostras"
+      },
+      labSwitcher: {
+        matriz: "Matriz",
+        branches: "Filiais",
+        inactive: "Inativa"
       },
       dashboard: {
         title: "Dashboard do Laboratório",
@@ -150,7 +160,16 @@ export const translations = {
         dragDrop: "Arraste e solte um arquivo",
         orClick: "ou clique e procure",
         selectFiles: "Selecionar Arquivos",
-        featuresFooter: "Mapeamento automático • Validação instantânea • Upload Seguro"
+        featuresFooter: "Mapeamento automático • Validação instantânea • Upload Seguro",
+        clientLabel: "Cliente",
+        clientPlaceholder: "Selecionar cliente existente...",
+        registerClient: "Cadastrar Cliente",
+        registerClientTitle: "Cadastrar Novo Cliente",
+        fieldName: "Nome",
+        fieldEmail: "Email",
+        cancel: "Cancelar",
+        register: "Cadastrar",
+        registering: "Cadastrando..."
       },
       detail: {
         title: "Detalhe da amostra",
@@ -160,6 +179,66 @@ export const translations = {
         optimalLevel: "Nível Ideal",
         processingTrends: "Tendências de Processamento",
         samplesLine: "Amostras"
+      },
+      branches: {
+        title: "Filiais",
+        subtitle: "Gerencie as filiais vinculadas à matriz",
+        newBranch: "Nova Filial",
+        editBranch: "Editar Filial",
+        fieldName: "Nome da Filial",
+        fieldCity: "Cidade",
+        fieldState: "Estado",
+        fieldManager: "Responsável",
+        employees: "funcionários",
+        samples: "amostras",
+        cancel: "Cancelar",
+        save: "Salvar",
+        register: "Cadastrar",
+        confirmDelete: "Confirmar remoção",
+        confirmDeleteMsg: "Tem certeza que deseja remover esta filial?",
+        remove: "Remover",
+        empty: "Nenhuma filial cadastrada."
+      },
+      employees: {
+        title: "Funcionários",
+        registered: "funcionários cadastrados",
+        newEmployee: "Novo Funcionário",
+        fieldName: "Nome",
+        fieldRole: "Cargo",
+        fieldEmail: "Email",
+        fieldPermission: "Permissão",
+        cancel: "Cancelar",
+        register: "Cadastrar",
+        registering: "Cadastrando...",
+        confirmDelete: "Confirmar remoção",
+        confirmDeleteMsg: "Deseja remover este funcionário?",
+        remove: "Remover",
+        headers: { name: "FUNCIONÁRIO", role: "CARGO", email: "EMAIL", permission: "PERMISSÃO", status: "STATUS" }
+      },
+      clients: {
+        title: "Clientes",
+        registered: "clientes cadastrados",
+        searchPlaceholder: "Buscar cliente...",
+        filterAll: "Todos",
+        filterActive: "Ativos",
+        filterInactive: "Inativos",
+        viewProfile: "Ver Perfil",
+        headers: { client: "CLIENTE", email: "EMAIL", reports: "LAUDOS", lastReport: "ÚLTIMO LAUDO", status: "STATUS" },
+        empty: "Nenhum cliente encontrado.",
+        profileBack: "Voltar para Clientes",
+        historyTitle: "Histórico de Laudos",
+        historySubtitle: "Todos os laudos associados a este cliente",
+        viewDetail: "Ver Detalhe",
+        laudos: "laudos"
+      },
+      permissions: {
+        admin: "Admin",
+        tecnico: "Técnico",
+        viewer: "Viewer",
+        ativo: "Ativo",
+        inativo: "Inativo",
+        ativa: "Ativa",
+        inativa: "Inativa"
       }
     },
     cta: {
@@ -290,10 +369,20 @@ export const translations = {
         samples: "Samples",
         help: "Need help?",
         helpText: "Access our support documentation",
-        documentation: "Documentation"
+        documentation: "Documentation",
+        branches: "Branches",
+        employees: "Employees",
+        clients: "Clients",
+        sectionMain: "Main",
+        sectionManage: "Management"
       },
       topbar: {
         searchPlaceholder: "Search Samples"
+      },
+      labSwitcher: {
+        matriz: "Headquarters",
+        branches: "Branches",
+        inactive: "Inactive"
       },
       dashboard: {
         title: "Laboratory Dashboard",
@@ -326,7 +415,16 @@ export const translations = {
         dragDrop: "Drag and drop a file",
         orClick: "or click to browse",
         selectFiles: "Select Files",
-        featuresFooter: "Auto mapping • Instant validation • Secure Upload"
+        featuresFooter: "Auto mapping • Instant validation • Secure Upload",
+        clientLabel: "Client",
+        clientPlaceholder: "Select existing client...",
+        registerClient: "Register Client",
+        registerClientTitle: "Register New Client",
+        fieldName: "Name",
+        fieldEmail: "Email",
+        cancel: "Cancel",
+        register: "Register",
+        registering: "Registering..."
       },
       detail: {
         title: "Sample Detail",
@@ -336,6 +434,66 @@ export const translations = {
         optimalLevel: "Optimal Level",
         processingTrends: "Processing Trends",
         samplesLine: "Samples"
+      },
+      branches: {
+        title: "Branches",
+        subtitle: "Manage branches linked to headquarters",
+        newBranch: "New Branch",
+        editBranch: "Edit Branch",
+        fieldName: "Branch Name",
+        fieldCity: "City",
+        fieldState: "State",
+        fieldManager: "Manager",
+        employees: "employees",
+        samples: "samples",
+        cancel: "Cancel",
+        save: "Save",
+        register: "Register",
+        confirmDelete: "Confirm removal",
+        confirmDeleteMsg: "Are you sure you want to remove this branch?",
+        remove: "Remove",
+        empty: "No branches registered."
+      },
+      employees: {
+        title: "Employees",
+        registered: "employees registered",
+        newEmployee: "New Employee",
+        fieldName: "Name",
+        fieldRole: "Role",
+        fieldEmail: "Email",
+        fieldPermission: "Permission",
+        cancel: "Cancel",
+        register: "Register",
+        registering: "Registering...",
+        confirmDelete: "Confirm removal",
+        confirmDeleteMsg: "Do you want to remove this employee?",
+        remove: "Remove",
+        headers: { name: "EMPLOYEE", role: "ROLE", email: "EMAIL", permission: "PERMISSION", status: "STATUS" }
+      },
+      clients: {
+        title: "Clients",
+        registered: "clients registered",
+        searchPlaceholder: "Search client...",
+        filterAll: "All",
+        filterActive: "Active",
+        filterInactive: "Inactive",
+        viewProfile: "View Profile",
+        headers: { client: "CLIENT", email: "EMAIL", reports: "REPORTS", lastReport: "LAST REPORT", status: "STATUS" },
+        empty: "No clients found.",
+        profileBack: "Back to Clients",
+        historyTitle: "Report History",
+        historySubtitle: "All reports associated with this client",
+        viewDetail: "View Detail",
+        laudos: "reports"
+      },
+      permissions: {
+        admin: "Admin",
+        tecnico: "Technician",
+        viewer: "Viewer",
+        ativo: "Active",
+        inativo: "Inactive",
+        ativa: "Active",
+        inativa: "Inactive"
       }
     },
     cta: {
@@ -466,10 +624,20 @@ export const translations = {
         samples: "Muestras",
         help: "¿Necesitas ayuda?",
         helpText: "Accede a nuestros documentos de soporte",
-        documentation: "Documentación"
+        documentation: "Documentación",
+        branches: "Sucursales",
+        employees: "Empleados",
+        clients: "Clientes",
+        sectionMain: "Principal",
+        sectionManage: "Gestión"
       },
       topbar: {
         searchPlaceholder: "Buscar Muestras"
+      },
+      labSwitcher: {
+        matriz: "Sede Principal",
+        branches: "Sucursales",
+        inactive: "Inactiva"
       },
       dashboard: {
         title: "Panel del Laboratorio",
@@ -502,7 +670,16 @@ export const translations = {
         dragDrop: "Arrastra y suelta un archivo",
         orClick: "o haz clic y busca",
         selectFiles: "Seleccionar Archivos",
-        featuresFooter: "Mapeo automático • Validación instantánea • Subida Segura"
+        featuresFooter: "Mapeo automático • Validación instantánea • Subida Segura",
+        clientLabel: "Cliente",
+        clientPlaceholder: "Seleccionar cliente existente...",
+        registerClient: "Registrar Cliente",
+        registerClientTitle: "Registrar Nuevo Cliente",
+        fieldName: "Nombre",
+        fieldEmail: "Correo Electrónico",
+        cancel: "Cancelar",
+        register: "Registrar",
+        registering: "Registrando..."
       },
       detail: {
         title: "Detalle de la muestra",
@@ -512,6 +689,66 @@ export const translations = {
         optimalLevel: "Nivel Óptimo",
         processingTrends: "Tendencias de Procesamiento",
         samplesLine: "Muestras"
+      },
+      branches: {
+        title: "Sucursales",
+        subtitle: "Gestiona las sucursales vinculadas a la sede",
+        newBranch: "Nueva Sucursal",
+        editBranch: "Editar Sucursal",
+        fieldName: "Nombre de la Sucursal",
+        fieldCity: "Ciudad",
+        fieldState: "Estado",
+        fieldManager: "Responsable",
+        employees: "empleados",
+        samples: "muestras",
+        cancel: "Cancelar",
+        save: "Guardar",
+        register: "Registrar",
+        confirmDelete: "Confirmar eliminación",
+        confirmDeleteMsg: "¿Estás seguro de que deseas eliminar esta sucursal?",
+        remove: "Eliminar",
+        empty: "No hay sucursales registradas."
+      },
+      employees: {
+        title: "Empleados",
+        registered: "empleados registrados",
+        newEmployee: "Nuevo Empleado",
+        fieldName: "Nombre",
+        fieldRole: "Cargo",
+        fieldEmail: "Correo Electrónico",
+        fieldPermission: "Permiso",
+        cancel: "Cancelar",
+        register: "Registrar",
+        registering: "Registrando...",
+        confirmDelete: "Confirmar eliminación",
+        confirmDeleteMsg: "¿Deseas eliminar este empleado?",
+        remove: "Eliminar",
+        headers: { name: "EMPLEADO", role: "CARGO", email: "CORREO", permission: "PERMISO", status: "ESTADO" }
+      },
+      clients: {
+        title: "Clientes",
+        registered: "clientes registrados",
+        searchPlaceholder: "Buscar cliente...",
+        filterAll: "Todos",
+        filterActive: "Activos",
+        filterInactive: "Inactivos",
+        viewProfile: "Ver Perfil",
+        headers: { client: "CLIENTE", email: "CORREO", reports: "INFORMES", lastReport: "ÚLTIMO INFORME", status: "ESTADO" },
+        empty: "No se encontraron clientes.",
+        profileBack: "Volver a Clientes",
+        historyTitle: "Historial de Informes",
+        historySubtitle: "Todos los informes asociados a este cliente",
+        viewDetail: "Ver Detalle",
+        laudos: "informes"
+      },
+      permissions: {
+        admin: "Admin",
+        tecnico: "Técnico",
+        viewer: "Viewer",
+        ativo: "Activo",
+        inativo: "Inactivo",
+        ativa: "Activa",
+        inativa: "Inactiva"
       }
     },
     cta: {
