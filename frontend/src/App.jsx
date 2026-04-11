@@ -61,7 +61,7 @@ function App() {
   }
 
   if (currentView === 'lab') {
-    return <LabPortal onLogout={() => setCurrentView('landing')} t={t} />;
+    return <LabPortal onLogout={() => setCurrentView('landing')} t={t} lang={lang} setLang={setLang} />;
   }
 
   return (

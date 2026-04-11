@@ -140,10 +140,11 @@ export function Register({ onBack, onLogin, t }) {
                     <motion.button 
                       type="button"
                       onClick={() => setStep(2)}
-                      whileHover={{ scale: 1.02 }}
+                      whileHover={{ scale: 1.02, boxShadow: "0px 0px 20px rgba(16, 185, 129, 0.5)" }}
                       whileTap={{ scale: 0.98 }}
-                      className="w-full py-2.5 lg:py-4 text-sm lg:text-base bg-[#10b981] text-white rounded-sm font-semibold transition-all shadow-md flex justify-center items-center gap-2"
+                      className="relative overflow-hidden w-full py-2.5 lg:py-4 text-sm lg:text-base bg-[#10b981] text-white rounded-sm font-semibold transition-all shadow-md flex justify-center items-center gap-2 group"
                     >
+                      <div className="absolute inset-0 w-1/4 h-full bg-white opacity-20 skew-x-[45deg] -translate-x-[150%] group-hover:translate-x-[500%] transition-transform duration-700 ease-out" />
                       {t.register.nextStep} &rarr;
                     </motion.button>
                   </div>
