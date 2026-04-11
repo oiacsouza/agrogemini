@@ -11,6 +11,54 @@ export const translations = {
       signUpShort: "Criar Conta",
       exploreBtn: "Explorar a plataforma"
     },
+    login: {
+      back: "Voltar",
+      title: "Log In",
+      emailLabel: "ID ou Email",
+      emailPlaceholder: "Ex. joao@fazenda.com",
+      passwordLabel: "Senha",
+      submit: "Acessar",
+      forgotPassword: "Esqueceu a senha?",
+      signUp: "Cadastrar-se"
+    },
+    register: {
+      title: "Criar Conta",
+      subtitle: "Junte-se à revolução agronômica.",
+      personalInfo: "Informações Pessoais",
+      firstName: "Nome",
+      lastName: "Sobrenome",
+      email: "Email",
+      phone: "Telefone",
+      userType: "Tipo de Perfil",
+      typeFarmer: "Produtor Rural",
+      typeLab: "Consultor / Laboratório",
+      password: "Senha",
+      addressInfo: "Endereço",
+      zipcode: "CEP",
+      street: "Logradouro",
+      number: "Número",
+      complement: "Complemento",
+      neighborhood: "Bairro",
+      city: "Cidade",
+      state: "Estado",
+      submit: "Concluir Cadastro",
+      alreadyHaveAccount: "Já tem uma conta?",
+      login: "Acessar Plataforma",
+      confirmPassword: "Confirmar Senha",
+      nextStep: "Próximo Passo",
+      prevStep: "Voltar Etapa",
+      firstNameHint: "Ex. João",
+      lastNameHint: "Ex. Silva",
+      emailHint: "Ex. joao@fazenda.com",
+      phoneHint: "Ex. (11) 99999-9999",
+      zipcodeHint: "Ex. 01000-000",
+      streetHint: "Ex. Rodovia Principal",
+      numberHint: "Ex. 1000 ou S/N",
+      complementHint: "Ex. Fazenda Boa Vista",
+      neighborhoodHint: "Ex. Zona Rural",
+      cityHint: "Ex. Ribeirão Preto",
+      stateHint: "Ex. SP"
+    },
     hero: {
       badge: "O futuro da gestão agronômica",
       titleLine1: "Automatize o Laboratório.",
@@ -59,6 +107,61 @@ export const translations = {
         }
       ]
     },
+    portal: {
+      sidebar: {
+        dashboard: "Dashboard",
+        importSample: "Importar amostra",
+        samples: "Amostras",
+        help: "Precisa de ajuda?",
+        helpText: "Acesse nossos documentos de suporte",
+        documentation: "Documentação"
+      },
+      topbar: {
+        searchPlaceholder: "Procurar Amostras"
+      },
+      dashboard: {
+        title: "Dashboard do Laboratório",
+        subtitle: "Aqui estão os dados principais de todas suas operações",
+        totalSamples: "Total de amostras",
+        processedToday: "Processadas Hoje",
+        pending: "Pendentes",
+        avgHealth: "Saúde média do solo",
+        recentSamples: "Amostras analisadas recentemente",
+        recentSamplesText: "Veja todas amostras e suas atualizações recentes",
+        headers: {
+          date: "DATA",
+          producer: "PRODUTOR",
+          field: "TALHÃO",
+          status: "STATUS",
+          health: "SAÚDE DO SOLO",
+          actions: "AÇÕES"
+        },
+        viewDetails: "Ver Detalhes",
+        status: {
+          concluido: "Concluído",
+          processando: "Processando",
+          alerta: "Alerta"
+        }
+      },
+      import: {
+        title: "Importação de Amostra",
+        subtitle: "Da máquina direto para análise",
+        cardTitle: "Importação Inteligente",
+        dragDrop: "Arraste e solte um arquivo",
+        orClick: "ou clique e procure",
+        selectFiles: "Selecionar Arquivos",
+        featuresFooter: "Mapeamento automático • Validação instantânea • Upload Seguro"
+      },
+      detail: {
+        title: "Detalhe da amostra",
+        subtitle: "Aqui estão os dados principais da amostra",
+        nutrientAnalysis: "Análise de nutrientes",
+        currentLevel: "Nível Atual",
+        optimalLevel: "Nível Ideal",
+        processingTrends: "Tendências de Processamento",
+        samplesLine: "Amostras"
+      }
+    },
     cta: {
       title: "Pronto para Digitalizar suas Operações Agronômicas?",
       description: "Faça parte da principal plataforma que conecta a precisão laboratorial às decisões práticas na lavoura.",
@@ -83,6 +186,54 @@ export const translations = {
       signUp: "Create Free Account",
       signUpShort: "Sign Up",
       exploreBtn: "Explore Platform"
+    },
+    login: {
+      back: "Back",
+      title: "Log In",
+      emailLabel: "ID or Email",
+      emailPlaceholder: "Ex. john@farm.com",
+      passwordLabel: "Password",
+      submit: "Sign In",
+      forgotPassword: "Forgot password?",
+      signUp: "Sign Up"
+    },
+    register: {
+      title: "Create Account",
+      subtitle: "Join the agronomic revolution.",
+      personalInfo: "Personal Information",
+      firstName: "First Name",
+      lastName: "Last Name",
+      email: "Email",
+      phone: "Phone",
+      userType: "Profile Type",
+      typeFarmer: "Farmer",
+      typeLab: "Consultant / Lab",
+      password: "Password",
+      addressInfo: "Address",
+      zipcode: "Zip/Postal Code",
+      street: "Street Address",
+      number: "Number",
+      complement: "Apt, Suite, etc.",
+      neighborhood: "Neighborhood",
+      city: "City",
+      state: "State",
+      submit: "Complete Registration",
+      alreadyHaveAccount: "Already have an account?",
+      login: "Sign In",
+      confirmPassword: "Confirm Password",
+      nextStep: "Next Step",
+      prevStep: "Back",
+      firstNameHint: "Ex. John",
+      lastNameHint: "Ex. Doe",
+      emailHint: "Ex. john@farm.com",
+      phoneHint: "Ex. +1 555-0000",
+      zipcodeHint: "Ex. 90210",
+      streetHint: "Ex. Main Highway",
+      numberHint: "Ex. 1000",
+      complementHint: "Ex. Unit B",
+      neighborhoodHint: "Ex. Rural Area",
+      cityHint: "Ex. Fresno",
+      stateHint: "Ex. CA"
     },
     hero: {
       badge: "The future of agronomic management",
@@ -132,6 +283,61 @@ export const translations = {
         }
       ]
     },
+    portal: {
+      sidebar: {
+        dashboard: "Dashboard",
+        importSample: "Import Sample",
+        samples: "Samples",
+        help: "Need help?",
+        helpText: "Access our support documentation",
+        documentation: "Documentation"
+      },
+      topbar: {
+        searchPlaceholder: "Search Samples"
+      },
+      dashboard: {
+        title: "Laboratory Dashboard",
+        subtitle: "Here is the key data from all your operations",
+        totalSamples: "Total Samples",
+        processedToday: "Processed Today",
+        pending: "Pending",
+        avgHealth: "Avg Soil Health",
+        recentSamples: "Recently Analyzed Samples",
+        recentSamplesText: "View all samples and recent updates",
+        headers: {
+          date: "DATE",
+          producer: "PRODUCER",
+          field: "FIELD",
+          status: "STATUS",
+          health: "SOIL HEALTH",
+          actions: "ACTIONS"
+        },
+        viewDetails: "View Details",
+        status: {
+          concluido: "Completed",
+          processando: "Processing",
+          alerta: "Alert"
+        }
+      },
+      import: {
+        title: "Sample Import",
+        subtitle: "From the machine straight to analysis",
+        cardTitle: "Smart Import",
+        dragDrop: "Drag and drop a file",
+        orClick: "or click to browse",
+        selectFiles: "Select Files",
+        featuresFooter: "Auto mapping • Instant validation • Secure Upload"
+      },
+      detail: {
+        title: "Sample Detail",
+        subtitle: "Core data regarding the sample",
+        nutrientAnalysis: "Nutrient Analysis",
+        currentLevel: "Current Level",
+        optimalLevel: "Optimal Level",
+        processingTrends: "Processing Trends",
+        samplesLine: "Samples"
+      }
+    },
     cta: {
       title: "Ready to Digitize Your Agronomic Operations?",
       description: "Join the leading platform that connects laboratory precision to practical farming decisions.",
@@ -156,6 +362,54 @@ export const translations = {
       signUp: "Crear Cuenta Gratis",
       signUpShort: "Regístrate",
       exploreBtn: "Explorar la plataforma"
+    },
+    login: {
+      back: "Volver",
+      title: "Iniciar Sesión",
+      emailLabel: "ID o Email",
+      emailPlaceholder: "Ej. juan@hacienda.com",
+      passwordLabel: "Contraseña",
+      submit: "Acceder",
+      forgotPassword: "¿Olvidaste tu contraseña?",
+      signUp: "Regístrate"
+    },
+    register: {
+      title: "Crear Cuenta",
+      subtitle: "Únete a la revolución agronómica.",
+      personalInfo: "Información Personal",
+      firstName: "Nombre",
+      lastName: "Apellido",
+      email: "Correo Electrónico",
+      phone: "Teléfono",
+      userType: "Tipo de Perfil",
+      typeFarmer: "Productor",
+      typeLab: "Consultor / Laboratorio",
+      password: "Contraseña",
+      addressInfo: "Dirección",
+      zipcode: "Código Postal",
+      street: "Dirección",
+      number: "Número",
+      complement: "Dpto, Suite, etc.",
+      neighborhood: "Barrio",
+      city: "Ciudad",
+      state: "Estado",
+      submit: "Completar Registro",
+      alreadyHaveAccount: "¿Ya tienes una cuenta?",
+      login: "Iniciar Sesión",
+      confirmPassword: "Confirmar Contraseña",
+      nextStep: "Siguiente Paso",
+      prevStep: "Volver",
+      firstNameHint: "Ej. Juan",
+      lastNameHint: "Ej. Pérez",
+      emailHint: "Ej. juan@hacienda.com",
+      phoneHint: "Ej. +34 600 000 000",
+      zipcodeHint: "Ej. 28001",
+      streetHint: "Ej. Carretera Principal",
+      numberHint: "Ej. 1000",
+      complementHint: "Ej. Finca Buena Vista",
+      neighborhoodHint: "Ej. Zona Rural",
+      cityHint: "Ej. Valencia",
+      stateHint: "Ej. VC"
     },
     hero: {
       badge: "El futuro de la gestión agronómica",
@@ -204,6 +458,61 @@ export const translations = {
           text: "Toma decisiones rápidas en el campo. Recibe recomendaciones exactas y accionables para la corrección del suelo directamente del análisis del consultor."
         }
       ]
+    },
+    portal: {
+      sidebar: {
+        dashboard: "Dashboard",
+        importSample: "Importar Muestra",
+        samples: "Muestras",
+        help: "¿Necesitas ayuda?",
+        helpText: "Accede a nuestros documentos de soporte",
+        documentation: "Documentación"
+      },
+      topbar: {
+        searchPlaceholder: "Buscar Muestras"
+      },
+      dashboard: {
+        title: "Panel del Laboratorio",
+        subtitle: "Aquí están los datos principales de todas tus operaciones",
+        totalSamples: "Total de muestras",
+        processedToday: "Procesadas Hoy",
+        pending: "Pendientes",
+        avgHealth: "Salud media del suelo",
+        recentSamples: "Muestras analizadas recientemente",
+        recentSamplesText: "Ve todas las muestras y actualizaciones recientes",
+        headers: {
+          date: "FECHA",
+          producer: "PRODUCTOR",
+          field: "LOTE",
+          status: "ESTADO",
+          health: "SALUD DEL SUELO",
+          actions: "ACCIONES"
+        },
+        viewDetails: "Ver Detalles",
+        status: {
+          concluido: "Concluido",
+          processando: "Procesando",
+          alerta: "Alerta"
+        }
+      },
+      import: {
+        title: "Importación de Muestra",
+        subtitle: "De la máquina directo al análisis",
+        cardTitle: "Importación Inteligente",
+        dragDrop: "Arrastra y suelta un archivo",
+        orClick: "o haz clic y busca",
+        selectFiles: "Seleccionar Archivos",
+        featuresFooter: "Mapeo automático • Validación instantánea • Subida Segura"
+      },
+      detail: {
+        title: "Detalle de la muestra",
+        subtitle: "Aquí están los datos principales de la muestra",
+        nutrientAnalysis: "Análisis de nutrientes",
+        currentLevel: "Nivel Actual",
+        optimalLevel: "Nivel Óptimo",
+        processingTrends: "Tendencias de Procesamiento",
+        samplesLine: "Muestras"
+      }
     },
     cta: {
       title: "¿Listo para Digitalizar tus Operaciones Agronómicas?",
