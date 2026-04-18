@@ -11,15 +11,15 @@ export function LabClientProfile({ client, onBack, onViewDetail, t }) {
   const ds = t.portal.dashboard.status;
 
   const getStatusStyle = (s) => ({
-    concluido:   { icon: <CheckCircle2 size={12}/>, cls: { bg: '#dcfce7', color: '#15803d', border: '#bbf7d0' } },
-    alerta:      { icon: <AlertCircle   size={12}/>, cls: { bg: '#fef9c3', color: '#a16207', border: '#fde68a' } },
-    processando: { icon: <TrendingUp    size={12}/>, cls: { bg: '#dbeafe', color: '#1d4ed8', border: '#bfdbfe' } },
+    concluido: { icon: <CheckCircle2 size={12} />, cls: { bg: '#dcfce7', color: '#15803d', border: '#bbf7d0' } },
+    alerta: { icon: <AlertCircle size={12} />, cls: { bg: '#fef9c3', color: '#a16207', border: '#fde68a' } },
+    processando: { icon: <TrendingUp size={12} />, cls: { bg: '#dbeafe', color: '#1d4ed8', border: '#bfdbfe' } },
   }[s] ?? { icon: null, cls: { bg: '#f1f5f9', color: '#475569', border: '#e2e8f0' } });
 
   // Status labels from translation
   const statusLabels = {
-    concluido:   ds.concluido,
-    alerta:      ds.alerta,
+    concluido: ds.concluido,
+    alerta: ds.alerta,
     processando: ds.processando,
   };
 
@@ -40,7 +40,7 @@ export function LabClientProfile({ client, onBack, onViewDetail, t }) {
   const profileHeaders = [dh.date, dh.field, dh.status, dh.health, ''];
 
   return (
-    <div style={{ maxWidth: '56rem' }}>
+    <div style={{ maxWidth: '200rem' }}>
       <button onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'none', border: 'none', color: '#10b981', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', marginBottom: '1.5rem', padding: 0 }}>
         <ArrowLeft size={16} /> {c.profileBack}
       </button>

@@ -21,7 +21,7 @@ export function LabSamples({ t, onViewDetails }) {
   };
 
   return (
-    <div style={{ maxWidth: '64rem' }}>
+    <div style={{ maxWidth: '200rem' }}>
       <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
         <div style={{ padding: '1.25rem 1.5rem', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <FileSpreadsheet size={18} color="#10b981" />
@@ -36,8 +36,8 @@ export function LabSamples({ t, onViewDetails }) {
             <thead>
               <tr style={{ borderBottom: `1px solid ${C.border}`, background: C.bgAlt }}>
                 {[t.portal.dashboard.headers.date, t.portal.dashboard.headers.producer,
-                  t.portal.dashboard.headers.field, t.portal.dashboard.headers.status,
-                  t.portal.dashboard.headers.health, ''].map(h => (
+                t.portal.dashboard.headers.field, t.portal.dashboard.headers.status,
+                t.portal.dashboard.headers.health, ''].map(h => (
                   <th key={h} style={{ padding: '0.875rem 1.25rem', textAlign: 'left', fontSize: '0.6875rem', fontWeight: 800, color: C.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>

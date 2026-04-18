@@ -23,7 +23,7 @@ export function LabImport({ t }) {
 
   const validate = () => {
     const e = {};
-    if (!form.name.trim())  e.name  = `${im.fieldName} é obrigatório.`;
+    if (!form.name.trim()) e.name = `${im.fieldName} é obrigatório.`;
     if (!form.email.trim()) e.email = `${im.fieldEmail} é obrigatório.`;
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Email inválido.';
     else if (clients.some(c => c.email === form.email)) e.email = 'Este email já está cadastrado.';
@@ -58,7 +58,7 @@ export function LabImport({ t }) {
   }, []);
 
   return (
-    <div style={{ maxWidth: '48rem' }}>
+    <div style={{ maxWidth: '200rem' }}>
       <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
         {/* Card header */}
         <div style={{ padding: '1.25rem 1.5rem', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

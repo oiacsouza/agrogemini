@@ -21,7 +21,7 @@ export function LabBranches({ t }) {
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   const openCreate = () => { setEditTarget(null); setForm(emptyForm); setModal(true); };
-  const openEdit   = (br) => { setEditTarget(br.id); setForm({ name: br.name, city: br.city, state: br.state, manager: br.manager }); setModal(true); };
+  const openEdit = (br) => { setEditTarget(br.id); setForm({ name: br.name, city: br.city, state: br.state, manager: br.manager }); setModal(true); };
 
   const handleSave = () => {
     if (!form.name.trim() || !form.city.trim()) { toast.error(`${b.fieldName} e ${b.fieldCity} são obrigatórios.`); return; }
@@ -47,7 +47,7 @@ export function LabBranches({ t }) {
   ];
 
   return (
-    <div style={{ maxWidth: '56rem' }}>
+    <div style={{ maxWidth: '200rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Building2 size={20} color="#10b981" />

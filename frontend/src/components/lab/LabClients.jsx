@@ -10,8 +10,8 @@ export function LabClients({ onViewProfile, t }) {
   const C = useLabTheme();
   const c = t.portal.clients;
 
-  const [clients]      = useState(mockClients);
-  const [search, setSearch]         = useState('');
+  const [clients] = useState(mockClients);
+  const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('todos');
 
   const filtered = clients.filter(cl => {
@@ -23,7 +23,7 @@ export function LabClients({ onViewProfile, t }) {
   const headers = [c.headers.client, c.headers.email, c.headers.reports, c.headers.lastReport, c.headers.status, ''];
 
   return (
-    <div style={{ maxWidth: '64rem' }}>
+    <div style={{ maxWidth: '200rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <FlaskConical size={20} color="#10b981" />

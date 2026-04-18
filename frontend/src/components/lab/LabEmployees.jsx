@@ -25,7 +25,7 @@ export function LabEmployees({ t }) {
 
   const validate = () => {
     const errs = {};
-    if (!form.name.trim())  errs.name  = `${e.fieldName} é obrigatório.`;
+    if (!form.name.trim()) errs.name = `${e.fieldName} é obrigatório.`;
     if (!form.email.trim()) errs.email = `${e.fieldEmail} é obrigatório.`;
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Email inválido.';
     else if (employees.some(emp => emp.email === form.email)) errs.email = 'Email já cadastrado.';
@@ -71,7 +71,7 @@ export function LabEmployees({ t }) {
   const headers = [e.headers.name, e.headers.role, e.headers.email, e.headers.permission, e.headers.status, ''];
 
   return (
-    <div style={{ maxWidth: '60rem' }}>
+    <div style={{ maxWidth: '200rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Users size={20} color="#10b981" />
