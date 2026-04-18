@@ -12,6 +12,7 @@ import { LabSamples }        from './LabSamples';
 import { LabSampleDetail }   from './LabSampleDetail';
 import { LabBranches }       from './lab/LabBranches';
 import { LabEmployees }      from './lab/LabEmployees';
+import { LabUsers }          from './lab/LabUsers';
 import { LabClients }        from './lab/LabClients';
 import { LabClientProfile }  from './lab/LabClientProfile';
 import { useLabTheme }       from './lab/useLabTheme';
@@ -141,6 +142,7 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
       case 'detail':    return <LabSampleDetail t={t} onBack={() => handleSetTab('samples')} />;
       case 'branches':  return <LabBranches t={t} />;
       case 'employees': return <LabEmployees t={t} />;
+      case 'usuarios':  return <LabUsers t={t} />;
       case 'clients':
         return activeClient
           ? <LabClientProfile client={activeClient} onBack={() => setActiveClient(null)} onViewDetail={() => handleSetTab('detail')} t={t} />
@@ -156,6 +158,7 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
     detail:    t.portal.sidebar.samples,
     branches:  t.portal.branches.title,
     employees: t.portal.employees.title,
+    usuarios:  'Usuários',
     clients:   activeClient ? activeClient.name : t.portal.clients.title,
   };
 
@@ -166,6 +169,7 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
     detail:    t.portal.detail.subtitle,
     branches:  t.portal.branches.subtitle,
     employees: `${t.portal.employees.registered}`,
+    usuarios:  'Gerencie os usuários do sistema',
     clients:   activeClient ? t.portal.clients.historySubtitle : t.portal.clients.registered,
   };
 
@@ -182,7 +186,8 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
       label: t.portal.sidebar.sectionManage,
       items: [
         { id: 'branches',  icon: Building2,   label: t.portal.sidebar.branches },
-        { id: 'employees', icon: Users,        label: t.portal.sidebar.employees },
+        { id: 'usuarios',  icon: Users,       label: 'Usuários' },
+        { id: 'employees', icon: Users,       label: t.portal.sidebar.employees },
         { id: 'clients',   icon: FlaskConical, label: t.portal.sidebar.clients },
       ],
     },

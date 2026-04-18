@@ -1,9 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
-import { Leaf } from 'lucide-react';
+import { Leaf, Loader2 } from 'lucide-react';
+import { authService } from '../services/api';
 
 export function Login({ onBack, onRegister, onLogin, t }) {
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!email.trim() || !senha.trim()) {
+      setError(t.login.errorRequired || 'Preencha todos os campos.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authService.login(email, senha);
+      onLogin && onLogin();
+    } catch (err) {
+      setError(err.detail || 'Erro ao fazer login. Verifique suas credenciais.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col lg:flex-row h-screen w-full bg-white dark:bg-slate-950 overflow-hidden relative">
       {/* Left side: branding/hero */}
@@ -79,11 +105,22 @@ export function Login({ onBack, onRegister, onLogin, t }) {
         <div className="w-full max-w-sm z-20">
           <h2 className="text-xl lg:text-3xl font-bold mb-6 lg:mb-10 text-slate-900 dark:text-white tracking-tight">{t.login.title}</h2>
           
-          <form className="space-y-4 lg:space-y-6" onSubmit={(e) => { e.preventDefault(); onLogin && onLogin(); }}>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-md text-red-700 dark:text-red-300 text-sm"
+            >
+              {error}
+            </motion.div>
+          )}
+
+          <form className="space-y-4 lg:space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-1 lg:space-y-2">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{t.login.emailLabel}</label>
               <input 
                 type="text"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder={t.login.emailPlaceholder} 
                 className="w-full px-3 py-2 lg:px-4 lg:py-3 text-sm lg:text-base border border-slate-300 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-1 focus:border-[#10b981] focus:ring-[#10b981] bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all shadow-sm"
               />
@@ -93,6 +130,8 @@ export function Login({ onBack, onRegister, onLogin, t }) {
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{t.login.passwordLabel}</label>
               <input 
                 type="password"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
                 placeholder="••••••••" 
                 className="w-full px-3 py-2 lg:px-4 lg:py-3 text-sm lg:text-base border border-slate-300 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-1 focus:border-[#10b981] focus:ring-[#10b981] bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all shadow-sm"
               />
@@ -100,12 +139,19 @@ export function Login({ onBack, onRegister, onLogin, t }) {
 
             <div className="pt-2">
               <motion.button 
-                whileHover={{ scale: 1.02, boxShadow: "0px 0px 20px rgba(16, 185, 129, 0.5)" }}
+                type="submit"
+                disabled={loading}
+                whileHover={{ scale: loading ? 1 : 1.02, boxShadow: "0px 0px 20px rgba(16, 185, 129, 0.5)" }}
                 whileTap={{ scale: 0.98 }}
-                className="relative overflow-hidden w-full py-2.5 lg:py-3 text-sm lg:text-base bg-[#10b981] text-white rounded-sm font-semibold transition-all shadow-md group"
+                className="relative overflow-hidden w-full py-2.5 lg:py-3 text-sm lg:text-base bg-[#10b981] text-white rounded-sm font-semibold transition-all shadow-md group disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 <div className="absolute inset-0 w-1/4 h-full bg-white opacity-20 skew-x-[45deg] -translate-x-[150%] group-hover:translate-x-[500%] transition-transform duration-700 ease-out" />
-                {t.login.submit}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 size={18} className="animate-spin" />
+                    Entrando...
+                  </span>
+                ) : t.login.submit}
               </motion.button>
             </div>
           </form>
