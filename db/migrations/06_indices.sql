@@ -1,0 +1,438 @@
+-- AgroGemini Oracle v4 - separação por grupos lógicos
+-- Arquivo: 06_indices.sql
+-- Objetivo: índices B-Tree/convencionais da base.
+
+-- 3d. CREATE INDEX para FKs e campos de busca
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_USUARIOS_ENDERECO ON usuarios (endereco_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_USUARIOS_TIPO ON usuarios (tipo_usuario)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_TEL_USUARIOS_USUARIO ON telefones_usuarios (usuario_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_FAZENDAS_ENDERECO ON fazendas (endereco_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_FAZENDA_USUARIOS_FAZ ON fazenda_usuarios (fazenda_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_FAZENDA_USUARIOS_USU ON fazenda_usuarios (usuario_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_TALHOES_FAZENDA ON talhoes (fazenda_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_TALHOES_BIOMA ON talhoes (bioma)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_LABORATORIOS_ENDERECO ON laboratorios (endereco_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_LAB_USUARIOS_LAB ON laboratorio_usuarios (laboratorio_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_LAB_USUARIOS_USU ON laboratorio_usuarios (usuario_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_TEL_LABS_LAB ON telefones_laboratorios (laboratorio_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_ASSINATURAS_LAB ON assinaturas (laboratorio_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_ASSINATURAS_PLANO ON assinaturas (plano_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_ASSINATURAS_STATUS ON assinaturas (status)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_IMPORTACOES_LAB ON importacoes (laboratorio_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_IMPORTACOES_USU ON importacoes (usuario_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_IMPORTACOES_STATUS ON importacoes (status)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_IMPORTACOES_CRIADO_EM ON importacoes (criado_em)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_AMOSTRAS_TALHAO ON amostras (talhao_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_AMOSTRAS_CLIENTE ON amostras (cliente_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_AMOSTRAS_LAB ON amostras (laboratorio_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_AMOSTRAS_IMPORT ON amostras (importacao_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_AMOSTRAS_STATUS ON amostras (status)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_AMOSTRAS_TIPO ON amostras (tipo_amostra)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_AMOSTRAS_DATA_ENTRADA ON amostras (data_entrada)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_CONFIG_CALC_LAB ON configuracoes_calculo (laboratorio_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_CONFIG_CALC_TIPO ON configuracoes_calculo (tipo_laudo)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_CONFIG_CALC_SUBST ON configuracoes_calculo (substituido_por)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_LAUDOS_AMOSTRA ON laudos (amostra_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_LAUDOS_LAB ON laudos (laboratorio_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_LAUDOS_RESP ON laudos (responsavel_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_LAUDOS_STATUS ON laudos (status)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_LAUDOS_TIPO ON laudos (tipo_laudo)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_LAUDOS_DATA_EMISSAO ON laudos (data_emissao)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_LAUDO_RESULTADOS_LAUDO ON laudo_resultados (laudo_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_LAUDO_RESULTADOS_CONFIG ON laudo_resultados (configuracao_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_ARQUIVOS_LAB ON arquivos (laboratorio_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_ARQUIVOS_AMOSTRA ON arquivos (amostra_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_ARQUIVOS_LAUDO ON arquivos (laudo_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_ARQUIVOS_IMPORT ON arquivos (importacao_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_VARIAVEIS_CALC_CONFIG ON variaveis_calculo (configuracao_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_LIMITES_REF_CONFIG ON limites_referencia (configuracao_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_LIMITES_REF_CLASSE ON limites_referencia (classe)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_EVENTOS_AUD_USU ON eventos_auditoria (usuario_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_EVENTOS_AUD_LAB ON eventos_auditoria (laboratorio_id)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_EVENTOS_AUD_TABELA ON eventos_auditoria (tabela_afetada)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE q'~CREATE INDEX IDX_EVENTOS_AUD_CRIADO_EM ON eventos_auditoria (criado_em)~';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 AND SQLCODE != -1408 THEN
+            RAISE;
+        END IF;
+END;
+/
+
