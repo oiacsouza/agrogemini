@@ -126,13 +126,12 @@ function LangSwitcher({ lang, setLang, isDark }) {
 }
 
 // ── Inner portal (needs context) ─────────────────────────────────────────────
-function PortalInner({ onLogout, t, lang, setLang }) {
+function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
   const { currentUser, isDark, toggleDark } = useLab();
-  const [activeTab, setActiveTab] = useState('dashboard');
   const [activeClient, setActiveClient] = useState(null);
   const C = useLabTheme();
 
-  const handleSetTab = (tab) => { setActiveTab(tab); setActiveClient(null); };
+  const handleSetTab = (tab) => { onNavigate(tab); setActiveClient(null); };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -302,10 +301,17 @@ function PortalInner({ onLogout, t, lang, setLang }) {
 }
 
 // ── Public export ─────────────────────────────────────────────────────────────
-export function LabPortal({ onLogout, t, lang, setLang }) {
+export function LabPortal({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
   return (
     <LabProvider>
-      <PortalInner onLogout={onLogout} t={t} lang={lang} setLang={setLang} />
+      <PortalInner 
+        onLogout={onLogout} 
+        t={t} 
+        lang={lang} 
+        setLang={setLang} 
+        activeTab={activeTab}
+        onNavigate={onNavigate}
+      />
     </LabProvider>
   );
 }

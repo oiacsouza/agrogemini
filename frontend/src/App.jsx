@@ -89,8 +89,18 @@ function App() {
     return <Register onBack={() => navigate('landing')} onLogin={() => navigate('login')} t={t} />;
   }
 
-  if (currentView === 'lab') {
-    return <LabPortal onLogout={() => navigate('landing')} t={t} lang={lang} setLang={setLang} />;
+  if (currentView === 'lab' || currentView.startsWith('lab/')) {
+    const activeRoute = currentView === 'lab' ? 'dashboard' : currentView.replace('lab/', '');
+    return (
+      <LabPortal 
+        onLogout={() => navigate('landing')} 
+        t={t} 
+        lang={lang} 
+        setLang={setLang} 
+        activeTab={activeRoute}
+        onNavigate={(tab) => navigate(`lab/${tab}`)}
+      />
+    );
   }
 
   if (currentView === 'farmer/reports') {

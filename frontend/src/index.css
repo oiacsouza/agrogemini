@@ -16,10 +16,10 @@
 
   /* Component specifics */
   --mesh-bg-base: #f8fafc;
-  --mesh-overlay: rgba(248, 250, 252, 0.4);
-  --mesh-blob1: rgba(110, 231, 183, 0.45);
-  --mesh-blob2: rgba(253, 230, 138, 0.45);
-  --mesh-blob3: rgba(153, 246, 228, 0.45);
+  --mesh-overlay: rgba(255, 255, 255, 0.3);
+  --mesh-blob1: rgba(52, 211, 153, 0.5); /* Emerald */
+  --mesh-blob2: rgba(251, 191, 36, 0.4);  /* Amber */
+  --mesh-blob3: rgba(16, 185, 129, 0.4);  /* Green */
   
   --skel-bg: rgba(255, 255, 255, 0.4);
   --skel-border: rgba(0, 0, 0, 0.05);
@@ -42,10 +42,10 @@
 
   /* Component specifics */
   --mesh-bg-base: #020617;
-  --mesh-overlay: rgba(2, 6, 23, 0.2);
-  --mesh-blob1: rgba(6, 95, 70, 0.2);
-  --mesh-blob2: rgba(120, 53, 15, 0.1);
-  --mesh-blob3: rgba(19, 78, 74, 0.2);
+  --mesh-overlay: rgba(2, 6, 23, 0.4);
+  --mesh-blob1: rgba(52, 211, 153, 0.25);
+  --mesh-blob2: rgba(245, 158, 11, 0.15);
+  --mesh-blob3: rgba(16, 185, 129, 0.2);
   
   --skel-bg: rgba(255, 255, 255, 0.05);
   --skel-border: rgba(255, 255, 255, 0.1);
@@ -113,16 +113,25 @@ img {
   color: white;
   padding: 10px 24px;
   border-radius: 9999px;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.95rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 100%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
 }
 
 .btn-primary:hover {
   background: var(--primary-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
 }
 
 .badge {
@@ -195,10 +204,18 @@ nav.main-nav {
 
 .sign-in {
   display: none;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.9rem;
   color: var(--primary);
-  background: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sign-in:hover {
+  color: var(--primary-hover);
+  transform: scale(1.05);
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+.sign-in:active {
+  transform: scale(0.95);
 }
 
 header .btn-primary {
@@ -419,6 +436,13 @@ header .btn-primary {
   gap: 16px;
   text-align: left;
   box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease;
+}
+
+.farmer-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .farmer-card .feature-icon {
@@ -431,6 +455,12 @@ header .btn-primary {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.4s ease, background 0.4s ease;
+}
+
+.farmer-card:hover .feature-icon {
+  transform: rotate(10deg) scale(1.1);
+  background: rgba(16, 185, 129, 0.2);
 }
 
 .farmer-card h3 {
