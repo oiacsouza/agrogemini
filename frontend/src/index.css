@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
@@ -167,6 +167,7 @@ header {
 
 header.scrolled {
   background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   padding: 12px 0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
