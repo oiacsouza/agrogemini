@@ -14,6 +14,7 @@ import { LabBranches }       from './lab/LabBranches';
 import { LabEmployees }      from './lab/LabEmployees';
 import { LabClients }        from './lab/LabClients';
 import { LabClientProfile }  from './lab/LabClientProfile';
+import { useLabTheme }       from './lab/useLabTheme';
 
 // ── Lab Switcher dropdown ────────────────────────────────────────────────────
 function LabSwitcher({ t }) {
@@ -129,10 +130,7 @@ function PortalInner({ onLogout, t, lang, setLang }) {
   const { currentUser, isDark, toggleDark } = useLab();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [activeClient, setActiveClient] = useState(null);
-
-  const C = isDark
-    ? { bg: '#020617', border: '#1e293b', text: '#f1f5f9', textMuted: '#94a3b8', header: '#0f172a', inputBg: '#1e293b' }
-    : { bg: '#f8fafc',  border: '#e2e8f0', text: '#0f172a', textMuted: '#64748b', header: '#ffffff',  inputBg: '#f8fafc'  };
+  const C = useLabTheme();
 
   const handleSetTab = (tab) => { setActiveTab(tab); setActiveClient(null); };
 

@@ -14,12 +14,16 @@ const logos = [
   { icon: Sun, name: 'Luz do Campo' },
 ];
 
-export function LogoCarousel() {
+// Translation map for "Our Clients" in all supported languages
+const OUR_CLIENTS = { pt: 'Nossos Clientes', en: 'Our Clients', es: 'Nuestros Clientes' };
+
+export function LogoCarousel({ lang }) {
+  const label = OUR_CLIENTS[lang] ?? OUR_CLIENTS.pt;
   return (
-    <section 
+    <section
       className="relative overflow-hidden bg-transparent"
-      style={{ 
-        padding: '30px 0', 
+      style={{
+        padding: '30px 0',
         margin: '25px 0',
         WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
         maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)'
@@ -27,10 +31,10 @@ export function LogoCarousel() {
     >
       <div className="container mx-auto text-center" style={{ marginBottom: '15px' }}>
         <p className="text-[0.95rem] font-semibold tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>
-          Nossos Clientes
+          {label}
         </p>
       </div>
-      
+
       <div className="flex">
         <motion.div
           animate={{ x: ["0%", "-50%"] }}
@@ -41,8 +45,8 @@ export function LogoCarousel() {
           {[...logos, ...logos, ...logos].map((logo, idx) => {
             const Icon = logo.icon;
             return (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="flex flex-col items-center justify-center gap-6 transition-all duration-300 opacity-40 hover:opacity-100 hover:scale-110 grayscale hover:grayscale-0"
                 style={{ color: 'var(--text-dark)' }}
               >

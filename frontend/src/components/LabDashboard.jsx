@@ -2,14 +2,13 @@ import React from 'react';
 import { FileText, CheckCircle2, AlertCircle, TrendingUp, FileSpreadsheet } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLab } from '../context/LabContext';
+import { useLabTheme } from './lab/useLabTheme';
+import { Badge } from './ui/Badge';
 
 // eslint-disable-next-line no-unused-vars
 export function LabDashboard({ t, onViewDetails }) {
   const { activeStats, activeSamples, isDark } = useLab();
-
-  const C = isDark
-    ? { surface: '#0f172a', border: '#1e293b', text: '#f1f5f9', textMuted: '#94a3b8', bgAlt: '#1e293b', trendBg: '#1e293b' }
-    : { surface: '#ffffff', border: '#e2e8f0', text: '#0f172a', textMuted: '#64748b', bgAlt: '#f8fafc', trendBg: '#f1f5f9' };
+  const C = useLabTheme();
 
   const stats = [
     { title: t.portal.dashboard.totalSamples, value: activeStats.total, icon: FileText, bg: '#10b981', trend: '+12.5%' },
@@ -17,24 +16,6 @@ export function LabDashboard({ t, onViewDetails }) {
     { title: t.portal.dashboard.pending, value: String(activeStats.pending), icon: AlertCircle, bg: '#f59e0b', trend: '-15.2%', trendDown: true },
     { title: t.portal.dashboard.avgHealth, value: `${activeStats.health}%`, icon: TrendingUp, bg: '#10b981', trend: '+3.1%' },
   ];
-
-  const getStatusStyle = (s) => ({
-    concluido: { bg: '#fcdcdcff', color: '#15803d', border: '#bbf7d0' },
-    alerta: { bg: '#fef9c3', color: '#a16207', border: '#fde68a' },
-    processando: { bg: '#dbeafe', color: '#1d4ed8', border: '#bfdbfe' },
-  }[s] ?? { bg: '#f1f5f9', color: '#475569', border: '#e2e8f0' });
-
-  const statusIcons = {
-    concluido: <CheckCircle2 size={11} />,
-    alerta: <AlertCircle size={11} />,
-    processando: <TrendingUp size={11} />,
-  };
-
-  const statusLabels = {
-    concluido: t.portal.dashboard.status.concluido,
-    alerta: t.portal.dashboard.status.alerta,
-    processando: t.portal.dashboard.status.processando,
-  };
 
   const HealthBar = ({ value }) => {
     const color = value > 80 ? '#10b981' : value > 70 ? '#f59e0b' : '#ef4444';
@@ -97,7 +78,6 @@ export function LabDashboard({ t, onViewDetails }) {
             </thead>
             <tbody>
               {activeSamples.map(s => {
-                const sc = getStatusStyle(s.status);
                 return (
                   <tr key={s.id} style={{ borderBottom: `1px solid ${C.border}` }}
                     onMouseEnter={e => e.currentTarget.style.background = C.bgAlt}
@@ -112,9 +92,7 @@ export function LabDashboard({ t, onViewDetails }) {
                     </td>
                     <td style={{ padding: '0.875rem 1.25rem', fontSize: '0.875rem', color: C.textMuted }}>{s.field}</td>
                     <td style={{ padding: '0.875rem 1.25rem' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', background: sc.bg, color: sc.color, fontSize: '0.7rem', fontWeight: 600, padding: '0.2rem 0.55rem', borderRadius: '9999px', border: `1px solid ${sc.border}` }}>
-                        {statusIcons[s.status]}{statusLabels[s.status]}
-                      </span>
+                      <Badge type={s.status} t={t} />
                     </td>
                     <td style={{ padding: '0.875rem 1.25rem' }}><HealthBar value={s.health} /></td>
                   </tr>

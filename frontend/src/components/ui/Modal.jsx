@@ -1,12 +1,9 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { useLab } from '../../context/LabContext';
+import { useLabTheme } from '../lab/useLabTheme';
 
 export function Modal({ isOpen, onClose, title, children, width = '32rem' }) {
-  const { isDark } = useLab();
-  const C = isDark
-    ? { bg: '#0f172a', border: '#1e293b', text: '#f1f5f9', textMuted: '#94a3b8', overlay: 'rgba(0,0,0,0.65)' }
-    : { bg: '#ffffff',  border: '#e2e8f0', text: '#0f172a', textMuted: '#94a3b8', overlay: 'rgba(0,0,0,0.45)' };
+  const C = useLabTheme();
 
   if (!isOpen) return null;
 
@@ -14,11 +11,11 @@ export function Modal({ isOpen, onClose, title, children, width = '32rem' }) {
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.overlay, backdropFilter: 'blur(2px)' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.modalOverlay, backdropFilter: 'blur(2px)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       onKeyDown={handleKey}
     >
-      <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: '1rem', boxShadow: '0 25px 60px rgba(0,0,0,0.3)', width, maxWidth: '90vw', maxHeight: '90vh', overflow: 'auto', animation: 'modalIn 0.2s ease' }}>
+      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '1rem', boxShadow: '0 25px 60px rgba(0,0,0,0.3)', width, maxWidth: '90vw', maxHeight: '90vh', overflow: 'auto', animation: 'modalIn 0.2s ease' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 1.5rem', borderBottom: `1px solid ${C.border}` }}>
           <h3 style={{ fontWeight: 700, fontSize: '1rem', color: C.text, margin: 0 }}>{title}</h3>

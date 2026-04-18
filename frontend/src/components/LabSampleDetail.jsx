@@ -3,12 +3,11 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { BarChart3, TrendingUp } from 'lucide-react';
 import { mockNutrientData, mockTrendData } from '../mockData';
 import { useLab } from '../context/LabContext';
+import { useLabTheme } from './lab/useLabTheme';
 
 export function LabSampleDetail({ t }) {
   const { isDark } = useLab();
-  const C = isDark
-    ? { surface: '#0f172a', border: '#1e293b', text: '#f1f5f9', textMuted: '#94a3b8', gridStroke: '#1e293b', tooltipBg: '#1e293b', tooltipBorder: '#334155', lineHealth: '#94a3b8' }
-    : { surface: '#ffffff',  border: '#e2e8f0', text: '#0f172a', textMuted: '#64748b', gridStroke: '#e2e8f0', tooltipBg: '#ffffff', tooltipBorder: '#e2e8f0', lineHealth: '#0f172a' };
+  const C = useLabTheme();
 
   const cardStyle = { background: C.surface, border: `1px solid ${C.border}`, borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', padding: '2rem', marginBottom: '1.5rem' };
   const tooltipStyle = { background: C.tooltipBg, border: `1px solid ${C.tooltipBorder}`, borderRadius: '0.5rem', color: C.text };

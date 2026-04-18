@@ -2,12 +2,13 @@ import React from 'react';
 import { ArrowLeft, Mail, Phone, FileText, CheckCircle2, AlertCircle, TrendingUp } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { useLab } from '../../context/LabContext';
+import { useLabTheme } from './useLabTheme';
 
-export function LabClientProfile({ client, onBack, onViewDetail }) {
+export function LabClientProfile({ client, onBack, onViewDetail, t }) {
   const { isDark } = useLab();
-  const C = isDark
-    ? { surface: '#0f172a', border: '#1e293b', text: '#f1f5f9', textMuted: '#94a3b8', bgAlt: '#1e293b', barBg: '#1e293b' }
-    : { surface: '#ffffff',  border: '#e2e8f0', text: '#0f172a', textMuted: '#64748b', bgAlt: '#f8fafc',  barBg: '#f1f5f9' };
+  const C = useLabTheme();
+  const c = t.portal.clients;
+  const ds = t.portal.dashboard.status;
 
   const getStatusStyle = (s) => ({
     concluido:   { icon: <CheckCircle2 size={12}/>, cls: { bg: '#dcfce7', color: '#15803d', border: '#bbf7d0' } },
@@ -15,7 +16,12 @@ export function LabClientProfile({ client, onBack, onViewDetail }) {
     processando: { icon: <TrendingUp    size={12}/>, cls: { bg: '#dbeafe', color: '#1d4ed8', border: '#bfdbfe' } },
   }[s] ?? { icon: null, cls: { bg: '#f1f5f9', color: '#475569', border: '#e2e8f0' } });
 
-  const statusLabels = { concluido: 'Concluído', alerta: 'Alerta', processando: 'Processando' };
+  // Status labels from translation
+  const statusLabels = {
+    concluido:   ds.concluido,
+    alerta:      ds.alerta,
+    processando: ds.processando,
+  };
 
   const HealthBar = ({ value }) => {
     const color = value > 80 ? '#10b981' : value > 70 ? '#f59e0b' : '#ef4444';
@@ -29,10 +35,14 @@ export function LabClientProfile({ client, onBack, onViewDetail }) {
     );
   };
 
+  // Profile table headers using dashboard headers
+  const dh = t.portal.dashboard.headers;
+  const profileHeaders = [dh.date, dh.field, dh.status, dh.health, ''];
+
   return (
     <div style={{ maxWidth: '56rem' }}>
       <button onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'none', border: 'none', color: '#10b981', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', marginBottom: '1.5rem', padding: 0 }}>
-        <ArrowLeft size={16} /> Voltar para Clientes
+        <ArrowLeft size={16} /> {c.profileBack}
       </button>
 
       {/* Profile Card */}
@@ -41,12 +51,12 @@ export function LabClientProfile({ client, onBack, onViewDetail }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
             <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: C.text, margin: 0 }}>{client.name}</h2>
-            <Badge type={client.status} />
+            <Badge type={client.status} t={t} />
           </div>
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.875rem', color: C.textMuted }}><Mail size={14} />{client.email}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.875rem', color: C.textMuted }}><Phone size={14} />{client.phone}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.875rem', color: C.textMuted }}><FileText size={14} />{client.totalReports} laudos</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.875rem', color: C.textMuted }}><FileText size={14} />{client.totalReports} {c.laudos}</span>
           </div>
         </div>
       </div>
@@ -56,14 +66,14 @@ export function LabClientProfile({ client, onBack, onViewDetail }) {
         <div style={{ padding: '1.25rem 1.5rem', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <FileText size={18} color="#10b981" />
           <div>
-            <h3 style={{ fontWeight: 700, fontSize: '1rem', color: C.text, margin: 0 }}>Histórico de Laudos</h3>
-            <p style={{ fontSize: '0.75rem', color: C.textMuted, margin: 0 }}>Todos os laudos associados a este cliente</p>
+            <h3 style={{ fontWeight: 700, fontSize: '1rem', color: C.text, margin: 0 }}>{c.historyTitle}</h3>
+            <p style={{ fontSize: '0.75rem', color: C.textMuted, margin: 0 }}>{c.historySubtitle}</p>
           </div>
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${C.border}`, background: C.bgAlt }}>
-              {['DATA', 'TALHÃO', 'STATUS', 'SAÚDE DO SOLO', ''].map(h => (
+              {profileHeaders.map(h => (
                 <th key={h} style={{ padding: '0.875rem 1.25rem', textAlign: 'left', fontSize: '0.6875rem', fontWeight: 800, color: C.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</th>
               ))}
             </tr>
@@ -79,13 +89,13 @@ export function LabClientProfile({ client, onBack, onViewDetail }) {
                   <td style={{ padding: '0.875rem 1.25rem', fontSize: '0.875rem', color: C.text, fontWeight: 600 }}>{r.field}</td>
                   <td style={{ padding: '0.875rem 1.25rem' }}>
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', background: cls.bg, color: cls.color, fontSize: '0.75rem', fontWeight: 600, padding: '0.2rem 0.6rem', borderRadius: '9999px', border: `1px solid ${cls.border}` }}>
-                      {icon}{statusLabels[r.status]}
+                      {icon}{statusLabels[r.status] ?? r.status}
                     </span>
                   </td>
                   <td style={{ padding: '0.875rem 1.25rem' }}><HealthBar value={r.health} /></td>
                   <td style={{ padding: '0.875rem 1.25rem', textAlign: 'right' }}>
                     <button onClick={() => onViewDetail(r)} style={{ color: '#10b981', fontWeight: 600, fontSize: '0.8125rem', background: 'none', border: 'none', cursor: 'pointer' }}>
-                      Ver Detalhe
+                      {c.viewDetail}
                     </button>
                   </td>
                 </tr>

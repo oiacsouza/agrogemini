@@ -10,13 +10,25 @@ import { GrowingCrop } from './components/GrowingCrop';
 import { LogoCarousel } from './components/LogoCarousel';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
-import { LabPortal } from './components/LabPortal';
+import { LabPortal }          from './components/LabPortal';
+import { FarmerReports }      from './components/farmer/FarmerReports';
+import { FarmerReportDetail } from './components/farmer/FarmerReportDetail';
 
 function App() {
   const [lang, setLang] = useState('pt');
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false); // Claro por padrão
   const [currentView, setCurrentView] = useState('landing');
+  const [scrolled, setScrolled] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const labSectionRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -33,6 +45,23 @@ function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDarkMode]);
+
+  // ── Hash-based slug routing ─────────────────────────────────────────────
+  const navigate = (slug) => {
+    window.location.hash = slug;
+    setCurrentView(slug);
+  };
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash.replace('#', '') || 'landing';
+      setCurrentView(hash);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    // Sync on mount
+    onHashChange();
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   const handleLangChange = (newLang) => {
     setLang(newLang);
@@ -53,21 +82,49 @@ function App() {
   };
 
   if (currentView === 'login') {
-    return <Login onBack={() => setCurrentView('landing')} onRegister={() => setCurrentView('register')} onLogin={() => setCurrentView('lab')} t={t} />;
+    return <Login onBack={() => navigate('landing')} onRegister={() => navigate('register')} onLogin={() => navigate('lab')} t={t} />;
   }
 
   if (currentView === 'register') {
-    return <Register onBack={() => setCurrentView('landing')} onLogin={() => setCurrentView('login')} t={t} />;
+    return <Register onBack={() => navigate('landing')} onLogin={() => navigate('login')} t={t} />;
   }
 
   if (currentView === 'lab') {
-    return <LabPortal onLogout={() => setCurrentView('landing')} t={t} lang={lang} setLang={setLang} />;
+    return <LabPortal onLogout={() => navigate('landing')} t={t} lang={lang} setLang={setLang} />;
+  }
+
+  if (currentView === 'farmer/reports') {
+    return (
+      <FarmerReports
+        t={t}
+        lang={lang}
+        setLang={setLang}
+        isDark={isDarkMode}
+        toggleDark={() => setIsDarkMode(!isDarkMode)}
+        onLogout={() => navigate('landing')}
+        onViewReport={(report) => {
+          setSelectedReport(report);
+          navigate(`farmer/report/${report.id}`);
+        }}
+      />
+    );
+  }
+
+  if (currentView.startsWith('farmer/report/')) {
+    return (
+      <FarmerReportDetail
+        t={t}
+        isDark={isDarkMode}
+        report={selectedReport}
+        onBack={() => navigate('farmer/reports')}
+      />
+    );
   }
 
   return (
     <>
       <MeshBackground />
-      <header>
+      <header className={scrolled ? "scrolled" : ""}>
         <div className="container">
           <div className="logo brand-font">
             <Leaf className="logo-icon" size={24} />
@@ -77,7 +134,7 @@ function App() {
           <nav className="main-nav">
             <a href="#plataforma">{t.nav.platform}</a>
             <a href="#lab">{t.nav.labPortal}</a>
-            <a href="#produtor">{t.nav.farmerPortal}</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); navigate('farmer/reports'); }}>{t.nav.farmerPortal}</a>
           </nav>
           
           <div className="header-actions">
@@ -258,7 +315,7 @@ function App() {
           </div>
         </section>
 
-        <LogoCarousel />
+        <LogoCarousel lang={lang} />
 
         <section className="cta-section">
           <motion.div 
