@@ -330,7 +330,6 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
             <Share2 size={16} /> {fpd.share}
           </button>
         </div>
-        </div>
       </div>
 
       {/* Plan upgrade popup for free producers */}
