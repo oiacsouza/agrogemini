@@ -15,57 +15,57 @@ class UsuarioRepository:
 
     def get_all(self):
         with self.connection.cursor() as cursor:
-            self._row_factory(cursor)
             cursor.execute(
                 "SELECT id, nome, sobrenome, email, tipo_usuario, ativo, "
                 "endereco_id, criado_em, ultimo_acesso "
                 "FROM usuarios ORDER BY id DESC"
             )
+            self._row_factory(cursor)
             return cursor.fetchall()
 
     def get_by_id(self, user_id: int):
         with self.connection.cursor() as cursor:
-            self._row_factory(cursor)
             cursor.execute(
                 "SELECT id, nome, sobrenome, email, tipo_usuario, ativo, "
                 "endereco_id, criado_em, ultimo_acesso "
                 "FROM usuarios WHERE id = :1",
                 [user_id],
             )
+            self._row_factory(cursor)
             return cursor.fetchone()
 
     def get_by_email(self, email: str):
         with self.connection.cursor() as cursor:
-            self._row_factory(cursor)
             cursor.execute(
                 "SELECT id, nome, sobrenome, email, tipo_usuario, ativo, "
                 "endereco_id, criado_em, ultimo_acesso "
                 "FROM usuarios WHERE email = :1",
                 [email],
             )
+            self._row_factory(cursor)
             return cursor.fetchone()
 
     def get_by_email_with_password(self, email: str):
         """Returns user data INCLUDING senha_hash, used for authentication."""
         with self.connection.cursor() as cursor:
-            self._row_factory(cursor)
             cursor.execute(
                 "SELECT id, nome, sobrenome, email, senha_hash, tipo_usuario, "
                 "ativo, endereco_id, criado_em, ultimo_acesso "
                 "FROM usuarios WHERE email = :1",
                 [email],
             )
+            self._row_factory(cursor)
             return cursor.fetchone()
 
     def get_by_tipo(self, tipo: str):
         with self.connection.cursor() as cursor:
-            self._row_factory(cursor)
             cursor.execute(
                 "SELECT id, nome, sobrenome, email, tipo_usuario, ativo, "
                 "endereco_id, criado_em, ultimo_acesso "
                 "FROM usuarios WHERE tipo_usuario = :1 ORDER BY nome",
                 [tipo],
             )
+            self._row_factory(cursor)
             return cursor.fetchall()
 
     def create(self, user_data: UsuarioCreate):

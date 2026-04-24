@@ -29,7 +29,9 @@ PROMPT [11/13] Executando 10_extensoes_text.sql
 @@10_extensoes_text.sql
 PROMPT [12/13] Executando 11_vpd_rls.sql
 @@11_vpd_rls.sql
-PROMPT [13/13] Executando 12_roles_grants.sql
+PROMPT [13/14] Executando 12_roles_grants.sql
 @@12_roles_grants.sql
+PROMPT [14/14] Executando 13_seed_usuarios_extras.sql
+@@13_seed_usuarios_extras.sql
 
 PROMPT Migracao completa finalizada com sucesso.
