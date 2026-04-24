@@ -97,6 +97,7 @@ export const authService = {
       sobrenome: data.sobrenome,
       email: data.email,
       tipo_usuario: data.tipo_usuario,
+      plano: data.plano || 'FREE',
     });
     return data;
   },
@@ -110,12 +111,17 @@ export const authService = {
       sobrenome: data.sobrenome,
       email: data.email,
       tipo_usuario: data.tipo_usuario,
+      plano: data.plano || 'FREE',
     });
     return data;
   },
 
   async me() {
     return api.get('/api/v1/auth/me');
+  },
+
+  async mePlan() {
+    return api.get('/api/v1/auth/me/plan');
   },
 
   logout() {
@@ -237,4 +243,13 @@ export const dashboardService = {
 
 export const fertilizerService = {
   preview: (formData) => api.upload('/api/v1/fertilizers/preview', formData),
+};
+
+// ── Admin ────────────────────────────────────────────────────────────────────
+
+export const adminService = {
+  getDashboard:   () => api.get('/api/v1/admin/dashboard'),
+  getUsuarios:    (tipo) => api.get(`/api/v1/admin/usuarios${tipo ? `?tipo=${tipo}` : ''}`),
+  getLaboratorios:() => api.get('/api/v1/admin/laboratorios'),
+  getProdutores:  () => api.get('/api/v1/admin/produtores'),
 };

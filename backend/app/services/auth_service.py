@@ -27,6 +27,9 @@ class AuthService:
         # Update last access
         self.user_repo.update_ultimo_acesso(user["id"])
 
+        # Resolve effective plan
+        plano = self.user_repo.get_user_plan(user["id"], user["tipo_usuario"])
+
         token = create_access_token({"sub": str(user["id"])})
         return TokenResponse(
             access_token=token,
@@ -35,6 +38,7 @@ class AuthService:
             sobrenome=user["sobrenome"],
             email=user["email"],
             tipo_usuario=user["tipo_usuario"],
+            plano=plano,
         )
 
     def register(self, data: RegisterRequest) -> TokenResponse:
@@ -60,8 +64,8 @@ class AuthService:
         # Create user with hashed password
         hashed = hash_password(data.senha)
 
-        # Map frontend tipo to DB
-        tipo_map = {"producer": "UP", "lab": "UE"}
+        # Map frontend tipo to DB — FIXED mapping
+        tipo_map = {"producer": "UE", "lab": "UP"}
         tipo = tipo_map.get(data.tipo_usuario, data.tipo_usuario)
         if tipo not in ("UE", "UP", "UC", "ADM"):
             tipo = "UC"
@@ -93,4 +97,5 @@ class AuthService:
             sobrenome=data.sobrenome,
             email=data.email,
             tipo_usuario=tipo,
+            plano="FREE",  # New users always start on FREE
         )

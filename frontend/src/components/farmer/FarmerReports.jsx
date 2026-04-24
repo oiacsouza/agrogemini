@@ -12,7 +12,7 @@ import { FarmerPortalHeader }from './ui/FarmerPortalHeader';
  *
  * @param {{ t: object, isDark: boolean, toggleDark: () => void, lang: string, setLang: (l) => void, onViewReport: (report) => void, onLogout: () => void }} props
  */
-export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, onViewReport, onLogout }) {
+export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, onViewReport, onLogout, onGoToLab }) {
   const tk = useFarmerTheme(isDark);
   const fp = t.farmerPortal;
 
@@ -218,9 +218,11 @@ export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, on
         padding:    '16px 20px 24px',
         display:    'flex',
         justifyContent: 'center',
+        gap: 10,
       }}>
         <button
           id="fr-link-btn"
+          onClick={onGoToLab}
           style={{
             width:        '100%',
             maxWidth:     540,
@@ -234,9 +236,10 @@ export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, on
             cursor:       'pointer',
             boxShadow:    '0 4px 16px rgba(22,163,74,0.35)',
             letterSpacing:'0.2px',
+            fontFamily:   'inherit',
           }}
         >
-          {fp.linkReport}
+          🧪 Acessar Portal do Laboratório
         </button>
       </div>
     </div>

@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Droplets, Leaf, TrendingUp, AlertCircle, Download, Share2, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, MapPin, Droplets, Leaf, TrendingUp, AlertCircle, Download, Share2, CheckCircle, Lock } from 'lucide-react';
 import { mockReportDetail }      from './data/farmerMockData';
 import { useFarmerTheme }        from './hooks/useFarmerTheme';
 import { FarmerNutrientBar }     from './ui/FarmerNutrientBar';
 import { FarmerInsightChip }     from './ui/FarmerInsightChip';
+import { PlanUpgradePopup }      from '../PlanUpgradePopup';
+import { authService }           from '../../services/api';
 
 /**
  * FarmerReportDetail – Screen 2 of the rural producer portal.
@@ -25,6 +27,26 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
     setDownloading(true);
     setTimeout(() => setDownloading(false), 1600);
   };
+
+  // Plan-based visibility
+  const user = authService.getUser();
+  const isPremium = user?.plano === 'PREMIUM' || user?.tipo_usuario === 'ADM';
+  const [showUpgradePopup, setShowUpgradePopup] = useState(false);
+  const [declinedUpgrade, setDeclinedUpgrade] = useState(false);
+
+  // Show popup for free producers on first load
+  useEffect(() => {
+    if (!isPremium && user?.tipo_usuario === 'UE') {
+      const dismissed = sessionStorage.getItem('upgrade_popup_dismissed');
+      if (!dismissed) {
+        setShowUpgradePopup(true);
+      } else {
+        setDeclinedUpgrade(true);
+      }
+    }
+  }, [isPremium, user?.tipo_usuario]);
+
+  const showPremiumSections = isPremium || (!declinedUpgrade && !showUpgradePopup);
 
   return (
     <div style={{
@@ -150,7 +172,7 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
             )}
           </SectionCard>
 
-          {/* Crop Recommendation */}
+          {showPremiumSections && (
           <div style={{ background: tk.cropBg, borderRadius: 16, padding: '18px 16px', marginBottom: 14, position: 'relative', overflow: 'hidden' }}>
             <span style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'block', pointerEvents: 'none' }} />
 
@@ -176,8 +198,9 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
               <div style={{ height: '100%', width: `${d.cropRecommendation.matchPct}%`, background: '#34d399', borderRadius: 99 }} />
             </div>
           </div>
+          )}
 
-          {/* Correction Plan */}
+          {showPremiumSections && (
           <SectionCard tk={tk}>
             <SectionTitle icon={<Leaf size={16} color={tk.greenText} />} label={fpd.correctionPlan} tk={tk} />
 
@@ -216,6 +239,36 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
               ))}
             </div>
           </SectionCard>
+          )}
+
+          {/* Premium lock banner for free users */}
+          {!isPremium && declinedUpgrade && (
+            <div style={{
+              background: tk.cardBg, borderRadius: 16, padding: '24px 20px',
+              marginBottom: 14, border: `1px solid ${tk.cardBorder}`,
+              textAlign: 'center',
+            }}>
+              <Lock size={32} color={tk.textMuted} style={{ marginBottom: 12 }} />
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: tk.textPrimary, marginBottom: 6 }}>
+                Conteúdo Premium
+              </div>
+              <div style={{ fontSize: '0.82rem', color: tk.textSecondary, marginBottom: 16, lineHeight: 1.5 }}>
+                Recomendação de Cultura e Plano de Correção estão disponíveis no plano Premium.
+              </div>
+              <button
+                onClick={() => setShowUpgradePopup(true)}
+                style={{
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  color: '#fff', border: 'none', borderRadius: 12,
+                  padding: '10px 24px', fontWeight: 700, fontSize: '0.85rem',
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                Ver planos
+              </button>
+            </div>
+          )}
+
 
         </div>
       </div>
@@ -277,7 +330,23 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
             <Share2 size={16} /> {fpd.share}
           </button>
         </div>
+        </div>
       </div>
+
+      {/* Plan upgrade popup for free producers */}
+      <PlanUpgradePopup
+        isOpen={showUpgradePopup}
+        onClose={() => {
+          setShowUpgradePopup(false);
+          setDeclinedUpgrade(true);
+          sessionStorage.setItem('upgrade_popup_dismissed', 'true');
+        }}
+        onUpgrade={() => {
+          setShowUpgradePopup(false);
+          window.location.hash = 'register';
+        }}
+        variant="produtor"
+      />
     </div>
   );
 }

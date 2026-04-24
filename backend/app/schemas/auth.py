@@ -14,6 +14,7 @@ class TokenResponse(BaseModel):
     sobrenome: str
     email: str
     tipo_usuario: str
+    plano: str = "FREE"  # FREE or PREMIUM
 
 
 class RegisterRequest(BaseModel):
@@ -36,3 +37,13 @@ class RegisterRequest(BaseModel):
     cidade: str | None = None
     estado: str | None = None
     pais: str = "Brasil"
+
+
+class UserPlanResponse(BaseModel):
+    """Returned by /me/plan to give full plan details."""
+    user_id: int
+    tipo_usuario: str
+    plano: str  # FREE or PREMIUM
+    limite_amostras: int | None = None
+    amostras_usadas: int = 0
+    pode_cadastrar_amostra: bool = True

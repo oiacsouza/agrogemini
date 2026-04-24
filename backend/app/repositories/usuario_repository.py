@@ -4,6 +4,18 @@ from app.core.security import hash_password
 from app.schemas.usuario import UsuarioCreate, UsuarioUpdate
 
 
+# Standard SELECT columns — includes plano_ativo
+_USER_COLS = (
+    "id, nome, sobrenome, email, tipo_usuario, ativo, "
+    "endereco_id, criado_em, ultimo_acesso, plano_ativo"
+)
+
+_USER_COLS_WITH_PWD = (
+    "id, nome, sobrenome, email, senha_hash, tipo_usuario, "
+    "ativo, endereco_id, criado_em, ultimo_acesso, plano_ativo"
+)
+
+
 class UsuarioRepository:
     def __init__(self, connection: oracledb.Connection):
         self.connection = connection
@@ -16,9 +28,7 @@ class UsuarioRepository:
     def get_all(self):
         with self.connection.cursor() as cursor:
             cursor.execute(
-                "SELECT id, nome, sobrenome, email, tipo_usuario, ativo, "
-                "endereco_id, criado_em, ultimo_acesso "
-                "FROM usuarios ORDER BY id DESC"
+                f"SELECT {_USER_COLS} FROM usuarios ORDER BY id DESC"
             )
             self._row_factory(cursor)
             return cursor.fetchall()
@@ -26,9 +36,7 @@ class UsuarioRepository:
     def get_by_id(self, user_id: int):
         with self.connection.cursor() as cursor:
             cursor.execute(
-                "SELECT id, nome, sobrenome, email, tipo_usuario, ativo, "
-                "endereco_id, criado_em, ultimo_acesso "
-                "FROM usuarios WHERE id = :1",
+                f"SELECT {_USER_COLS} FROM usuarios WHERE id = :1",
                 [user_id],
             )
             self._row_factory(cursor)
@@ -37,9 +45,7 @@ class UsuarioRepository:
     def get_by_email(self, email: str):
         with self.connection.cursor() as cursor:
             cursor.execute(
-                "SELECT id, nome, sobrenome, email, tipo_usuario, ativo, "
-                "endereco_id, criado_em, ultimo_acesso "
-                "FROM usuarios WHERE email = :1",
+                f"SELECT {_USER_COLS} FROM usuarios WHERE email = :1",
                 [email],
             )
             self._row_factory(cursor)
@@ -49,9 +55,7 @@ class UsuarioRepository:
         """Returns user data INCLUDING senha_hash, used for authentication."""
         with self.connection.cursor() as cursor:
             cursor.execute(
-                "SELECT id, nome, sobrenome, email, senha_hash, tipo_usuario, "
-                "ativo, endereco_id, criado_em, ultimo_acesso "
-                "FROM usuarios WHERE email = :1",
+                f"SELECT {_USER_COLS_WITH_PWD} FROM usuarios WHERE email = :1",
                 [email],
             )
             self._row_factory(cursor)
@@ -60,9 +64,7 @@ class UsuarioRepository:
     def get_by_tipo(self, tipo: str):
         with self.connection.cursor() as cursor:
             cursor.execute(
-                "SELECT id, nome, sobrenome, email, tipo_usuario, ativo, "
-                "endereco_id, criado_em, ultimo_acesso "
-                "FROM usuarios WHERE tipo_usuario = :1 ORDER BY nome",
+                f"SELECT {_USER_COLS} FROM usuarios WHERE tipo_usuario = :1 ORDER BY nome",
                 [tipo],
             )
             self._row_factory(cursor)
@@ -150,3 +152,79 @@ class UsuarioRepository:
             cursor.execute("DELETE FROM usuarios WHERE id = :1", [user_id])
             self.connection.commit()
             return cursor.rowcount > 0
+
+    # ── Plan-related queries ──────────────────────────────────────────────────
+
+    def get_user_plan(self, user_id: int, tipo_usuario: str) -> str:
+        """
+        Resolve the effective plan for a user.
+        - ADM  → always PREMIUM
+        - UE   → from usuarios.plano_ativo
+        - UP/UC → from assinaturas table (lab subscription)
+        """
+        if tipo_usuario == "ADM":
+            return "PREMIUM"
+
+        if tipo_usuario == "UE":
+            with self.connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT plano_ativo FROM usuarios WHERE id = :1", [user_id]
+                )
+                row = cursor.fetchone()
+                return (row[0] if row and row[0] else "FREE")
+
+        # Lab users (UP / UC): check via assinaturas
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT pa.tipo
+                   FROM laboratorio_usuarios lu
+                   JOIN assinaturas a ON a.laboratorio_id = lu.laboratorio_id
+                   JOIN planos_assinaturas pa ON pa.id = a.plano_id
+                   WHERE lu.usuario_id = :1
+                     AND a.status = 'ATIVA'
+                     AND a.data_expiracao >= TRUNC(SYSDATE)
+                   ORDER BY pa.id DESC
+                   FETCH FIRST 1 ROW ONLY""",
+                [user_id],
+            )
+            row = cursor.fetchone()
+            if row:
+                # DB stores BASICO/PREMIUM; normalize to FREE/PREMIUM
+                return "PREMIUM" if row[0] == "PREMIUM" else "FREE"
+            return "FREE"
+
+    def get_lab_sample_usage(self, user_id: int) -> dict:
+        """
+        For a lab user, return sample count and limit from their active plan.
+        Returns: { 'amostras_usadas': int, 'limite_amostras': int|None }
+        """
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT a.amostras_consumidas, pa.limite_amostras
+                   FROM laboratorio_usuarios lu
+                   JOIN assinaturas a ON a.laboratorio_id = lu.laboratorio_id
+                   JOIN planos_assinaturas pa ON pa.id = a.plano_id
+                   WHERE lu.usuario_id = :1
+                     AND a.status = 'ATIVA'
+                   FETCH FIRST 1 ROW ONLY""",
+                [user_id],
+            )
+            row = cursor.fetchone()
+            if row:
+                return {"amostras_usadas": row[0] or 0, "limite_amostras": row[1]}
+            # No subscription — hard limit of 5
+            return {"amostras_usadas": 0, "limite_amostras": 5}
+
+    # ── Admin queries ─────────────────────────────────────────────────────────
+
+    def count_by_tipo(self, tipo: str) -> int:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT COUNT(*) FROM usuarios WHERE tipo_usuario = :1", [tipo]
+            )
+            return cursor.fetchone()[0]
+
+    def count_all(self) -> int:
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) FROM usuarios")
+            return cursor.fetchone()[0]

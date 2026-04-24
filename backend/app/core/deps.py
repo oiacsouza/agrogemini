@@ -1,3 +1,5 @@
+from typing import Callable
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
@@ -59,3 +61,35 @@ async def get_current_user_optional(
         return None
     repo = UsuarioRepository(db)
     return repo.get_by_id(int(user_id))
+
+
+# ── Role-based access control dependencies ───────────────────────────────────
+
+def require_role(*allowed_roles: str) -> Callable:
+    """
+    FastAPI dependency factory that restricts access to specific user roles.
+
+    Usage:
+        @router.get("/admin-only")
+        async def admin_view(user=Depends(require_role("ADM"))):
+            ...
+    """
+
+    async def _checker(
+        current_user=Depends(get_current_user),
+    ):
+        if current_user["tipo_usuario"] not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Acesso negado para este perfil de usuário",
+            )
+        return current_user
+
+    return _checker
+
+
+# Convenience shortcuts
+require_admin = require_role("ADM")
+require_lab_user = require_role("UP", "UC", "ADM")
+require_producer = require_role("UE", "ADM")
+require_any_authenticated = require_role("UE", "UP", "UC", "ADM")

@@ -33,5 +33,7 @@ PROMPT [13/14] Executando 12_roles_grants.sql
 @@12_roles_grants.sql
 PROMPT [14/14] Executando 13_seed_usuarios_extras.sql
 @@13_seed_usuarios_extras.sql
+PROMPT [15/15] Executando 14_plano_produtor.sql
+@@14_plano_produtor.sql
 
 PROMPT Migracao completa finalizada com sucesso.

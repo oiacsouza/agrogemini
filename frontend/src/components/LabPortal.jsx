@@ -23,6 +23,9 @@ function LabSwitcher({ t }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
+  // Guard: producers may not have an activeLab
+  if (!activeLab) return null;
+
   const D = isDark
     ? { btn: '#1e293b', btnBorder: '#334155', btnText: '#f1f5f9', drop: '#0f172a', dropBorder: '#1e293b', sectionBg: '#1e293b', sectionBorder: '#334155', hoverBg: '#1e293b', activeBg: '#0d2b1f', itemText: '#f1f5f9' }
     : { btn: '#f8fafc', btnBorder: '#e2e8f0', btnText: '#0f172a', drop: '#ffffff', dropBorder: '#e2e8f0', sectionBg: '#f8fafc', sectionBorder: '#f1f5f9', hoverBg: '#f8fafc', activeBg: '#f0fdf4', itemText: '#0f172a' };
@@ -128,11 +131,24 @@ function LangSwitcher({ lang, setLang, isDark }) {
 
 // ── Inner portal (needs context) ─────────────────────────────────────────────
 function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
-  const { currentUser, isDark, toggleDark } = useLab();
+  const { currentUser, isDark, toggleDark, isProducer, isPremium, labsLoading, activeLab } = useLab();
   const [activeClient, setActiveClient] = useState(null);
   const C = useLabTheme();
 
   const handleSetTab = (tab) => { onNavigate(tab); setActiveClient(null); };
+
+  // Show loading while labs are loading (prevents null access crashes)
+  if (labsLoading) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f172a', fontFamily: 'Inter, sans-serif' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: 40, height: 40, border: '3px solid #1e293b', borderTop: '3px solid #10b981', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
+          <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>Carregando portal...</p>
+        </div>
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -173,25 +189,41 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
     clients:   activeClient ? t.portal.clients.historySubtitle : t.portal.clients.registered,
   };
 
-  const navSections = [
-    {
-      label: t.portal.sidebar.sectionMain,
-      items: [
-        { id: 'dashboard', icon: LayoutDashboard, label: t.portal.sidebar.dashboard },
-        { id: 'import',    icon: Upload,          label: t.portal.sidebar.importSample },
-        { id: 'samples',   icon: FileSpreadsheet, label: t.portal.sidebar.samples },
-      ],
-    },
-    {
-      label: t.portal.sidebar.sectionManage,
-      items: [
-        { id: 'branches',  icon: Building2,   label: t.portal.sidebar.branches },
-        { id: 'usuarios',  icon: Users,       label: 'Usuários' },
-        { id: 'employees', icon: Users,       label: t.portal.sidebar.employees },
-        { id: 'clients',   icon: FlaskConical, label: t.portal.sidebar.clients },
-      ],
-    },
-  ];
+  // Build nav sections based on user role and plan
+  const buildNavSections = () => {
+    // Producers see limited nav (only dashboard + samples)
+    if (isProducer) {
+      return [{
+        label: t.portal.sidebar.sectionMain,
+        items: [
+          { id: 'dashboard', icon: LayoutDashboard, label: t.portal.sidebar.dashboard },
+          { id: 'samples',   icon: FileSpreadsheet, label: t.portal.sidebar.samples },
+        ],
+      }];
+    }
+
+    const mainItems = [
+      { id: 'dashboard', icon: LayoutDashboard, label: t.portal.sidebar.dashboard },
+      { id: 'import',    icon: Upload,          label: t.portal.sidebar.importSample },
+      { id: 'samples',   icon: FileSpreadsheet, label: t.portal.sidebar.samples },
+    ];
+
+    const manageItems = [];
+    // Only show Filiais for premium labs
+    if (isPremium) {
+      manageItems.push({ id: 'branches',  icon: Building2,   label: t.portal.sidebar.branches });
+    }
+    manageItems.push({ id: 'usuarios',  icon: Users,       label: 'Usuários' });
+    manageItems.push({ id: 'employees', icon: Users,       label: t.portal.sidebar.employees });
+    manageItems.push({ id: 'clients',   icon: FlaskConical, label: t.portal.sidebar.clients });
+
+    return [
+      { label: t.portal.sidebar.sectionMain, items: mainItems },
+      { label: t.portal.sidebar.sectionManage, items: manageItems },
+    ];
+  };
+
+  const navSections = buildNavSections();
 
   const SIDEBAR_W = 260;
   const HEADER_H  = 73;
@@ -206,7 +238,7 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
       <div style={{ width: SIDEBAR_W, minWidth: SIDEBAR_W, height: '100%', display: 'flex', flexDirection: 'column', background: '#0f172a', borderRight: '1px solid #1e293b', overflow: 'hidden' }}>
         {/* Logo */}
         <div style={{ padding: '1.25rem', flexShrink: 0, borderBottom: '1px solid #1e293b' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', cursor: 'pointer' }} onClick={onLogout}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', cursor: 'pointer' }} onClick={() => { window.location.hash = 'landing'; onLogout(); }}>          
             <div style={{ background: '#10b981', padding: '0.375rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Leaf size={18} color="white" />
             </div>

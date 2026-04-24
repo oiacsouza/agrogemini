@@ -17,6 +17,7 @@ from app.routers.amostra import router as amostra_router
 from app.routers.laudo import router as laudo_router
 from app.routers.importacao import router as importacao_router
 from app.routers.dashboard import router as dashboard_router
+from app.routers.admin import router as admin_router
 
 
 @contextlib.asynccontextmanager
@@ -54,3 +55,4 @@ app.include_router(laudo_router)
 app.include_router(importacao_router)
 app.include_router(dashboard_router)
 app.include_router(fertilizer_router)
+app.include_router(admin_router)

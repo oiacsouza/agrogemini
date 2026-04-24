@@ -13,6 +13,10 @@ import { Register } from './components/Register';
 import { LabPortal }          from './components/LabPortal';
 import { FarmerReports }      from './components/farmer/FarmerReports';
 import { FarmerReportDetail } from './components/farmer/FarmerReportDetail';
+import { AuthGuard }          from './components/AuthGuard';
+import { AdminDashboard }     from './components/admin/AdminDashboard';
+import { PlanModal }          from './components/PlanModal';
+import { authService }        from './services/api';
 
 function App() {
   const [lang, setLang] = useState('pt');
@@ -21,6 +25,7 @@ function App() {
   const [currentView, setCurrentView] = useState('landing');
   const [scrolled, setScrolled] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [showPlanModal, setShowPlanModal] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,6 +73,34 @@ function App() {
     setShowLangMenu(false);
   };
 
+  // ── Post-login redirect based on user role ──────────────────────────────
+  const handleLoginSuccess = () => {
+    const user = authService.getUser();
+    if (!user) {
+      navigate('lab');
+      return;
+    }
+    switch (user.tipo_usuario) {
+      case 'UE':  // Produtor → Portal do Produtor
+        navigate('farmer/reports');
+        break;
+      case 'ADM': // Admin → Painel Admin
+        navigate('admin');
+        break;
+      case 'UP':  // Lab Premium → Portal Lab
+      case 'UC':  // Lab Free → Portal Lab
+      default:
+        navigate('lab');
+        break;
+    }
+  };
+
+  // ── Logout ──────────────────────────────────────────────────────────────
+  const handleLogout = () => {
+    authService.logout();
+    navigate('landing');
+  };
+
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
@@ -81,56 +114,97 @@ function App() {
     }
   };
 
+  // ── Login ───────────────────────────────────────────────────────────────
   if (currentView === 'login') {
-    return <Login onBack={() => navigate('landing')} onRegister={() => navigate('register')} onLogin={() => navigate('lab')} t={t} />;
+    return <Login onBack={() => navigate('landing')} onRegister={() => navigate('register')} onLogin={handleLoginSuccess} t={t} />;
   }
 
+  // ── Register ────────────────────────────────────────────────────────────
   if (currentView === 'register') {
     return <Register onBack={() => navigate('landing')} onLogin={() => navigate('login')} t={t} />;
   }
 
+  // ── Admin Dashboard ─────────────────────────────────────────────────────
+  if (currentView === 'admin') {
+    return (
+      <AuthGuard
+        requiredRoles={['ADM']}
+        onUnauthorized={() => navigate('login')}
+      >
+        <AdminDashboard
+          t={t}
+          onLogout={handleLogout}
+          onNavigateAs={(target) => {
+            if (target === 'lab') navigate('lab');
+            else if (target === 'farmer') navigate('farmer/reports');
+          }}
+        />
+      </AuthGuard>
+    );
+  }
+
+  // ── Lab Portal ──────────────────────────────────────────────────────────
   if (currentView === 'lab' || currentView.startsWith('lab/')) {
     const activeRoute = currentView === 'lab' ? 'dashboard' : currentView.replace('lab/', '');
     return (
-      <LabPortal 
-        onLogout={() => navigate('landing')} 
-        t={t} 
-        lang={lang} 
-        setLang={setLang} 
-        activeTab={activeRoute}
-        onNavigate={(tab) => navigate(`lab/${tab}`)}
-      />
+      <AuthGuard
+        requiredRoles={['UP', 'UC', 'ADM', 'UE']}
+        onUnauthorized={() => navigate('login')}
+      >
+        <LabPortal 
+          onLogout={handleLogout} 
+          t={t} 
+          lang={lang} 
+          setLang={setLang} 
+          activeTab={activeRoute}
+          onNavigate={(tab) => navigate(`lab/${tab}`)}
+        />
+      </AuthGuard>
     );
   }
 
+  // ── Farmer Reports ──────────────────────────────────────────────────────
   if (currentView === 'farmer/reports') {
     return (
-      <FarmerReports
-        t={t}
-        lang={lang}
-        setLang={setLang}
-        isDark={isDarkMode}
-        toggleDark={() => setIsDarkMode(!isDarkMode)}
-        onLogout={() => navigate('landing')}
-        onViewReport={(report) => {
-          setSelectedReport(report);
-          navigate(`farmer/report/${report.id}`);
-        }}
-      />
+      <AuthGuard
+        requiredRoles={['UE', 'ADM']}
+        onUnauthorized={() => navigate('login')}
+      >
+        <FarmerReports
+          t={t}
+          lang={lang}
+          setLang={setLang}
+          isDark={isDarkMode}
+          toggleDark={() => setIsDarkMode(!isDarkMode)}
+          onLogout={handleLogout}
+          onViewReport={(report) => {
+            setSelectedReport(report);
+            navigate(`farmer/report/${report.id}`);
+          }}
+          onGoToLab={() => navigate('lab')}
+        />
+      </AuthGuard>
     );
   }
 
+  // ── Farmer Report Detail ────────────────────────────────────────────────
   if (currentView.startsWith('farmer/report/')) {
     return (
-      <FarmerReportDetail
-        t={t}
-        isDark={isDarkMode}
-        report={selectedReport}
-        onBack={() => navigate('farmer/reports')}
-      />
+      <AuthGuard
+        requiredRoles={['UE', 'ADM']}
+        onUnauthorized={() => navigate('login')}
+      >
+        <FarmerReportDetail
+          t={t}
+          isDark={isDarkMode}
+          report={selectedReport}
+          onBack={() => navigate('farmer/reports')}
+        />
+      </AuthGuard>
     );
   }
 
+  // ── Landing Page ────────────────────────────────────────────────────────
   return (
     <>
       <MeshBackground />
@@ -174,8 +248,8 @@ function App() {
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             
-            <button className="sign-in" onClick={() => setCurrentView('login')}>{t.actions.signIn}</button>
-            <button className="btn-primary" onClick={() => setCurrentView('register')}>
+            <button className="sign-in" onClick={() => navigate('login')}>{t.actions.signIn}</button>
+            <button className="btn-primary" onClick={() => navigate('register')}>
               <span className="hide-mobile">{t.actions.signUp}</span>
               <span className="show-mobile-only" style={{display: 'none'}}>{t.actions.signUpShort}</span>
             </button>
@@ -203,7 +277,11 @@ function App() {
               <motion.p variants={fadeInUp}>
                 {t.hero.description}
               </motion.p>
-              <motion.button className="btn-primary" variants={fadeInUp}>
+              <motion.button
+                className="btn-primary"
+                variants={fadeInUp}
+                onClick={() => setShowPlanModal(true)}
+              >
                 {t.actions.exploreBtn}
               </motion.button>
             </motion.div>
@@ -337,7 +415,7 @@ function App() {
           >
             <h2>{t.cta.title}</h2>
             <p>{t.cta.description}</p>
-            <button className="btn-primary" onClick={() => setCurrentView('register')}>{t.actions.signUp}</button>
+            <button className="btn-primary" onClick={() => navigate('register')}>{t.actions.signUp}</button>
           </motion.div>
         </section>
       </main>
@@ -379,6 +457,17 @@ function App() {
           </div>
         </div>
       </footer>
+
+      {/* Plan selection modal */}
+      <PlanModal
+        isOpen={showPlanModal}
+        onClose={() => setShowPlanModal(false)}
+        onSelectPlan={(planId) => {
+          setShowPlanModal(false);
+          navigate('register');
+        }}
+        t={t}
+      />
     </>
   );
 }

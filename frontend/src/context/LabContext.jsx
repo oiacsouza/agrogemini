@@ -22,16 +22,23 @@ export function LabProvider({ children }) {
         name: `${stored.nome} ${stored.sobrenome}`,
         initials: `${stored.nome?.[0] || ''}${stored.sobrenome?.[0] || ''}`,
         role: stored.tipo_usuario === 'ADM' ? 'Administrador' :
-              stored.tipo_usuario === 'UE' ? 'Analista' :
-              stored.tipo_usuario === 'UP' ? 'Produtor' : 'Usuário',
+              stored.tipo_usuario === 'UE' ? 'Produtor' :
+              stored.tipo_usuario === 'UP' ? 'Lab Premium' :
+              stored.tipo_usuario === 'UC' ? 'Lab Free' : 'Usuário',
         permission: stored.tipo_usuario === 'ADM' ? 'admin' :
-                    stored.tipo_usuario === 'UE' ? 'admin' : 'viewer',
+                    stored.tipo_usuario === 'UP' ? 'admin' :
+                    stored.tipo_usuario === 'UC' ? 'viewer' :
+                    stored.tipo_usuario === 'UE' ? 'viewer' : 'viewer',
         email: stored.email,
         tipo_usuario: stored.tipo_usuario,
+        plano: stored.plano || 'FREE',
       };
     }
-    return { name: 'Usuário', initials: 'U', role: 'Visitante', permission: 'viewer' };
+    return { name: 'Usuário', initials: 'U', role: 'Visitante', permission: 'viewer', plano: 'FREE' };
   });
+
+  // ── Plan ────────────────────────────────────────────────────────────────────
+  const [userPlan, setUserPlan] = useState(null);
 
   // ── Dashboard stats ─────────────────────────────────────────────────────────
   const [activeStats, setActiveStats] = useState(defaultStats);
@@ -41,12 +48,25 @@ export function LabProvider({ children }) {
   // ── Theme ───────────────────────────────────────────────────────────────────
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
 
+  // ── Helper: is user a producer? ─────────────────────────────────────────────
+  const isProducer = currentUser.tipo_usuario === 'UE';
+  const isAdmin = currentUser.tipo_usuario === 'ADM';
+  const isPremium = currentUser.plano === 'PREMIUM' || isAdmin;
+
   // ── Load labs on mount ──────────────────────────────────────────────────────
   useEffect(() => {
     async function loadLabs() {
       if (!authService.isAuthenticated()) {
         setLabs(mockLabs);
         setActiveLabState(mockLabs[0]);
+        setLabsLoading(false);
+        return;
+      }
+
+      // Producers don't own labs — skip lab loading
+      if (isProducer) {
+        setLabs([]);
+        setActiveLabState(null);
         setLabsLoading(false);
         return;
       }
@@ -94,11 +114,51 @@ export function LabProvider({ children }) {
     }
 
     loadLabs();
+  }, [isProducer]);
+
+  // ── Load plan info ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    async function loadPlan() {
+      if (!authService.isAuthenticated()) return;
+      try {
+        const plan = await authService.mePlan();
+        setUserPlan(plan);
+        if (plan?.plano) {
+          setCurrentUser(prev => ({ ...prev, plano: plan.plano }));
+        }
+      } catch {
+        // Plan endpoint might not be available
+      }
+    }
+    loadPlan();
   }, []);
 
   // ── Load stats + samples when activeLab changes ────────────────────────────
   const loadDashboardData = useCallback(async (lab) => {
-    if (!lab || !authService.isAuthenticated()) return;
+    if (!authService.isAuthenticated()) return;
+
+    // For producers, load their own samples instead
+    if (isProducer) {
+      setStatsLoading(true);
+      try {
+        const samples = await amostraService.getByCliente(currentUser.id).catch(() => []);
+        setActiveSamples(samples);
+        setActiveStats({
+          total_amostras: samples.length,
+          processadas_hoje: 0,
+          pendentes: samples.filter(s => s.status === 'EM_ANALISE' || s.status === 'RECEBIDA').length,
+          laudos_emitidos: samples.filter(s => s.status === 'LAUDO_GERADO').length,
+        });
+      } catch {
+        setActiveStats(defaultStats);
+        setActiveSamples([]);
+      } finally {
+        setStatsLoading(false);
+      }
+      return;
+    }
+
+    if (!lab) return;
 
     const labId = lab.id;
     if (typeof labId !== 'number') {
@@ -122,13 +182,15 @@ export function LabProvider({ children }) {
     } finally {
       setStatsLoading(false);
     }
-  }, []);
+  }, [isProducer, currentUser.id]);
 
   useEffect(() => {
-    if (activeLab) {
+    if (isProducer) {
+      loadDashboardData(null);
+    } else if (activeLab) {
       loadDashboardData(activeLab);
     }
-  }, [activeLab, loadDashboardData]);
+  }, [activeLab, loadDashboardData, isProducer]);
 
   // ── Load current user from API ──────────────────────────────────────────────
   useEffect(() => {
@@ -137,18 +199,23 @@ export function LabProvider({ children }) {
       try {
         const u = await authService.me();
         if (u) {
-          setCurrentUser({
+          setCurrentUser(prev => ({
+            ...prev,
             id: u.id,
             name: `${u.nome} ${u.sobrenome}`,
             initials: `${u.nome?.[0] || ''}${u.sobrenome?.[0] || ''}`,
             role: u.tipo_usuario === 'ADM' ? 'Administrador' :
-                  u.tipo_usuario === 'UE' ? 'Analista' :
-                  u.tipo_usuario === 'UP' ? 'Produtor' : 'Usuário',
+                  u.tipo_usuario === 'UE' ? 'Produtor' :
+                  u.tipo_usuario === 'UP' ? 'Lab Premium' :
+                  u.tipo_usuario === 'UC' ? 'Lab Free' : 'Usuário',
             permission: u.tipo_usuario === 'ADM' ? 'admin' :
-                        u.tipo_usuario === 'UE' ? 'admin' : 'viewer',
+                        u.tipo_usuario === 'UP' ? 'admin' :
+                        u.tipo_usuario === 'UC' ? 'viewer' :
+                        u.tipo_usuario === 'UE' ? 'viewer' : 'viewer',
             email: u.email,
             tipo_usuario: u.tipo_usuario,
-          });
+            plano_ativo: u.plano_ativo,
+          }));
         }
       } catch {
         // Token might be invalid
@@ -185,6 +252,11 @@ export function LabProvider({ children }) {
       activeSamples,
       statsLoading,
       refreshDashboard,
+      // New plan-related values
+      userPlan,
+      isProducer,
+      isAdmin,
+      isPremium,
     }}>
       {children}
     </LabContext.Provider>
