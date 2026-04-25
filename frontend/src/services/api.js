@@ -85,6 +85,20 @@ export const api = {
   upload: (ep, formData) => request(ep, { method: 'POST', body: formData }),
 };
 
+function normalizeUserType(value) {
+  return String(value || '').trim().toUpperCase();
+}
+
+function resolveUserPlan({ plano, plano_ativo: planoAtivo, tipo_usuario: tipoUsuario } = {}) {
+  const normalizedPlan = String(plano || planoAtivo || '').toUpperCase();
+  const normalizedType = normalizeUserType(tipoUsuario);
+
+  if (normalizedPlan === 'PREMIUM') return 'PREMIUM';
+  if (normalizedType === 'UP' || normalizedType === 'ADM') return 'PREMIUM';
+  if (normalizedPlan === 'FREE') return 'FREE';
+  return 'FREE';
+}
+
 // ── Auth ─────────────────────────────────────────────────────────────────────
 
 export const authService = {
@@ -97,7 +111,7 @@ export const authService = {
       sobrenome: data.sobrenome,
       email: data.email,
       tipo_usuario: data.tipo_usuario,
-      plano: data.plano || 'FREE',
+      plano: resolveUserPlan(data),
     });
     return data;
   },
@@ -111,7 +125,7 @@ export const authService = {
       sobrenome: data.sobrenome,
       email: data.email,
       tipo_usuario: data.tipo_usuario,
-      plano: data.plano || 'FREE',
+      plano: resolveUserPlan(data),
     });
     return data;
   },

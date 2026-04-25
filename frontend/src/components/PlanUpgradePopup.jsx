@@ -1,5 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Crown, Zap, X } from 'lucide-react';
+import { ConfettiBurst } from './ui/ConfettiBurst';
+
+function getIsDarkMode() {
+  if (typeof document === 'undefined') return false;
+  return document.documentElement.classList.contains('dark');
+}
+
+function useIsDarkMode() {
+  const [isDark, setIsDark] = useState(getIsDarkMode);
+
+  useEffect(() => {
+    if (typeof document === 'undefined' || typeof MutationObserver === 'undefined') return undefined;
+    const observer = new MutationObserver(() => setIsDark(getIsDarkMode()));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
+  return isDark;
+}
 
 /**
  * PlanUpgradePopup — shown when a FREE user tries to access premium features.
@@ -14,6 +33,9 @@ import { Crown, Zap, X } from 'lucide-react';
  *   variant    — 'produtor' | 'laboratorio'
  */
 export function PlanUpgradePopup({ isOpen, onClose, onUpgrade, variant = 'produtor' }) {
+  const isDark = useIsDarkMode();
+  const [isCelebrating, setIsCelebrating] = useState(false);
+
   if (!isOpen) return null;
 
   const isLab = variant === 'laboratorio';
@@ -29,6 +51,43 @@ export function PlanUpgradePopup({ isOpen, onClose, onUpgrade, variant = 'produt
   const features = isLab
     ? ['Amostras ilimitadas', 'Gestão de filiais', 'API de integração', 'Suporte 24/7']
     : ['Recomendação de cultura ideal', 'Plano de correção detalhado', 'Relatórios em PDF', 'Suporte prioritário'];
+  const C = isDark
+    ? {
+      overlayBg: 'rgba(0,0,0,0.6)',
+      panelBg: '#0f172a',
+      panelBorder: 'rgba(16,185,129,0.3)',
+      panelShadow: '0 24px 64px rgba(0,0,0,0.5)',
+      closeBg: '#1e293b',
+      closeText: '#64748b',
+      title: '#f1f5f9',
+      description: '#94a3b8',
+      featureBg: '#1e293b',
+      featureText: '#cbd5e1',
+      secondaryBorder: '#334155',
+      secondaryText: '#64748b',
+    }
+    : {
+      overlayBg: 'rgba(15,23,42,0.45)',
+      panelBg: '#ffffff',
+      panelBorder: 'rgba(16,185,129,0.35)',
+      panelShadow: '0 24px 64px rgba(2,6,23,0.18)',
+      closeBg: '#f1f5f9',
+      closeText: '#64748b',
+      title: '#0f172a',
+      description: '#64748b',
+      featureBg: '#f8fafc',
+      featureText: '#334155',
+      secondaryBorder: '#cbd5e1',
+      secondaryText: '#475569',
+    };
+
+  const handleUpgrade = () => {
+    setIsCelebrating(true);
+    window.setTimeout(() => {
+      setIsCelebrating(false);
+      onUpgrade?.();
+    }, 480);
+  };
 
   return (
     <div
@@ -36,18 +95,18 @@ export function PlanUpgradePopup({ isOpen, onClose, onUpgrade, variant = 'produt
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)',
+        background: C.overlayBg, backdropFilter: 'blur(6px)',
         fontFamily: "'Inter', sans-serif",
       }}
     >
       <div style={{
-        background: '#0f172a', borderRadius: 24,
-        border: '1px solid rgba(16,185,129,0.3)',
+        background: C.panelBg, borderRadius: 24,
+        border: `1px solid ${C.panelBorder}`,
         width: '90vw', maxWidth: 440,
         padding: '36px 32px 28px',
         textAlign: 'center',
         position: 'relative',
-        boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+        boxShadow: C.panelShadow,
         animation: 'upgradePopIn 0.3s ease',
       }}>
         {/* Close button */}
@@ -55,8 +114,8 @@ export function PlanUpgradePopup({ isOpen, onClose, onUpgrade, variant = 'produt
           onClick={onClose}
           style={{
             position: 'absolute', top: 16, right: 16,
-            background: '#1e293b', border: 'none', borderRadius: 8,
-            padding: 6, cursor: 'pointer', color: '#64748b',
+            background: C.closeBg, border: 'none', borderRadius: 8,
+            padding: 6, cursor: 'pointer', color: C.closeText,
             display: 'flex',
           }}
         >
@@ -74,14 +133,14 @@ export function PlanUpgradePopup({ isOpen, onClose, onUpgrade, variant = 'produt
         </div>
 
         <h2 style={{
-          color: '#f1f5f9', fontSize: '1.35rem', fontWeight: 800,
+          color: C.title, fontSize: '1.35rem', fontWeight: 800,
           margin: '0 0 8px',
         }}>
           {title}
         </h2>
 
         <p style={{
-          color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.6,
+          color: C.description, fontSize: '0.85rem', lineHeight: 1.6,
           margin: '0 0 24px', maxWidth: 340, marginInline: 'auto',
         }}>
           {description}
@@ -89,14 +148,14 @@ export function PlanUpgradePopup({ isOpen, onClose, onUpgrade, variant = 'produt
 
         {/* Feature list */}
         <div style={{
-          background: '#1e293b', borderRadius: 16, padding: '16px 20px',
+          background: C.featureBg, borderRadius: 16, padding: '16px 20px',
           marginBottom: 24, textAlign: 'left',
         }}>
           {features.map((feat, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 10,
               marginBottom: i < features.length - 1 ? 12 : 0,
-              fontSize: '0.82rem', color: '#cbd5e1',
+              fontSize: '0.82rem', color: C.featureText,
             }}>
               <Zap size={14} color="#10b981" style={{ flexShrink: 0 }} />
               {feat}
@@ -106,7 +165,7 @@ export function PlanUpgradePopup({ isOpen, onClose, onUpgrade, variant = 'produt
 
         {/* Buttons */}
         <button
-          onClick={onUpgrade}
+          onClick={handleUpgrade}
           style={{
             width: '100%', padding: '14px',
             borderRadius: 14, border: 'none',
@@ -129,8 +188,8 @@ export function PlanUpgradePopup({ isOpen, onClose, onUpgrade, variant = 'produt
           onClick={onClose}
           style={{
             width: '100%', padding: '12px',
-            borderRadius: 14, border: '1px solid #334155',
-            background: 'transparent', color: '#64748b',
+            borderRadius: 14, border: `1px solid ${C.secondaryBorder}`,
+            background: 'transparent', color: C.secondaryText,
             fontWeight: 600, fontSize: '0.85rem',
             cursor: 'pointer', fontFamily: 'inherit',
           }}
@@ -138,6 +197,8 @@ export function PlanUpgradePopup({ isOpen, onClose, onUpgrade, variant = 'produt
           Agora não
         </button>
       </div>
+
+      <ConfettiBurst active={isCelebrating} onDone={() => setIsCelebrating(false)} />
 
       <style>{`
         @keyframes upgradePopIn {

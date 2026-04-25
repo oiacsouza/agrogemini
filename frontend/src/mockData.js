@@ -36,6 +36,13 @@ export const mockLabs = [
   { id: 'filial-3', name: 'Filial Bauru',           city: 'Bauru, SP',       type: 'filial',  active: false },
 ];
 
+// ── Plano (mock para demo de upload) ───────────────────────────────────────
+export const mockLabUploadPlan = {
+  plano_atual: 'FREE',
+  limite_uploads: 5,
+  uploads_realizados: 0,
+};
+
 // ── Clientes ──────────────────────────────────────────────────────────────
 export const mockClients = [
   {

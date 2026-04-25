@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   Leaf, LayoutDashboard, Upload, FileSpreadsheet,
   Search, Bell, Building2, Users, FlaskConical,
-  ChevronDown, CheckCircle2, LogOut, Sun, Moon, Globe
+  ChevronDown, CheckCircle2, LogOut, Sun, Moon, Globe, Database
 } from 'lucide-react';
 import { LabProvider, useLab } from '../context/LabContext';
+import { useDataMode } from '../context/DataModeContext';
 import { ToastContainer } from './ui/Toast';
 import { LabDashboard }      from './LabDashboard';
 import { LabImport }         from './LabImport';
@@ -131,7 +132,19 @@ function LangSwitcher({ lang, setLang, isDark }) {
 
 // ── Inner portal (needs context) ─────────────────────────────────────────────
 function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
-  const { currentUser, isDark, toggleDark, isProducer, isPremium, labsLoading, activeLab } = useLab();
+  const {
+    currentUser,
+    isDark,
+    toggleDark,
+    isProducer,
+    isPremium,
+    labsLoading,
+    activeLab,
+    activeDataSource,
+    dataModeMessage,
+    isUsingFallbackData,
+  } = useLab();
+  const { dataMode, setDataMode } = useDataMode();
   const [activeClient, setActiveClient] = useState(null);
   const C = useLabTheme();
 
@@ -227,6 +240,16 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
 
   const SIDEBAR_W = 260;
   const HEADER_H  = 73;
+  const dataSourceLabel = activeDataSource === 'real'
+    ? 'Fonte: Banco'
+    : activeDataSource === 'fallback'
+      ? 'Fonte: Mock (fallback)'
+      : 'Fonte: Demo / Mock';
+  const dataSourceColor = activeDataSource === 'real'
+    ? '#10b981'
+    : activeDataSource === 'fallback'
+      ? '#f59e0b'
+      : '#38bdf8';
 
   // Permission label via locales
   const permLabel = t.portal.permissions?.[currentUser.permission] ?? currentUser.permission;
@@ -301,6 +324,68 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              border: `1px solid ${C.border}`,
+              borderRadius: '0.55rem',
+              background: C.inputBg,
+              padding: '0.2rem',
+            }}>
+              <button
+                onClick={() => setDataMode('mock')}
+                title="Usar dados mockados para demo"
+                style={{
+                  border: 'none',
+                  borderRadius: '0.42rem',
+                  padding: '0.35rem 0.55rem',
+                  background: dataMode === 'mock' ? '#10b981' : 'transparent',
+                  color: dataMode === 'mock' ? '#ffffff' : C.textMuted,
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Demo
+              </button>
+              <button
+                onClick={() => setDataMode('real')}
+                title="Tentar dados reais do backend"
+                style={{
+                  border: 'none',
+                  borderRadius: '0.42rem',
+                  padding: '0.35rem 0.55rem',
+                  background: dataMode === 'real' ? '#10b981' : 'transparent',
+                  color: dataMode === 'real' ? '#ffffff' : C.textMuted,
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Banco
+              </button>
+            </div>
+
+            <div
+              title={dataModeMessage || dataSourceLabel}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                border: `1px solid ${C.border}`,
+                borderRadius: '9999px',
+                padding: '0.35rem 0.6rem',
+                background: C.inputBg,
+                color: C.textMuted,
+                fontSize: '0.68rem',
+                fontWeight: 700,
+              }}
+            >
+              <Database size={12} color={dataSourceColor} />
+              <span>{dataSourceLabel}</span>
+            </div>
+
             <div style={{ position: 'relative' }}>
               <Search style={{ position: 'absolute', left: '0.625rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={14} />
               <input type="text" placeholder={t.portal.topbar.searchPlaceholder}
@@ -328,6 +413,20 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
 
         {/* Scrollable Content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem', boxSizing: 'border-box', minHeight: 0, background: C.bg }}>
+          {isUsingFallbackData && (
+            <div style={{
+              marginBottom: '0.9rem',
+              border: '1px solid rgba(245,158,11,0.35)',
+              borderRadius: '0.65rem',
+              background: 'rgba(245,158,11,0.12)',
+              color: C.text,
+              padding: '0.65rem 0.85rem',
+              fontSize: '0.79rem',
+              fontWeight: 500,
+            }}>
+              {dataModeMessage || 'Falha ao carregar dados reais. Exibindo mock para manter a demo estável.'}
+            </div>
+          )}
           {renderContent()}
         </div>
       </div>
