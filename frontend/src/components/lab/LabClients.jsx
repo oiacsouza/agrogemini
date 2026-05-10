@@ -1,18 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FlaskConical, Search, ChevronRight, FileText } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { useLab } from '../../context/LabContext';
-import { mockClients } from '../../mockData';
 import { useLabTheme } from './useLabTheme';
+import { usuarioService } from '../../services/api';
 
 export function LabClients({ onViewProfile, t }) {
   const { isDark } = useLab();
   const C = useLabTheme();
   const c = t.portal.clients;
 
-  const [clients] = useState(mockClients);
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('todos');
+
+  useEffect(() => {
+    async function loadClients() {
+      setLoading(true);
+      try {
+        const data = await usuarioService.getUsuarios('UE');
+        if (Array.isArray(data)) {
+          setClients(data.map(u => ({
+            id: u.id,
+            name: `${u.nome} ${u.sobrenome}`,
+            email: u.email,
+            phone: u.telefone || 'Sem contato',
+            totalReports: 5,
+            lastReport: '05/05/2026',
+            status: u.ativo === 'Y' ? 'ativo' : 'inativo',
+            initials: `${u.nome?.[0] || ''}${u.sobrenome?.[0] || ''}`.toUpperCase(),
+            reports: []
+          })));
+        }
+      } catch (err) {
+        console.error('Error loading clients:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadClients();
+  }, []);
 
   const filtered = clients.filter(cl => {
     const matchSearch = cl.name.toLowerCase().includes(search.toLowerCase()) || cl.email.toLowerCase().includes(search.toLowerCase());
@@ -57,36 +85,40 @@ export function LabClients({ onViewProfile, t }) {
             </tr>
           </thead>
           <tbody>
-            {filtered.map(cl => (
-              <tr key={cl.id} style={{ borderBottom: `1px solid ${C.border}`, transition: 'background 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.background = C.bgAlt}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                <td style={{ padding: '1rem 1.25rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '9999px', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>{cl.initials}</div>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: '0.875rem', color: C.text }}>{cl.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: C.textMuted }}>{cl.phone}</div>
+            {loading ? (
+               <tr><td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: C.textMuted, fontSize: '0.875rem' }}>Carregando clientes...</td></tr>
+            ) : (
+              filtered.map(cl => (
+                <tr key={cl.id} style={{ borderBottom: `1px solid ${C.border}`, transition: 'background 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = C.bgAlt}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  <td style={{ padding: '1rem 1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '9999px', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>{cl.initials}</div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '0.875rem', color: C.text }}>{cl.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: C.textMuted }}>{cl.phone}</div>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem', color: C.textMuted }}>{cl.email}</td>
-                <td style={{ padding: '1rem 1.25rem' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.875rem', fontWeight: 600, color: C.text }}>
-                    <FileText size={14} color="#10b981" />{cl.totalReports}
-                  </span>
-                </td>
-                <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem', color: C.textMuted }}>{cl.lastReport}</td>
-                <td style={{ padding: '1rem 1.25rem' }}><Badge type={cl.status} t={t} /></td>
-                <td style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>
-                  <button onClick={() => onViewProfile(cl)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: '#10b981', fontWeight: 600, fontSize: '0.8125rem', background: 'none', border: 'none', cursor: 'pointer' }}>
-                    {c.viewProfile} <ChevronRight size={14} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {filtered.length === 0 && (
+                  </td>
+                  <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem', color: C.textMuted }}>{cl.email}</td>
+                  <td style={{ padding: '1rem 1.25rem' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.875rem', fontWeight: 600, color: C.text }}>
+                      <FileText size={14} color="#10b981" />{cl.totalReports}
+                    </span>
+                  </td>
+                  <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem', color: C.textMuted }}>{cl.lastReport}</td>
+                  <td style={{ padding: '1rem 1.25rem' }}><Badge type={cl.status} t={t} /></td>
+                  <td style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>
+                    <button onClick={() => onViewProfile(cl)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: '#10b981', fontWeight: 600, fontSize: '0.8125rem', background: 'none', border: 'none', cursor: 'pointer' }}>
+                      {c.viewProfile} <ChevronRight size={14} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+            {!loading && filtered.length === 0 && (
               <tr><td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: C.textMuted, fontSize: '0.875rem' }}>{c.empty}</td></tr>
             )}
           </tbody>

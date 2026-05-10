@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Building2, Plus, Pencil, Trash2, MapPin, Users, FlaskConical } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Badge } from '../ui/Badge';
 import { toast } from '../ui/Toast';
 import { useLab } from '../../context/LabContext';
-import { mockBranches } from '../../mockData';
 import { useLabTheme } from './useLabTheme';
+import { laboratorioService } from '../../services/api';
 
 const emptyForm = { name: '', city: '', state: '', manager: '' };
 
@@ -14,11 +14,37 @@ export function LabBranches({ t }) {
   const C = useLabTheme();
   const b = t.portal.branches;
 
-  const [branches, setBranches] = useState(mockBranches);
+  const [branches, setBranches] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [confirmDelete, setConfirmDelete] = useState(null);
+
+  useEffect(() => {
+    async function loadBranches() {
+      setLoading(true);
+      try {
+        const data = await laboratorioService.getMyLabs();
+        if (Array.isArray(data)) {
+          setBranches(data.map(l => ({
+            id: l.id,
+            name: l.nome,
+            city: l.cidade_endereco || 'Sede',
+            state: 'GO',
+            employees: 12,
+            samples: 450,
+            status: l.ativo === 'Y' ? 'ativa' : 'inativa'
+          })));
+        }
+      } catch (err) {
+        console.error('Error loading branches:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadBranches();
+  }, []);
 
   const openCreate = () => { setEditTarget(null); setForm(emptyForm); setModal(true); };
   const openEdit = (br) => { setEditTarget(br.id); setForm({ name: br.name, city: br.city, state: br.state, manager: br.manager }); setModal(true); };
@@ -62,33 +88,37 @@ export function LabBranches({ t }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        {branches.map(br => (
-          <div key={br.id} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '0.75rem', padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <div style={{ width: '3rem', height: '3rem', background: C.iconBg, borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Building2 size={22} color="#10b981" />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.375rem' }}>
-                <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: C.text }}>{br.name}</span>
-                <Badge type={br.status} t={t} />
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '3rem', color: C.textMuted }}>Carregando unidades...</div>
+        ) : (
+          branches.map(br => (
+            <div key={br.id} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '0.75rem', padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <div style={{ width: '3rem', height: '3rem', background: C.iconBg, borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Building2 size={22} color="#10b981" />
               </div>
-              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8125rem', color: C.textMuted }}><MapPin size={13} />{br.city}, {br.state}</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8125rem', color: C.textMuted }}><Users size={13} />{br.employees} {b.employees}</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8125rem', color: C.textMuted }}><FlaskConical size={13} />{br.samples} {b.samples}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.375rem' }}>
+                  <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: C.text }}>{br.name}</span>
+                  <Badge type={br.status} t={t} />
+                </div>
+                <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8125rem', color: C.textMuted }}><MapPin size={13} />{br.city}, {br.state}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8125rem', color: C.textMuted }}><Users size={13} />{br.employees} {b.employees}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8125rem', color: C.textMuted }}><FlaskConical size={13} />{br.samples} {b.samples}</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                <button onClick={() => openEdit(br)} style={{ background: C.btnBg, border: `1px solid ${C.btnBorder}`, borderRadius: '0.5rem', padding: '0.5rem', cursor: 'pointer', display: 'flex', color: C.textMuted }}>
+                  <Pencil size={15} />
+                </button>
+                <button onClick={() => setConfirmDelete(br.id)} style={{ background: C.dangerBg, border: `1px solid ${C.dangerBorder}`, borderRadius: '0.5rem', padding: '0.5rem', cursor: 'pointer', display: 'flex', color: '#ef4444' }}>
+                  <Trash2 size={15} />
+                </button>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
-              <button onClick={() => openEdit(br)} style={{ background: C.btnBg, border: `1px solid ${C.btnBorder}`, borderRadius: '0.5rem', padding: '0.5rem', cursor: 'pointer', display: 'flex', color: C.textMuted }}>
-                <Pencil size={15} />
-              </button>
-              <button onClick={() => setConfirmDelete(br.id)} style={{ background: C.dangerBg, border: `1px solid ${C.dangerBorder}`, borderRadius: '0.5rem', padding: '0.5rem', cursor: 'pointer', display: 'flex', color: '#ef4444' }}>
-                <Trash2 size={15} />
-              </button>
-            </div>
-          </div>
-        ))}
-        {branches.length === 0 && <div style={{ textAlign: 'center', padding: '3rem', color: C.textMuted }}>{b.empty}</div>}
+          ))
+        )}
+        {!loading && branches.length === 0 && <div style={{ textAlign: 'center', padding: '3rem', color: C.textMuted }}>{b.empty}</div>}
       </div>
 
       <Modal isOpen={modal} onClose={() => setModal(false)} title={editTarget ? b.editBranch : b.newBranch}>

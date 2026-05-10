@@ -1,100 +1,84 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
-from typing import Optional
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.database import get_db_connection
-from app.core.deps import get_current_user
-from app.schemas.laudo import LaudoCreate, LaudoUpdate, LaudoResultadoCreate
+from app.db.database import get_db_session
+from app.core.deps import require_role
+from app.schemas.laudo import LaudoCreate, LaudoUpdate, LaudoResponse, LaudoResultadoCreate
 from app.services.laudo_service import LaudoService
 
 router = APIRouter(prefix="/api/v1/laudos", tags=["Laudos"])
 
 
-@router.get("/")
+@router.get("/", response_model=list[LaudoResponse])
 async def list_laudos(
-    lab_id: Optional[int] = Query(None),
-    limit: int = Query(100, le=500),
-    db=Depends(get_db_connection),
-    user=Depends(get_current_user),
+    lab_id: int = Query(..., description="ID do laboratório"),
+    limit: int = Query(100),
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UP", "UC", "ADM")),
 ):
-    # Producers can only see laudos of their own samples
-    if user["tipo_usuario"] == "UE":
-        return LaudoService(db).get_by_cliente(user["id"])
-    return LaudoService(db).get_all(lab_id=lab_id, limit=limit)
+    return await LaudoService(db).get_all(lab_id, limit)
 
 
-@router.get("/cliente/{cliente_id}")
-async def list_por_cliente(
+@router.get("/{id}", response_model=LaudoResponse)
+async def get_laudo(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "UP", "UC", "ADM")),
+):
+    return await LaudoService(db).get_by_id(id)
+
+
+@router.get("/amostra/{amostra_id}", response_model=LaudoResponse)
+async def get_laudo_by_amostra(
+    amostra_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "UP", "UC", "ADM")),
+):
+    return await LaudoService(db).get_by_amostra(amostra_id)
+
+
+@router.get("/cliente/{cliente_id}", response_model=list[LaudoResponse])
+async def get_laudos_by_cliente(
     cliente_id: int,
-    db=Depends(get_db_connection),
-    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "ADM")),
 ):
-    # Producers can only see their own
-    if user["tipo_usuario"] == "UE" and user["id"] != cliente_id:
-        raise HTTPException(status_code=403, detail="Acesso negado")
-    return LaudoService(db).get_by_cliente(cliente_id)
+    return await LaudoService(db).get_by_cliente(cliente_id)
 
 
-@router.get("/amostra/{amostra_id}")
-async def list_por_amostra(amostra_id: int, db=Depends(get_db_connection), user=Depends(get_current_user)):
-    return LaudoService(db).get_by_amostra(amostra_id)
-
-
-@router.get("/{laudo_id}")
-async def get_laudo(laudo_id: int, db=Depends(get_db_connection), user=Depends(get_current_user)):
-    return LaudoService(db).get_by_id(laudo_id)
-
-
-@router.post("/", status_code=201)
+@router.post("/", response_model=LaudoResponse)
 async def create_laudo(
     data: LaudoCreate,
-    db=Depends(get_db_connection),
-    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UP", "UC", "ADM")),
 ):
-    # Producers cannot create laudos
-    if user["tipo_usuario"] == "UE":
-        raise HTTPException(status_code=403, detail="Produtores não podem criar laudos")
-    return LaudoService(db).create(data)
+    return await LaudoService(db).create(data)
 
 
-@router.put("/{laudo_id}")
+@router.put("/{id}", response_model=LaudoResponse)
 async def update_laudo(
-    laudo_id: int,
+    id: int,
     data: LaudoUpdate,
-    db=Depends(get_db_connection),
-    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UP", "UC", "ADM")),
 ):
-    if user["tipo_usuario"] == "UE":
-        raise HTTPException(status_code=403, detail="Acesso negado")
-    return LaudoService(db).update(laudo_id, data)
+    return await LaudoService(db).update(id, data)
 
 
-@router.delete("/{laudo_id}")
-async def delete_laudo(
-    laudo_id: int,
-    db=Depends(get_db_connection),
-    user=Depends(get_current_user),
+@router.get("/{id}/resultados")
+async def get_laudo_resultados(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "UP", "UC", "ADM")),
 ):
-    if user["tipo_usuario"] == "UE":
-        raise HTTPException(status_code=403, detail="Acesso negado")
-    LaudoService(db).delete(laudo_id)
-    return {"detail": "Laudo removido"}
+    return await LaudoService(db).get_resultados(id)
 
 
-# ── Resultados ────────────────────────────────────────────────────────────────
-
-@router.get("/{laudo_id}/resultados")
-async def get_resultados(laudo_id: int, db=Depends(get_db_connection), user=Depends(get_current_user)):
-    return LaudoService(db).get_resultados(laudo_id)
-
-
-@router.post("/{laudo_id}/resultados", status_code=201)
-async def add_resultado(
-    laudo_id: int,
+@router.post("/{id}/resultados")
+async def add_laudo_resultado(
+    id: int,
     data: LaudoResultadoCreate,
-    db=Depends(get_db_connection),
-    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UP", "UC", "ADM")),
 ):
-    if user["tipo_usuario"] == "UE":
-        raise HTTPException(status_code=403, detail="Acesso negado")
-    rid = LaudoService(db).add_resultado(data)
-    return {"id": rid}
+    return await LaudoService(db).add_resultado(id, data)

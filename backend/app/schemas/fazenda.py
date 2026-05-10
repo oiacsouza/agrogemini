@@ -1,7 +1,10 @@
 from datetime import date, datetime
 from typing import Optional
+import re
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+
+from app.core.validators import validate_cpf_cnpj
 
 
 # ── Fazenda ───────────────────────────────────────────────────────────────────
@@ -11,6 +14,13 @@ class FazendaBase(BaseModel):
     cpf_cnpj: str
     car: Optional[str] = None
     area_total_ha: Optional[float] = None
+
+    @field_validator("cpf_cnpj")
+    @classmethod
+    def validate_id(cls, v: str) -> str:
+        if not validate_cpf_cnpj(v):
+            raise ValueError("CPF ou CNPJ inválido matematicamente.")
+        return re.sub(r'[^0-9]', '', v)
 
 
 class FazendaCreate(FazendaBase):

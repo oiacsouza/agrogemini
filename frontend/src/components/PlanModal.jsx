@@ -413,7 +413,7 @@ export function PlanModal({
             gap: '0.45rem',
           }}>
             <Sparkles size={14} color="#34d399" />
-            Upgrade confirmado na demo.
+            Upgrade confirmado.
           </div>
         )}
       </div>

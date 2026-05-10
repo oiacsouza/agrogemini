@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authService, laboratorioService, dashboardService, amostraService } from '../services/api';
-import { mockLabs, mockSamples, mockLabUploadPlan } from '../mockData';
-import { useDataMode } from './DataModeContext';
 
 const LabContext = createContext(null);
 
@@ -16,6 +14,13 @@ const defaultStats = {
   pendentes: 0,
   laudos_emitidos: 0,
 };
+
+const defaultUploadPlan = {
+  plano_atual: 'FREE',
+  limite_uploads: 5,
+  uploads_realizados: 0
+};
+
 const PLAN_USAGE_STORAGE_KEY = 'agrogemini_lab_upload_plan_usage';
 
 const BACKEND_STATUS_MAP = {
@@ -141,20 +146,6 @@ function mapLabForUi(lab, index = 0) {
   };
 }
 
-function getMockDashboardData() {
-  const normalizedSamples = normalizeSamples(mockSamples);
-  return {
-    samples: normalizedSamples,
-    stats: normalizeStats({
-      total_amostras: normalizedSamples.length,
-      processadas_hoje: Math.max(1, Math.round(normalizedSamples.length * 0.4)),
-      pendentes: normalizedSamples.filter(sample => sample.status === 'processando').length,
-      laudos_emitidos: normalizedSamples.filter(sample => sample.status === 'concluido').length,
-      health: computeAverageHealth(normalizedSamples),
-    }, normalizedSamples),
-  };
-}
-
 function normalizeUserType(value) {
   return String(value || '').trim().toUpperCase();
 }
@@ -185,14 +176,10 @@ function resolveUserPermission(tipoUsuario) {
 }
 
 export function LabProvider({ children }) {
-  const { dataMode } = useDataMode();
-
   // ── Labs ────────────────────────────────────────────────────────────────────
   const [labs, setLabs] = useState([]);
   const [activeLab, setActiveLabState] = useState(null);
   const [labsLoading, setLabsLoading] = useState(true);
-  const [activeDataSource, setActiveDataSource] = useState('mock'); // mock | real | fallback
-  const [dataModeMessage, setDataModeMessage] = useState('Modo Demo / Mock ativo.');
 
   // ── User ────────────────────────────────────────────────────────────────────
   const [currentUser, setCurrentUser] = useState(() => {
@@ -216,7 +203,7 @@ export function LabProvider({ children }) {
   // ── Plan ────────────────────────────────────────────────────────────────────
   const [userPlan, setUserPlan] = useState(null);
   const [labUploadPlan, setLabUploadPlan] = useState(() => {
-    const fallback = { ...mockLabUploadPlan };
+    const fallback = { ...defaultUploadPlan };
     if (typeof window === 'undefined') return fallback;
 
     try {
@@ -255,17 +242,14 @@ export function LabProvider({ children }) {
   const isPremium = currentUser.plano === 'PREMIUM' || isLabPremiumByType || isAdmin;
   const uploadLimit = Number.isFinite(labUploadPlan?.limite_uploads)
     ? labUploadPlan.limite_uploads
-    : mockLabUploadPlan.limite_uploads;
+    : defaultUploadPlan.limite_uploads;
   const uploadsUsed = Math.min(labUploadPlan?.uploads_realizados || 0, uploadLimit);
   const uploadsRemaining = Math.max(0, uploadLimit - uploadsUsed);
   const uploadUsagePercent = uploadLimit > 0
     ? Math.min(100, (uploadsUsed / uploadLimit) * 100)
     : 0;
   const isUploadLimitReached = !isPremium && uploadsRemaining <= 0;
-  const setDataSourceInfo = useCallback((source, message) => {
-    setActiveDataSource(source);
-    setDataModeMessage(message || '');
-  }, []);
+
   const resolveInitialLab = useCallback((availableLabs = []) => {
     if (!availableLabs.length) return null;
     if (typeof window === 'undefined') return availableLabs[0];
@@ -286,22 +270,10 @@ export function LabProvider({ children }) {
     async function loadLabs() {
       setLabsLoading(true);
 
-      // Producers don't own labs — skip lab loading
       if (isProducer) {
         if (cancelled) return;
         setLabs([]);
         setActiveLabState(null);
-        setDataSourceInfo(dataMode === 'real' ? 'real' : 'mock', '');
-        setLabsLoading(false);
-        return;
-      }
-
-      const fallbackLabs = mockLabs.map(mapLabForUi);
-      if (dataMode === 'mock') {
-        if (cancelled) return;
-        setLabs(fallbackLabs);
-        setActiveLabState(resolveInitialLab(fallbackLabs));
-        setDataSourceInfo('mock', 'Modo Demo / Mock ativo.');
         setLabsLoading(false);
         return;
       }
@@ -315,18 +287,15 @@ export function LabProvider({ children }) {
           const mapped = data.map(mapLabForUi);
           setLabs(mapped);
           setActiveLabState(resolveInitialLab(mapped));
-          setDataSourceInfo('real', 'Dados reais do backend ativos.');
         } else {
-          setLabs(fallbackLabs);
-          setActiveLabState(resolveInitialLab(fallbackLabs));
-          setDataSourceInfo('fallback', 'Backend sem laboratórios retornados. Exibindo dados mockados para manter a demo.');
+          setLabs([]);
+          setActiveLabState(null);
         }
       } catch (err) {
         if (cancelled) return;
         console.error('Erro ao carregar laboratórios:', err);
-        setLabs(fallbackLabs);
-        setActiveLabState(resolveInitialLab(fallbackLabs));
-        setDataSourceInfo('fallback', 'Não foi possível carregar dados reais. Exibindo dados mockados para estabilidade da apresentação.');
+        setLabs([]);
+        setActiveLabState(null);
       } finally {
         if (cancelled) return;
         setLabsLoading(false);
@@ -335,12 +304,11 @@ export function LabProvider({ children }) {
 
     loadLabs();
     return () => { cancelled = true; };
-  }, [dataMode, isProducer, resolveInitialLab, setDataSourceInfo]);
+  }, [isProducer, resolveInitialLab]);
 
   // ── Load plan info ──────────────────────────────────────────────────────────
   useEffect(() => {
     async function loadPlan() {
-      if (dataMode === 'mock') return;
       if (!authService.isAuthenticated()) return;
       try {
         const plan = await authService.mePlan();
@@ -359,16 +327,13 @@ export function LabProvider({ children }) {
       }
     }
     loadPlan();
-  }, [dataMode]);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
     try {
       window.sessionStorage.setItem(PLAN_USAGE_STORAGE_KEY, JSON.stringify(labUploadPlan));
-    } catch {
-      // Ignore storage failures in private mode or restricted contexts
-    }
+    } catch { /* ignore */ }
   }, [labUploadPlan]);
 
   useEffect(() => {
@@ -381,22 +346,12 @@ export function LabProvider({ children }) {
 
   // ── Load stats + samples when activeLab changes ────────────────────────────
   const loadDashboardData = useCallback(async (lab) => {
-    const mockData = getMockDashboardData();
-
-    if (dataMode === 'mock') {
-      setActiveSamples(mockData.samples);
-      setActiveStats(mockData.stats);
-      return;
-    }
-
     if (!authService.isAuthenticated()) {
-      setActiveSamples(mockData.samples);
-      setActiveStats(mockData.stats);
-      setDataSourceInfo('fallback', 'Sessão não autenticada para backend. Exibindo dados mockados.');
+      setActiveSamples([]);
+      setActiveStats(defaultStats);
       return;
     }
 
-    // For producers in real mode, derive stats from own samples
     if (isProducer && currentUser.id) {
       setStatsLoading(true);
       try {
@@ -411,11 +366,9 @@ export function LabProvider({ children }) {
         }, normalizedSamples);
         setActiveSamples(normalizedSamples);
         setActiveStats(stats);
-        setDataSourceInfo('real', 'Dados reais do backend ativos.');
       } catch {
-        setActiveStats(mockData.stats);
-        setActiveSamples(mockData.samples);
-        setDataSourceInfo('fallback', 'Falha ao carregar amostras reais. Dados mockados exibidos para continuidade da demo.');
+        setActiveStats(defaultStats);
+        setActiveSamples([]);
       } finally {
         setStatsLoading(false);
       }
@@ -423,19 +376,12 @@ export function LabProvider({ children }) {
     }
 
     if (!lab) {
-      setActiveStats(mockData.stats);
-      setActiveSamples(mockData.samples);
+      setActiveStats(defaultStats);
+      setActiveSamples([]);
       return;
     }
 
     const labId = lab.id;
-    if (typeof labId !== 'number') {
-      setActiveStats(mockData.stats);
-      setActiveSamples(mockData.samples);
-      setDataSourceInfo('fallback', 'Laboratório sem ID numérico para consulta real. Exibindo dados mockados.');
-      return;
-    }
-
     setStatsLoading(true);
     try {
       const [stats, samples] = await Promise.all([
@@ -446,15 +392,13 @@ export function LabProvider({ children }) {
       const normalizedStats = normalizeStats(stats, normalizedSamples);
       setActiveStats(normalizedStats);
       setActiveSamples(normalizedSamples);
-      setDataSourceInfo('real', 'Dados reais do backend ativos.');
     } catch {
-      setActiveStats(mockData.stats);
-      setActiveSamples(mockData.samples);
-      setDataSourceInfo('fallback', 'Falha ao buscar dados reais do laboratório. Exibindo dados mockados.');
+      setActiveStats(defaultStats);
+      setActiveSamples([]);
     } finally {
       setStatsLoading(false);
     }
-  }, [dataMode, isProducer, currentUser.id, setDataSourceInfo]);
+  }, [isProducer, currentUser.id]);
 
   useEffect(() => {
     if (isProducer) {
@@ -467,7 +411,6 @@ export function LabProvider({ children }) {
   // ── Load current user from API ──────────────────────────────────────────────
   useEffect(() => {
     async function loadUser() {
-      if (dataMode === 'mock') return;
       if (!authService.isAuthenticated()) return;
       try {
         const u = await authService.me();
@@ -486,12 +429,10 @@ export function LabProvider({ children }) {
             plano_ativo: u.plano_ativo,
           }));
         }
-      } catch {
-        // Token might be invalid
-      }
+      } catch { /* token might be invalid */ }
     }
     loadUser();
-  }, [dataMode]);
+  }, []);
 
   // ── Setters ─────────────────────────────────────────────────────────────────
   const setActiveLab = (lab) => {
@@ -510,6 +451,7 @@ export function LabProvider({ children }) {
   };
 
   const refreshDashboard = () => loadDashboardData(activeLab);
+  
   const registerSampleUploads = (count = 1) => {
     const safeCount = Math.max(0, Number(count) || 0);
     if (!safeCount) return;
@@ -517,7 +459,7 @@ export function LabProvider({ children }) {
     setLabUploadPlan(prev => {
       const limit = Number.isFinite(prev?.limite_uploads)
         ? prev.limite_uploads
-        : mockLabUploadPlan.limite_uploads;
+        : defaultUploadPlan.limite_uploads;
 
       if (isPremium) {
         return {
@@ -535,19 +477,6 @@ export function LabProvider({ children }) {
       };
     });
   };
-  const activateDemoPremiumPlan = () => {
-    setCurrentUser(prev => ({ ...prev, plano: 'PREMIUM', role: 'Lab Premium' }));
-    setLabUploadPlan(prev => ({ ...prev, plano_atual: 'PREMIUM' }));
-
-    try {
-      const storedUser = authService.getUser();
-      if (!storedUser) return;
-      const updatedUser = { ...storedUser, plano: 'PREMIUM' };
-      window.localStorage.setItem('agrogemini_user', JSON.stringify(updatedUser));
-    } catch {
-      // Ignore storage sync errors
-    }
-  };
 
   return (
     <LabContext.Provider value={{
@@ -560,16 +489,12 @@ export function LabProvider({ children }) {
       activeSamples,
       statsLoading,
       refreshDashboard,
-      dataMode,
-      activeDataSource,
-      dataModeMessage,
-      isUsingFallbackData: activeDataSource === 'fallback',
       // New plan-related values
       userPlan,
       isProducer,
       isAdmin,
       isPremium,
-      // Upload plan demo values
+      // Upload plan values
       uploadPlan: isPremium ? 'PREMIUM' : 'FREE',
       uploadLimit,
       uploadsUsed,
@@ -577,7 +502,6 @@ export function LabProvider({ children }) {
       uploadUsagePercent,
       isUploadLimitReached,
       registerSampleUploads,
-      activateDemoPremiumPlan,
     }}>
       {children}
     </LabContext.Provider>

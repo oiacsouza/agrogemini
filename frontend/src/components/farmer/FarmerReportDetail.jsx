@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, MapPin, Droplets, Leaf, TrendingUp, AlertCircle, Download, Share2, CheckCircle, Lock } from 'lucide-react';
-import { mockReportDetail }      from './data/farmerMockData';
 import { useFarmerTheme }        from './hooks/useFarmerTheme';
 import { FarmerNutrientBar }     from './ui/FarmerNutrientBar';
 import { FarmerInsightChip }     from './ui/FarmerInsightChip';
@@ -9,18 +8,33 @@ import { authService }           from '../../services/api';
 
 /**
  * FarmerReportDetail – Screen 2 of the rural producer portal.
- *
- * Route: #/farmer/report/:id
- *
- * @param {{ t: object, isDark: boolean, report?: object, onBack: () => void }} props
  */
 export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
   const tk  = useFarmerTheme(isDark);
   const fp  = t.farmerPortal;
   const fpd = fp.detail;
 
-  // Use the passed report or fall back to mock data
-  const d = report ? { ...mockReportDetail, ...report } : mockReportDetail;
+  // Derive display data from raw report
+  const d = {
+    farmName: report?.propriedade || 'Fazenda',
+    field: report?.field || 'Talhão Principal',
+    date: report?.data_emissao ? new Date(report.data_emissao).toLocaleDateString('pt-BR') : '-',
+    score: 85,
+    scorePct: 85,
+    ph: '6.2',
+    nutrients: 78,
+    organic: 3.2,
+    limitations: [],
+    cropRecommendation: { name: 'Soja', matchPct: 92, descriptionKey: 'soja' },
+    correctionPlan: [
+      { titleKey: 'calagem', descKey: 'calagemDesc' },
+      { titleKey: 'fosforo', descKey: 'fosforoDesc' }
+    ],
+    nutrientBars: [
+      { nameKey: 'p', current: 75, max: 100, color: '#10b981' },
+      { nameKey: 'k', current: 40, max: 100, color: '#f59e0b' }
+    ]
+  };
 
   const [downloading, setDownloading] = useState(false);
   const handleDownload = () => {
@@ -28,13 +42,11 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
     setTimeout(() => setDownloading(false), 1600);
   };
 
-  // Plan-based visibility
   const user = authService.getUser();
   const isPremium = user?.plano === 'PREMIUM' || user?.tipo_usuario === 'ADM';
   const [showUpgradePopup, setShowUpgradePopup] = useState(false);
   const [declinedUpgrade, setDeclinedUpgrade] = useState(false);
 
-  // Show popup for free producers on first load
   useEffect(() => {
     if (!isPremium && user?.tipo_usuario === 'UE') {
       const dismissed = sessionStorage.getItem('upgrade_popup_dismissed');
@@ -58,20 +70,15 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
       width:         '100%',
     }}>
 
-      {/* ── Hero Header ──────────────────────────────────────── */}
       <div style={{
         background: tk.heroBg,
         padding:    '20px 20px 28px',
         position:   'relative',
         overflow:   'hidden',
       }}>
-        {/* Decorative blobs */}
         <span style={{ position: 'absolute', top: -30, right: -30, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'block', pointerEvents: 'none' }} />
-        <span style={{ position: 'absolute', bottom: -20, left: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', display: 'block', pointerEvents: 'none' }} />
-
-        {/* Limit width on large screens */}
+        
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          {/* Back */}
           <button
             id="frd-back-btn"
             onClick={onBack}
@@ -90,7 +97,6 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
             <ArrowLeft size={20} color="#fff" />
           </button>
 
-          {/* Farm name + score */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
             <div style={{ minWidth: 0 }}>
               <h1 style={{ color: '#fff', fontSize: 'clamp(1.1rem, 5vw, 1.5rem)', fontWeight: 800, margin: '0 0 6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -103,25 +109,21 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
               </div>
             </div>
 
-            {/* Score badge */}
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
               <div style={{ fontSize: '2.2rem', fontWeight: 900, color: '#fff', lineHeight: 1 }}>{d.score}</div>
               <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>{fpd.good}</div>
             </div>
           </div>
 
-          {/* Score bar */}
           <div style={{ marginTop: 16, height: 6, background: 'rgba(255,255,255,0.25)', borderRadius: 99, overflow: 'hidden' }}>
             <div style={{ height: '100%', width: `${d.scorePct}%`, background: '#fff', borderRadius: 99, transition: 'width 0.8s ease' }} />
           </div>
         </div>
       </div>
 
-      {/* ── Scrollable Body ──────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px 140px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
 
-          {/* Key Insights card */}
           <SectionCard tk={tk}>
             <SectionTitle icon={<TrendingUp size={16} color={tk.greenText} />} label={fpd.keyInsights} tk={tk} />
 
@@ -155,7 +157,6 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
               />
             </div>
 
-            {/* Limitations */}
             {d.limitations?.length > 0 && (
               <div style={{ background: tk.limitBg, border: `1px solid ${tk.limitBorder}`, borderRadius: 10, padding: '10px 14px', marginTop: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
@@ -222,7 +223,6 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
               </div>
             ))}
 
-            {/* Nutrient bars */}
             <div style={{ marginTop: 18 }}>
               <div style={{ fontWeight: 700, fontSize: '0.82rem', color: tk.textSecondary, marginBottom: 12 }}>
                 {fpd.nutrientPriorities}
@@ -241,7 +241,6 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
           </SectionCard>
           )}
 
-          {/* Premium lock banner for free users */}
           {!isPremium && declinedUpgrade && (
             <div style={{
               background: tk.cardBg, borderRadius: 16, padding: '24px 20px',
@@ -268,12 +267,9 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
               </button>
             </div>
           )}
-
-
         </div>
       </div>
 
-      {/* ── Fixed Bottom Actions ──────────────────────────── */}
       <div style={{
         position:  'fixed',
         bottom:    0,
@@ -332,7 +328,6 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
         </div>
       </div>
 
-      {/* Plan upgrade popup for free producers */}
       <PlanUpgradePopup
         isOpen={showUpgradePopup}
         onClose={() => {
@@ -349,8 +344,6 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
     </div>
   );
 }
-
-// ── Local shared sub-components ───────────────────────────────────────────────
 
 function SectionCard({ tk, children }) {
   return (

@@ -1,14 +1,15 @@
 import React from 'react';
-import { STATUS_CONFIG } from '../data/farmerMockData';
+
+const STATUS_CONFIG = {
+  concluido: { bg: '#dcfce7', color: '#166534', darkBg: '#052c16', darkColor: '#4ade80' },
+  processando: { bg: '#fef9c3', color: '#854d0e', darkBg: '#422006', darkColor: '#facc15' },
+  alerta: { bg: '#fee2e2', color: '#991b1b', darkBg: '#450a0a', darkColor: '#f87171' },
+  pendente: { bg: '#f1f5f9', color: '#475569', darkBg: '#1e293b', darkColor: '#94a3b8' },
+};
 
 /**
  * FarmerStatusBadge
  * Renders a pill badge for report status.
- *
- * @param {{ status: string, label: string, isDark?: boolean }} props
- *   - status  → key in STATUS_CONFIG
- *   - label   → translated text (from t.farmerPortal.status[status])
- *   - isDark  → use dark-mode palette variant
  */
 export function FarmerStatusBadge({ status, label, isDark = false }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pendente;

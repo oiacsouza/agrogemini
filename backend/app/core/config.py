@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     DB_USER: str = "AGROGEMINI"
     DB_PASSWORD: str = "AgroGemini123"
-    DB_DSN: str = "localhost:1521/FREEPDB1"
+    DB_DSN: str = "127.0.0.1:1521/freepdb1"
 
     SECRET_KEY: str = "agrogemini-secret-key-change-in-production-2026"
     ALGORITHM: str = "HS256"

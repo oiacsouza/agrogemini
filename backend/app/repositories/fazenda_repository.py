@@ -1,77 +1,73 @@
-import oracledb
+from typing import Optional, Sequence
+from sqlalchemy import select, update, delete, func
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
+from app.models.fazenda import Fazenda, FazendaUsuario
+from app.schemas.fazenda import FazendaCreate, FazendaUpdate
 
 class FazendaRepository:
-    def __init__(self, connection: oracledb.Connection):
-        self.conn = connection
+    def __init__(self, session: AsyncSession):
+        self.session = session
 
-    def _rf(self, cur):
-        cur.rowfactory = lambda *a: dict(zip([d[0].lower() for d in cur.description], a))
+    async def get_all(self) -> Sequence[Fazenda]:
+        result = await self.session.execute(
+            select(Fazenda).order_by(Fazenda.nome)
+        )
+        return result.scalars().all()
 
-    def get_all(self):
-        with self.conn.cursor() as cur:
-            self._rf(cur)
-            cur.execute("SELECT * FROM fazendas ORDER BY id DESC")
-            return cur.fetchall()
+    async def get_by_id(self, fazenda_id: int) -> Optional[Fazenda]:
+        result = await self.session.execute(
+            select(Fazenda).where(Fazenda.id == fazenda_id)
+        )
+        return result.scalar_one_or_none()
 
-    def get_by_id(self, fid: int):
-        with self.conn.cursor() as cur:
-            self._rf(cur)
-            cur.execute("SELECT * FROM fazendas WHERE id = :1", [fid])
-            return cur.fetchone()
+    async def get_by_cpf_cnpj(self, cpf_cnpj: str) -> Optional[Fazenda]:
+        result = await self.session.execute(
+            select(Fazenda).where(Fazenda.cpf_cnpj == cpf_cnpj)
+        )
+        return result.scalar_one_or_none()
 
-    def create(self, data) -> int:
-        with self.conn.cursor() as cur:
-            out = cur.var(oracledb.NUMBER)
-            cur.execute(
-                """INSERT INTO fazendas (nome, cpf_cnpj, endereco_id, car, area_total_ha)
-                   VALUES (:1,:2,:3,:4,:5) RETURNING id INTO :6""",
-                [data.nome, data.cpf_cnpj, data.endereco_id, data.car, data.area_total_ha, out],
-            )
-            self.conn.commit()
-            return int(out.getvalue()[0])
+    async def create(self, fazenda_data: FazendaCreate) -> int:
+        new_faz = Fazenda(**fazenda_data.model_dump())
+        self.session.add(new_faz)
+        await self.session.flush()
+        await self.session.commit()
+        return new_faz.id
 
-    def update(self, fid: int, data):
-        with self.conn.cursor() as cur:
-            fields, params = [], {}
-            for f in ("nome", "cpf_cnpj", "endereco_id", "car", "area_total_ha"):
-                v = getattr(data, f, None)
-                if v is not None:
-                    fields.append(f"{f} = :{f}")
-                    params[f] = v
-            if not fields:
-                return False
-            params["id"] = fid
-            cur.execute(f"UPDATE fazendas SET {', '.join(fields)} WHERE id = :id", params)
-            self.conn.commit()
-            return cur.rowcount > 0
+    async def update(self, fazenda_id: int, fazenda_data: FazendaUpdate) -> bool:
+        update_data = fazenda_data.model_dump(exclude_unset=True)
+        if not update_data:
+            return False
 
-    def delete(self, fid: int):
-        with self.conn.cursor() as cur:
-            cur.execute("DELETE FROM fazendas WHERE id = :1", [fid])
-            self.conn.commit()
-            return cur.rowcount > 0
+        result = await self.session.execute(
+            update(Fazenda).where(Fazenda.id == fazenda_id).values(**update_data)
+        )
+        await self.session.commit()
+        return result.rowcount > 0
 
-    # ── Fazenda-Usuarios ──────────────────────────────────────────────────────
+    async def delete(self, fazenda_id: int) -> bool:
+        result = await self.session.execute(
+            delete(Fazenda).where(Fazenda.id == fazenda_id)
+        )
+        await self.session.commit()
+        return result.rowcount > 0
 
-    def get_usuarios(self, fazenda_id: int):
-        with self.conn.cursor() as cur:
-            self._rf(cur)
-            cur.execute(
-                """SELECT fu.*, u.nome AS usuario_nome, u.sobrenome AS usuario_sobrenome
-                   FROM fazenda_usuarios fu JOIN usuarios u ON u.id = fu.usuario_id
-                   WHERE fu.fazenda_id = :1""",
-                [fazenda_id],
-            )
-            return cur.fetchall()
+    # ── User Links ───────────────────────────────────────────────────────────
 
-    def add_usuario(self, data) -> int:
-        with self.conn.cursor() as cur:
-            out = cur.var(oracledb.NUMBER)
-            cur.execute(
-                """INSERT INTO fazenda_usuarios (fazenda_id, usuario_id, papel, inicio_vigencia, fim_vigencia)
-                   VALUES (:1,:2,:3,:4,:5) RETURNING id INTO :6""",
-                [data.fazenda_id, data.usuario_id, data.papel, data.inicio_vigencia, data.fim_vigencia, out],
-            )
-            self.conn.commit()
-            return int(out.getvalue()[0])
+    async def get_usuarios(self, fazenda_id: int) -> list:
+        from app.models.usuario import Usuario
+        stmt = (
+            select(Usuario, FazendaUsuario.papel)
+            .join(FazendaUsuario, FazendaUsuario.usuario_id == Usuario.id)
+            .where(FazendaUsuario.fazenda_id == fazenda_id)
+        )
+        result = await self.session.execute(stmt)
+        return [{"user": row[0], "papel": row[1]} for row in result.all()]
+
+    async def add_usuario(self, fazenda_id: int, usuario_id: int, papel: str) -> bool:
+        from datetime import datetime
+        new_vinc = FazendaUsuario(fazenda_id=fazenda_id, usuario_id=usuario_id, papel=papel, inicio_vigencia=datetime.now())
+        self.session.add(new_vinc)
+        await self.session.commit()
+        return True

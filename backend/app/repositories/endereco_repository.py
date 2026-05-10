@@ -1,66 +1,37 @@
-import oracledb
+from typing import Optional, Sequence
+from sqlalchemy import select, update, delete
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.endereco import Endereco
+from app.schemas.endereco import EnderecoCreate, EnderecoUpdate
 
 class EnderecoRepository:
-    def __init__(self, connection: oracledb.Connection):
-        self.conn = connection
+    def __init__(self, session: AsyncSession):
+        self.session = session
 
-    def _rf(self, cur):
-        cur.rowfactory = lambda *a: dict(zip([d[0].lower() for d in cur.description], a))
+    async def get_all(self) -> Sequence[Endereco]:
+        result = await self.session.execute(select(Endereco).order_by(Endereco.id))
+        return result.scalars().all()
 
-    def get_all(self):
-        with self.conn.cursor() as cur:
-            self._rf(cur)
-            cur.execute("SELECT * FROM enderecos ORDER BY id DESC")
-            return cur.fetchall()
+    async def get_by_id(self, endereco_id: int) -> Optional[Endereco]:
+        result = await self.session.execute(select(Endereco).where(Endereco.id == endereco_id))
+        return result.scalar_one_or_none()
 
-    def get_by_id(self, eid: int):
-        with self.conn.cursor() as cur:
-            self._rf(cur)
-            cur.execute("SELECT * FROM enderecos WHERE id = :1", [eid])
-            return cur.fetchone()
+    async def create(self, data: EnderecoCreate) -> int:
+        new_end = Endereco(**data.model_dump())
+        self.session.add(new_end)
+        await self.session.flush()
+        await self.session.commit()
+        return new_end.id
 
-    def create(self, data) -> int:
-        with self.conn.cursor() as cur:
-            out = cur.var(oracledb.NUMBER)
-            cur.execute(
-                """INSERT INTO enderecos (cep, logradouro, numero, complemento, bairro, cidade, estado, latitude, longitude, pais)
-                   VALUES (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10) RETURNING id INTO :11""",
-                [data.cep, data.logradouro, data.numero, data.complemento,
-                 data.bairro, data.cidade, data.estado, data.latitude, data.longitude, data.pais, out],
-            )
-            self.conn.commit()
-            return int(out.getvalue()[0])
+    async def update(self, id: int, data: EnderecoUpdate) -> bool:
+        update_data = data.model_dump(exclude_unset=True)
+        if not update_data: return False
+        result = await self.session.execute(update(Endereco).where(Endereco.id == id).values(**update_data))
+        await self.session.commit()
+        return result.rowcount > 0
 
-    def create_from_dict(self, d: dict) -> int:
-        with self.conn.cursor() as cur:
-            out = cur.var(oracledb.NUMBER)
-            cur.execute(
-                """INSERT INTO enderecos (cep, logradouro, numero, complemento, bairro, cidade, estado, pais)
-                   VALUES (:1,:2,:3,:4,:5,:6,:7,:8) RETURNING id INTO :9""",
-                [d.get("cep"), d.get("logradouro"), d.get("numero"), d.get("complemento"),
-                 d.get("bairro"), d.get("cidade"), d.get("estado"), d.get("pais", "Brasil"), out],
-            )
-            self.conn.commit()
-            return int(out.getvalue()[0])
-
-    def update(self, eid: int, data):
-        with self.conn.cursor() as cur:
-            fields, params = [], {}
-            for f in ("cep", "logradouro", "numero", "complemento", "bairro", "cidade", "estado", "latitude", "longitude", "pais"):
-                v = getattr(data, f, None)
-                if v is not None:
-                    fields.append(f"{f} = :{f}")
-                    params[f] = v
-            if not fields:
-                return False
-            params["id"] = eid
-            cur.execute(f"UPDATE enderecos SET {', '.join(fields)} WHERE id = :id", params)
-            self.conn.commit()
-            return cur.rowcount > 0
-
-    def delete(self, eid: int):
-        with self.conn.cursor() as cur:
-            cur.execute("DELETE FROM enderecos WHERE id = :1", [eid])
-            self.conn.commit()
-            return cur.rowcount > 0
+    async def delete(self, id: int) -> bool:
+        result = await self.session.execute(delete(Endereco).where(Endereco.id == id))
+        await self.session.commit()
+        return result.rowcount > 0

@@ -61,12 +61,18 @@ async function request(endpoint, { method = 'GET', body, headers: extraHeaders }
     removeToken();
     removeUser();
     window.location.hash = '#login';
-    throw { detail: 'Sessão expirada, faça login novamente.' };
+    throw { detail: 'Sessão expirada, faça login novamente.', type: 'AuthError' };
   }
 
   if (!res.ok) {
     let err;
-    try { err = await res.json(); } catch { err = { detail: res.statusText }; }
+    try { 
+      err = await res.json(); 
+      // Ensure we have a detail property for consistent UI display
+      if (!err.detail) err.detail = err.message || 'Ocorreu um erro na requisição.';
+    } catch { 
+      err = { detail: `Erro ${res.status}: ${res.statusText}`, type: 'HttpError' }; 
+    }
     throw err;
   }
 

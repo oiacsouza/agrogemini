@@ -1,34 +1,60 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Users, Plus, Trash2 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Badge } from '../ui/Badge';
 import { toast } from '../ui/Toast';
 import { InputField } from '../ui/InputField';
 import { useLab } from '../../context/LabContext';
-import { mockEmployees } from '../../mockData';
 import { useLabTheme } from './useLabTheme';
+import { laboratorioService } from '../../services/api';
 
 const emptyForm = { name: '', role: '', email: '', permission: 'tecnico' };
 const PERMISSIONS = ['admin', 'tecnico', 'viewer'];
 
 export function LabEmployees({ t }) {
-  const { isDark } = useLab();
+  const { isDark, activeLab } = useLab();
   const e = t.portal.employees;
   const C = useLabTheme();
 
-  const [employees, setEmployees] = useState(mockEmployees);
+  const [employees, setEmployees] = useState([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
+  useEffect(() => {
+    async function loadEmployees() {
+      if (!activeLab?.id) return;
+      setLoadingEmployees(true);
+      try {
+        const data = await laboratorioService.getUsuarios(activeLab.id);
+        if (Array.isArray(data)) {
+          setEmployees(data.map(item => ({
+            id: item.user.id,
+            name: `${item.user.nome} ${item.user.sobrenome}`,
+            role: item.papel,
+            email: item.user.email,
+            permission: item.papel.toLowerCase().includes('admin') ? 'admin' : 'tecnico',
+            status: item.user.ativo === 'Y' ? 'ativo' : 'inativa',
+            initials: `${item.user.nome?.[0] || ''}${item.user.sobrenome?.[0] || ''}`.toUpperCase()
+          })));
+        }
+      } catch (err) {
+        console.error('Error loading employees:', err);
+      } finally {
+        setLoadingEmployees(false);
+      }
+    }
+    loadEmployees();
+  }, [activeLab]);
+
   const validate = () => {
     const errs = {};
     if (!form.name.trim()) errs.name = `${e.fieldName} é obrigatório.`;
     if (!form.email.trim()) errs.email = `${e.fieldEmail} é obrigatório.`;
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Email inválido.';
-    else if (employees.some(emp => emp.email === form.email)) errs.email = 'Email já cadastrado.';
     return errs;
   };
 
@@ -50,7 +76,6 @@ export function LabEmployees({ t }) {
     toast.success(`${e.title} removido.`);
   };
 
-  // Stable onChange handlers — one per field
   const handleNameChange = useCallback((ev) => {
     const v = ev.target.value;
     setForm(p => ({ ...p, name: v }));
@@ -98,27 +123,31 @@ export function LabEmployees({ t }) {
             </tr>
           </thead>
           <tbody>
-            {employees.map(emp => (
-              <tr key={emp.id} style={{ borderBottom: `1px solid ${C.border}` }}
-                onMouseEnter={ev => ev.currentTarget.style.background = C.bgAlt}
-                onMouseLeave={ev => ev.currentTarget.style.background = 'transparent'}>
-                <td style={{ padding: '1rem 1.25rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '9999px', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>{emp.initials}</div>
-                    <span style={{ fontWeight: 600, fontSize: '0.875rem', color: C.text }}>{emp.name}</span>
-                  </div>
-                </td>
-                <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem', color: C.textMuted }}>{emp.role}</td>
-                <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem', color: C.textMuted }}>{emp.email}</td>
-                <td style={{ padding: '1rem 1.25rem' }}><Badge type={emp.permission} t={t} /></td>
-                <td style={{ padding: '1rem 1.25rem' }}><Badge type={emp.status} t={t} /></td>
-                <td style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>
-                  <button onClick={() => setConfirmDelete(emp.id)} style={{ background: C.dangerBg, border: `1px solid ${C.dangerBorder}`, borderRadius: '0.5rem', padding: '0.4rem 0.6rem', cursor: 'pointer', display: 'inline-flex', color: '#ef4444' }}>
-                    <Trash2 size={14} />
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {loadingEmployees ? (
+               <tr><td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: C.textMuted, fontSize: '0.875rem' }}>Carregando equipe...</td></tr>
+            ) : (
+              employees.map(emp => (
+                <tr key={emp.id} style={{ borderBottom: `1px solid ${C.border}` }}
+                  onMouseEnter={ev => ev.currentTarget.style.background = C.bgAlt}
+                  onMouseLeave={ev => ev.currentTarget.style.background = 'transparent'}>
+                  <td style={{ padding: '1rem 1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '9999px', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>{emp.initials}</div>
+                      <span style={{ fontWeight: 600, fontSize: '0.875rem', color: C.text }}>{emp.name}</span>
+                    </div>
+                  </td>
+                  <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem', color: C.textMuted }}>{emp.role}</td>
+                  <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem', color: C.textMuted }}>{emp.email}</td>
+                  <td style={{ padding: '1rem 1.25rem' }}><Badge type={emp.permission} t={t} /></td>
+                  <td style={{ padding: '1rem 1.25rem' }}><Badge type={emp.status} t={t} /></td>
+                  <td style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>
+                    <button onClick={() => setConfirmDelete(emp.id)} style={{ background: C.dangerBg, border: `1px solid ${C.dangerBorder}`, borderRadius: '0.5rem', padding: '0.4rem 0.6rem', cursor: 'pointer', display: 'inline-flex', color: '#ef4444' }}>
+                      <Trash2 size={14} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

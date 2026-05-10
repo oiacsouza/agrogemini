@@ -1,32 +1,23 @@
-import oracledb
+from typing import Sequence
+from sqlalchemy import select, delete
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.usuario import TelefoneUsuario
+from app.models.laboratorio import TelefoneLaboratorio
 
-class TelefoneUsuarioRepository:
-    def __init__(self, connection: oracledb.Connection):
-        self.conn = connection
+class TelefoneRepository:
+    def __init__(self, session: AsyncSession):
+        self.session = session
 
-    def _rf(self, cur):
-        cur.rowfactory = lambda *a: dict(zip([d[0].lower() for d in cur.description], a))
+    async def get_by_usuario(self, usuario_id: int) -> Sequence[TelefoneUsuario]:
+        result = await self.session.execute(select(TelefoneUsuario).where(TelefoneUsuario.usuario_id == usuario_id))
+        return result.scalars().all()
 
-    def get_by_usuario(self, usuario_id: int):
-        with self.conn.cursor() as cur:
-            self._rf(cur)
-            cur.execute("SELECT * FROM telefones_usuarios WHERE usuario_id = :1", [usuario_id])
-            return cur.fetchall()
+    async def get_by_laboratorio(self, lab_id: int) -> Sequence[TelefoneLaboratorio]:
+        result = await self.session.execute(select(TelefoneLaboratorio).where(TelefoneLaboratorio.laboratorio_id == lab_id))
+        return result.scalars().all()
 
-    def create(self, usuario_id: int, numero: str, tipo: str = "MOVEL", whatsapp: str = "Y") -> int:
-        with self.conn.cursor() as cur:
-            out = cur.var(oracledb.NUMBER)
-            cur.execute(
-                """INSERT INTO telefones_usuarios (usuario_id, numero, tipo, whatsapp)
-                   VALUES (:1,:2,:3,:4) RETURNING id INTO :5""",
-                [usuario_id, numero, tipo, whatsapp, out],
-            )
-            self.conn.commit()
-            return int(out.getvalue()[0])
-
-    def delete(self, tel_id: int):
-        with self.conn.cursor() as cur:
-            cur.execute("DELETE FROM telefones_usuarios WHERE id = :1", [tel_id])
-            self.conn.commit()
-            return cur.rowcount > 0
+    async def delete_usuario_telefone(self, tel_id: int) -> bool:
+        result = await self.session.execute(delete(TelefoneUsuario).where(TelefoneUsuario.id == tel_id))
+        await self.session.commit()
+        return result.rowcount > 0

@@ -1,43 +1,54 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.database import get_db_connection
-from app.core.deps import get_current_user
-from app.schemas.fazenda import TalhaoCreate, TalhaoUpdate
-from app.repositories.talhao_repository import TalhaoRepository
+from app.db.database import get_db_session
+from app.core.deps import require_role
+from app.schemas.fazenda import TalhaoCreate, TalhaoUpdate, TalhaoResponse
+from app.services.fazenda_service import FazendaService
 
-router = APIRouter(prefix="/api/v1/talhoes", tags=["Talhões"])
-
-
-@router.get("/")
-async def list_talhoes(db=Depends(get_db_connection), _=Depends(get_current_user)):
-    return TalhaoRepository(db).get_all()
+router = APIRouter(prefix="/api/v1/talhoes", tags=["Talhoes"])
 
 
-@router.get("/{talhao_id}")
-async def get_talhao(talhao_id: int, db=Depends(get_db_connection), _=Depends(get_current_user)):
-    repo = TalhaoRepository(db)
-    t = repo.get_by_id(talhao_id)
-    if not t:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Talhão não encontrado")
-    return t
+@router.get("/", response_model=list[TalhaoResponse])
+async def list_talhoes(
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "ADM")),
+):
+    return await FazendaService(db).get_all_talhoes()
 
 
-@router.post("/", status_code=201)
-async def create_talhao(data: TalhaoCreate, db=Depends(get_db_connection), _=Depends(get_current_user)):
-    repo = TalhaoRepository(db)
-    tid = repo.create(data)
-    return repo.get_by_id(tid)
+@router.get("/{id}", response_model=TalhaoResponse)
+async def get_talhao(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "ADM")),
+):
+    return await FazendaService(db).get_talhao_by_id(id)
 
 
-@router.put("/{talhao_id}")
-async def update_talhao(talhao_id: int, data: TalhaoUpdate, db=Depends(get_db_connection), _=Depends(get_current_user)):
-    repo = TalhaoRepository(db)
-    repo.update(talhao_id, data)
-    return repo.get_by_id(talhao_id)
+@router.post("/", response_model=TalhaoResponse)
+async def create_talhao(
+    data: TalhaoCreate,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "ADM")),
+):
+    return await FazendaService(db).create_talhao(data)
 
 
-@router.delete("/{talhao_id}")
-async def delete_talhao(talhao_id: int, db=Depends(get_db_connection), _=Depends(get_current_user)):
-    TalhaoRepository(db).delete(talhao_id)
-    return {"detail": "Talhão removido"}
+@router.put("/{id}", response_model=TalhaoResponse)
+async def update_talhao(
+    id: int,
+    data: TalhaoUpdate,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "ADM")),
+):
+    return await FazendaService(db).update_talhao(id, data)
+
+
+@router.delete("/{id}")
+async def delete_talhao(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "ADM")),
+):
+    return await FazendaService(db).delete_talhao(id)

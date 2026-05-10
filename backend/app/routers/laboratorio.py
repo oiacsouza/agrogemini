@@ -1,116 +1,81 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.database import get_db_connection
-from app.core.deps import get_current_user, require_role
-from app.schemas.laboratorio import LaboratorioCreate, LaboratorioUpdate, LabUsuarioCreate
+from app.db.database import get_db_session
+from app.core.deps import require_role, get_current_user
+from app.schemas.laboratorio import LaboratorioCreate, LaboratorioUpdate, LaboratorioResponse
 from app.services.laboratorio_service import LaboratorioService
 
-router = APIRouter(prefix="/api/v1/laboratorios", tags=["Laboratórios"])
+router = APIRouter(prefix="/api/v1/laboratorios", tags=["Laboratorios"])
 
 
-@router.get("/")
+@router.get("/", response_model=list[LaboratorioResponse])
 async def list_laboratorios(
-    db=Depends(get_db_connection),
-    user=Depends(get_current_user),
-):
-    # Only admin sees all labs; lab users see only their own
-    if user["tipo_usuario"] == "ADM":
-        return LaboratorioService(db).get_with_stats()
-    # Producers and lab users see only labs linked to them
-    return LaboratorioService(db).get_by_user(user["id"])
-
-
-@router.get("/me")
-async def my_labs(db=Depends(get_db_connection), user=Depends(get_current_user)):
-    """Get labs the authenticated user belongs to."""
-    return LaboratorioService(db).get_by_user(user["id"])
-
-
-@router.get("/{lab_id}")
-async def get_laboratorio(lab_id: int, db=Depends(get_db_connection), user=Depends(get_current_user)):
-    return LaboratorioService(db).get_by_id(lab_id)
-
-
-@router.post("/", status_code=201)
-async def create_laboratorio(
-    data: LaboratorioCreate,
-    db=Depends(get_db_connection),
-    user=Depends(require_role("UP", "UC", "ADM")),
-):
-    return LaboratorioService(db).create(data)
-
-
-@router.put("/{lab_id}")
-async def update_laboratorio(
-    lab_id: int,
-    data: LaboratorioUpdate,
-    db=Depends(get_db_connection),
-    user=Depends(require_role("UP", "UC", "ADM")),
-):
-    return LaboratorioService(db).update(lab_id, data)
-
-
-@router.delete("/{lab_id}")
-async def delete_laboratorio(
-    lab_id: int,
-    db=Depends(get_db_connection),
+    db: AsyncSession = Depends(get_db_session),
     user=Depends(require_role("ADM")),
 ):
-    LaboratorioService(db).delete(lab_id)
-    return {"detail": "Laboratório removido"}
+    return await LaboratorioService(db).get_all()
 
 
-# ── Lab Users (Employees) ────────────────────────────────────────────────────
-
-@router.get("/{lab_id}/usuarios")
-async def list_lab_usuarios(
-    lab_id: int,
-    db=Depends(get_db_connection),
-    user=Depends(get_current_user),
+@router.get("/me", response_model=list[LaboratorioResponse])
+async def list_my_laboratorios(
+    db: AsyncSession = Depends(get_db_session),
+    current_user=Depends(get_current_user),
 ):
-    return LaboratorioService(db).get_usuarios(lab_id)
+    """List labs linked to the authenticated user."""
+    return await LaboratorioService(db).get_by_user(current_user["id"])
 
 
-@router.post("/{lab_id}/usuarios", status_code=201)
-async def add_lab_usuario(
-    lab_id: int,
-    data: LabUsuarioCreate,
-    db=Depends(get_db_connection),
+@router.get("/{id}", response_model=LaboratorioResponse)
+async def get_laboratorio(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
     user=Depends(require_role("UP", "UC", "ADM")),
 ):
-    assoc_id = LaboratorioService(db).add_usuario(lab_id, data.usuario_id, data.papel, data.registro_crea)
-    return {"id": assoc_id}
+    return await LaboratorioService(db).get_by_id(id)
 
 
-@router.delete("/{lab_id}/usuarios/{assoc_id}")
-async def remove_lab_usuario(
-    lab_id: int,
-    assoc_id: int,
-    db=Depends(get_db_connection),
+@router.post("/", response_model=LaboratorioResponse)
+async def create_laboratorio(
+    data: LaboratorioCreate,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("ADM")),
+):
+    return await LaboratorioService(db).create(data)
+
+
+@router.put("/{id}", response_model=LaboratorioResponse)
+async def update_laboratorio(
+    id: int,
+    data: LaboratorioUpdate,
+    db: AsyncSession = Depends(get_db_session),
     user=Depends(require_role("UP", "ADM")),
 ):
-    LaboratorioService(db).remove_usuario(assoc_id)
-    return {"detail": "Associação removida"}
+    return await LaboratorioService(db).update(id, data)
 
 
-# ── Lab Phones ────────────────────────────────────────────────────────────────
-
-@router.get("/{lab_id}/telefones")
-async def list_lab_telefones(
-    lab_id: int,
-    db=Depends(get_db_connection),
-    user=Depends(get_current_user),
+@router.delete("/{id}")
+async def delete_laboratorio(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("ADM")),
 ):
-    return LaboratorioService(db).get_telefones(lab_id)
+    return await LaboratorioService(db).delete(id)
 
 
-@router.post("/{lab_id}/telefones", status_code=201)
-async def add_lab_telefone(
-    lab_id: int,
-    numero: str,
-    tipo: str = "COMERCIAL",
-    db=Depends(get_db_connection),
+@router.get("/{id}/usuarios")
+async def get_lab_usuarios(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UP", "ADM")),
+):
+    return await LaboratorioService(db).get_usuarios(id)
+
+
+@router.get("/{id}/telefones")
+async def get_lab_telefones(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
     user=Depends(require_role("UP", "UC", "ADM")),
 ):
-    tid = LaboratorioService(db).add_telefone(lab_id, numero, tipo)
-    return {"id": tid}
+    return await LaboratorioService(db).get_telefones(id)

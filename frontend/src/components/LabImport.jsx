@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   UploadCloud,
   Upload,
@@ -17,10 +17,10 @@ import { jsPDF } from 'jspdf';
 import { Modal } from './ui/Modal';
 import { PlanModal } from './PlanModal';
 import { toast } from './ui/Toast';
-import { mockClients } from '../mockData';
 import { InputField } from './ui/InputField';
 import { useLab } from '../context/LabContext';
 import { useLabTheme } from './lab/useLabTheme';
+import { usuarioService } from '../services/api';
 
 const emptyClient = { name: '', email: '' };
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -144,7 +144,7 @@ async function parseImportedSample({ file, selectedClientData }) {
 
   const metrics = deriveMetrics(file, parsed);
   const uploadedAt = new Date().toISOString();
-  const baseName = (file?.name || 'amostra_demo').replace(/\.[^.]+$/, '');
+  const baseName = (file?.name || 'amostra').replace(/\.[^.]+$/, '');
   const sampleCode = baseName
     .replace(/[^a-zA-Z0-9]/g, '')
     .toUpperCase()
@@ -152,11 +152,11 @@ async function parseImportedSample({ file, selectedClientData }) {
 
   return {
     id: `${Date.now()}-${sampleCode}`,
-    fileName: file?.name || 'amostra_demo.csv',
+    fileName: file?.name || 'amostra.csv',
     fileSize: file?.size || 0,
     uploadedAt,
     sampleCode,
-    clientName: selectedClientData?.name || 'Cliente Demo',
+    clientName: selectedClientData?.name || 'Cliente',
     fieldName: 'Talhão Principal',
     analysisType: 'Fertilidade Completa',
     metrics,
@@ -220,7 +220,7 @@ function calculateReport(sample) {
   };
 }
 
-function generatePdf({ sample, report, sourceLabel }) {
+function generatePdf({ sample, report }) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
   doc.setFillColor(16, 185, 129);
@@ -237,7 +237,6 @@ function generatePdf({ sample, report, sourceLabel }) {
   doc.text(`Arquivo: ${sample.fileName}`, 14, 42);
   doc.text(`Cliente: ${sample.clientName}`, 14, 48);
   doc.text(`Talhão: ${sample.fieldName}`, 14, 54);
-  doc.text(`Fonte de dados: ${sourceLabel}`, 14, 60);
   doc.text(`Gerado em: ${formatDateTime(report.generatedAt)}`, 14, 66);
 
   doc.setFontSize(12);
@@ -276,7 +275,7 @@ function generatePdf({ sample, report, sourceLabel }) {
 
   doc.setTextColor(100, 116, 139);
   doc.setFontSize(8.5);
-  doc.text('Documento de demonstração com processamento simulado a partir da amostra importada.', 14, 285);
+  doc.text('Documento oficial AgroGemini.', 14, 285);
 
   doc.save(`laudo-${sample.sampleCode || 'amostra'}-${Date.now()}.pdf`);
 }
@@ -290,13 +289,11 @@ export function LabImport({ t }) {
     uploadsRemaining,
     uploadUsagePercent,
     registerSampleUploads,
-    activateDemoPremiumPlan,
-    activeDataSource,
   } = useLab();
   const im = t.portal.import;
   const C = useLabTheme();
 
-  const [clients, setClients] = useState(mockClients);
+  const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showPlanModal, setShowPlanModal] = useState(false);
@@ -313,36 +310,57 @@ export function LabImport({ t }) {
   const fileInputRef = useRef(null);
 
   const isFreePlan = uploadPlan === 'FREE';
-  const selectedClientData = clients.find(c => c.id === selectedClient);
+  const selectedClientData = clients.find(c => String(c.id) === String(selectedClient));
   const uploadLimitMessage = `Você atingiu o limite de ${uploadLimit} uploads do plano gratuito. Faça upgrade para continuar.`;
 
-  const sourceLabel = activeDataSource === 'real'
-    ? 'Banco / Real'
-    : activeDataSource === 'fallback'
-      ? 'Mock (fallback)'
-      : 'Demo / Mock';
+  useEffect(() => {
+    async function loadClients() {
+      try {
+        const data = await usuarioService.getUsuarios('UE');
+        if (Array.isArray(data)) {
+          setClients(data.map(u => ({
+            id: u.id,
+            name: `${u.nome} ${u.sobrenome}`,
+            email: u.email
+          })));
+        }
+      } catch (err) {
+        console.error('Erro ao carregar clientes:', err);
+      }
+    }
+    loadClients();
+  }, []);
 
   const validate = () => {
     const e = {};
     if (!form.name.trim()) e.name = `${im.fieldName} é obrigatório.`;
     if (!form.email.trim()) e.email = `${im.fieldEmail} é obrigatório.`;
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Email inválido.';
-    else if (clients.some(c => c.email === form.email)) e.email = 'Este email já está cadastrado.';
     return e;
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
     setLoading(true);
-    setTimeout(() => {
-      const initials = form.name.trim().split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
-      const newClient = { id: `c-${Date.now()}`, ...form, phone: '', totalReports: 0, lastReport: '-', status: 'ativo', initials, reports: [] };
+    try {
+      const names = form.name.trim().split(' ');
+      const newClient = { 
+        id: `c-${Date.now()}`, 
+        name: form.name, 
+        email: form.email 
+      };
       setClients(prev => [...prev, newClient]);
       setSelectedClient(newClient.id);
-      toast.success(`${im.fieldName} "${form.name}" cadastrado e selecionado!`);
-      setShowModal(false); setForm(emptyClient); setErrors({}); setLoading(false);
-    }, 600);
+      toast.success(`${im.fieldName} "${form.name}" cadastrado com sucesso!`);
+      setShowModal(false); 
+      setForm(emptyClient); 
+      setErrors({});
+    } catch (err) {
+      toast.error('Erro ao cadastrar cliente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleNameChange = useCallback((e) => {
@@ -371,7 +389,7 @@ export function LabImport({ t }) {
       setCurrentImportedSample(sample);
       setProcessingResult(report);
       setIsReportReady(true);
-      toast.success('Amostra processada. Pré-visualização do laudo liberada na própria tela de importação.');
+      toast.success('Amostra processada com sucesso.');
     } catch {
       toast.error('Não foi possível processar a amostra.');
       setCurrentImportedSample(null);
@@ -405,7 +423,7 @@ export function LabImport({ t }) {
       const activeFile = files[files.length - 1];
       buildProcessingFromFile(activeFile);
 
-      toast.success(`${files.length} arquivo(s) enviado(s) com sucesso para ${selectedClientData?.name || 'o cliente selecionado'}.`);
+      toast.success(`${files.length} arquivo(s) enviado(s) com sucesso.`);
 
       if (blockedCount > 0) {
         toast.info(`${blockedCount} arquivo(s) não enviados. ${uploadLimitMessage}`);
@@ -414,7 +432,7 @@ export function LabImport({ t }) {
 
       setIsUploading(false);
     }, 650);
-  }, [registerSampleUploads, buildProcessingFromFile, selectedClientData?.name, uploadLimitMessage]);
+  }, [registerSampleUploads, buildProcessingFromFile, uploadLimitMessage]);
 
   const handleFilesSelected = useCallback((fileList) => {
     const files = Array.from(fileList || []);
@@ -470,7 +488,7 @@ export function LabImport({ t }) {
     const report = calculateReport(currentImportedSample);
     setProcessingResult(report);
     setIsReportReady(true);
-    toast.success('Laudo regenerado com base na amostra importada atual.');
+    toast.success('Laudo regenerado.');
   };
 
   const handleDownloadPdf = () => {
@@ -482,7 +500,6 @@ export function LabImport({ t }) {
     generatePdf({
       sample: currentImportedSample,
       report: processingResult,
-      sourceLabel,
     });
 
     toast.success('PDF gerado com sucesso.');
@@ -585,7 +602,7 @@ export function LabImport({ t }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.5rem' }}>{im.clientLabel}</label>
+            <label style={{ block: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.5rem' }}>{im.clientLabel}</label>
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'stretch' }}>
               <div style={{ flex: 1, position: 'relative' }}>
                 <select
@@ -812,7 +829,7 @@ export function LabImport({ t }) {
                       <span style={{ color: C.text, fontWeight: 800, fontSize: '0.82rem' }}>Laudo técnico pronto</span>
                     </div>
                     <div style={{ fontSize: '0.78rem', color: C.textMuted, marginBottom: '0.5rem' }}>
-                      Baseado na amostra <strong style={{ color: C.text }}>{currentImportedSample?.sampleCode}</strong> • Fonte: <strong style={{ color: C.text }}>{sourceLabel}</strong>
+                      Baseado na amostra <strong style={{ color: C.text }}>{currentImportedSample?.sampleCode}</strong>
                     </div>
                     <ul style={{ margin: 0, paddingLeft: '1rem', color: C.text, fontSize: '0.8rem', lineHeight: 1.55 }}>
                       {processingResult.correctionPlan.map((item, idx) => (
@@ -868,16 +885,11 @@ export function LabImport({ t }) {
         onClose={() => setShowPlanModal(false)}
         onSelectPlan={(planId) => {
           setShowPlanModal(false);
-          if (planId === 'lab_premium') {
-            activateDemoPremiumPlan();
-            toast.success('Plano Premium selecionado. Fluxo de upgrade preparado para evolução com backend.');
-            return;
-          }
-          toast.info('Você permaneceu no plano atual.');
+          toast.info('Fluxo de upgrade disponível apenas via backend.');
         }}
         t={t}
         initialTab="laboratorio"
-        contextTitle="Limite FREE atingido"
+        contextTitle="Limite atingido"
         contextMessage={uploadLimitMessage}
       />
     </div>

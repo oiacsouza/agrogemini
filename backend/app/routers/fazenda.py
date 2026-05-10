@@ -1,50 +1,63 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.database import get_db_connection
-from app.core.deps import get_current_user
-from app.schemas.fazenda import FazendaCreate, FazendaUpdate, FazendaUsuarioCreate
+from app.db.database import get_db_session
+from app.core.deps import require_role
+from app.schemas.fazenda import FazendaCreate, FazendaUpdate, FazendaResponse
 from app.services.fazenda_service import FazendaService
 
 router = APIRouter(prefix="/api/v1/fazendas", tags=["Fazendas"])
 
 
-@router.get("/")
-async def list_fazendas(db=Depends(get_db_connection), _=Depends(get_current_user)):
-    return FazendaService(db).get_all()
+@router.get("/", response_model=list[FazendaResponse])
+async def list_fazendas(
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "ADM")),
+):
+    return await FazendaService(db).get_all()
 
 
-@router.get("/{fazenda_id}")
-async def get_fazenda(fazenda_id: int, db=Depends(get_db_connection), _=Depends(get_current_user)):
-    return FazendaService(db).get_by_id(fazenda_id)
+@router.get("/{id}", response_model=FazendaResponse)
+async def get_fazenda(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "ADM")),
+):
+    return await FazendaService(db).get_by_id(id)
 
 
-@router.post("/", status_code=201)
-async def create_fazenda(data: FazendaCreate, db=Depends(get_db_connection), _=Depends(get_current_user)):
-    return FazendaService(db).create(data)
+@router.post("/", response_model=FazendaResponse)
+async def create_fazenda(
+    data: FazendaCreate,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "ADM")),
+):
+    return await FazendaService(db).create(data)
 
 
-@router.put("/{fazenda_id}")
-async def update_fazenda(fazenda_id: int, data: FazendaUpdate, db=Depends(get_db_connection), _=Depends(get_current_user)):
-    return FazendaService(db).update(fazenda_id, data)
+@router.put("/{id}", response_model=FazendaResponse)
+async def update_fazenda(
+    id: int,
+    data: FazendaUpdate,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "ADM")),
+):
+    return await FazendaService(db).update(id, data)
 
 
-@router.delete("/{fazenda_id}")
-async def delete_fazenda(fazenda_id: int, db=Depends(get_db_connection), _=Depends(get_current_user)):
-    FazendaService(db).delete(fazenda_id)
-    return {"detail": "Fazenda removida"}
+@router.delete("/{id}")
+async def delete_fazenda(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "ADM")),
+):
+    return await FazendaService(db).delete(id)
 
 
-@router.get("/{fazenda_id}/talhoes")
-async def list_talhoes(fazenda_id: int, db=Depends(get_db_connection), _=Depends(get_current_user)):
-    return FazendaService(db).get_talhoes(fazenda_id)
-
-
-@router.get("/{fazenda_id}/usuarios")
-async def list_fazenda_usuarios(fazenda_id: int, db=Depends(get_db_connection), _=Depends(get_current_user)):
-    return FazendaService(db).get_usuarios(fazenda_id)
-
-
-@router.post("/{fazenda_id}/usuarios", status_code=201)
-async def add_fazenda_usuario(fazenda_id: int, data: FazendaUsuarioCreate, db=Depends(get_db_connection), _=Depends(get_current_user)):
-    assoc_id = FazendaService(db).add_usuario(data)
-    return {"id": assoc_id}
+@router.get("/{id}/usuarios")
+async def get_fazenda_usuarios(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "ADM")),
+):
+    return await FazendaService(db).get_usuarios(id)
