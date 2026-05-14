@@ -65,6 +65,15 @@ async def update_laudo(
     return await LaudoService(db).update(id, data)
 
 
+@router.delete("/{id}")
+async def delete_laudo(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UP", "UC", "ADM")),
+):
+    return await LaudoService(db).delete(id)
+
+
 @router.get("/{id}/resultados")
 async def get_laudo_resultados(
     id: int,

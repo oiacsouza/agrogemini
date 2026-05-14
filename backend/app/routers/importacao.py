@@ -44,3 +44,12 @@ async def update_importacao(
     user=Depends(require_role("UP", "UC", "ADM")),
 ):
     return await ImportacaoService(db).update(id, data)
+
+
+@router.delete("/{id}")
+async def delete_importacao(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UP", "UC", "ADM")),
+):
+    return await ImportacaoService(db).delete(id)

@@ -34,10 +34,15 @@ class LaudoService:
 
     async def delete(self, lid: int):
         await self.get_by_id(lid)
-        return await self.repo.delete(lid)
+        success = await self.repo.delete(lid)
+        if not success:
+            raise HTTPException(status_code=500, detail="Não foi possível remover o laudo")
+        return {"detail": "Laudo removido com sucesso"}
 
     async def get_resultados(self, laudo_id: int):
         return await self.repo.get_resultados(laudo_id)
 
-    async def add_resultado(self, data):
-        return await self.repo.add_resultado(data)
+    async def add_resultado(self, laudo_id: int, data):
+        await self.get_by_id(laudo_id)
+        new_id = await self.repo.add_resultado(laudo_id, data)
+        return await self.repo.get_resultado_by_id(new_id)

@@ -3,10 +3,10 @@ import { FlaskConical, Search, ChevronRight, FileText } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { useLab } from '../../context/LabContext';
 import { useLabTheme } from './useLabTheme';
-import { usuarioService } from '../../services/api';
+import { laboratorioService } from '../../services/api';
 
 export function LabClients({ onViewProfile, t }) {
-  const { isDark } = useLab();
+  const { isDark, activeLab } = useLab();
   const C = useLabTheme();
   const c = t.portal.clients;
 
@@ -17,17 +17,18 @@ export function LabClients({ onViewProfile, t }) {
 
   useEffect(() => {
     async function loadClients() {
+      if (!activeLab?.id) return;
       setLoading(true);
       try {
-        const data = await usuarioService.getUsuarios('UE');
+        const data = await laboratorioService.getClientes(activeLab.id);
         if (Array.isArray(data)) {
           setClients(data.map(u => ({
             id: u.id,
             name: `${u.nome} ${u.sobrenome}`,
             email: u.email,
             phone: u.telefone || 'Sem contato',
-            totalReports: 5,
-            lastReport: '05/05/2026',
+            totalReports: u.total_laudos || 0,
+            lastReport: u.ultimo_laudo ? new Date(u.ultimo_laudo).toLocaleDateString('pt-BR') : '-',
             status: u.ativo === 'Y' ? 'ativo' : 'inativo',
             initials: `${u.nome?.[0] || ''}${u.sobrenome?.[0] || ''}`.toUpperCase(),
             reports: []
@@ -40,10 +41,12 @@ export function LabClients({ onViewProfile, t }) {
       }
     }
     loadClients();
-  }, []);
+  }, [activeLab]);
 
   const filtered = clients.filter(cl => {
-    const matchSearch = cl.name.toLowerCase().includes(search.toLowerCase()) || cl.email.toLowerCase().includes(search.toLowerCase());
+    const nameMatch = (cl.name || '').toLowerCase().includes(search.toLowerCase());
+    const emailMatch = (cl.email || '').toLowerCase().includes(search.toLowerCase());
+    const matchSearch = nameMatch || emailMatch;
     const matchStatus = filterStatus === 'todos' || cl.status === filterStatus;
     return matchSearch && matchStatus;
   });

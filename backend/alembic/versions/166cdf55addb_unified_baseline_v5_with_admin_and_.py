@@ -224,7 +224,7 @@ def upgrade() -> None:
     sa.Column('usuario_id', sa.Integer(), nullable=False),
     sa.Column('papel', sa.String(length=25), nullable=False),
     sa.Column('registro_crea', sa.String(length=30), nullable=True),
-    sa.CheckConstraint("papel IN ('TECNICO','GESTOR','RESPONSAVEL_TECNICO','ADMINISTRADOR')"),
+    sa.CheckConstraint("papel IN ('TECNICO','GESTOR','RESPONSAVEL_TECNICO','ADMINISTRADOR','CLIENTE')", name='CK_LAB_USUARIOS_PAPEL'),
     sa.ForeignKeyConstraint(['laboratorio_id'], ['laboratorios.id'], ),
     sa.ForeignKeyConstraint(['usuario_id'], ['usuarios.id'], ),
     sa.PrimaryKeyConstraint('id'),

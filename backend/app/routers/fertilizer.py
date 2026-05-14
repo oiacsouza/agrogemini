@@ -9,7 +9,7 @@ from app.services.fertilizer_parser import parse_fertilizer_machine_file
 from app.services.fertilizer_pdf import render_fertilizer_report_pdf
 from app.services.fertilizer_report import build_fertilizer_report_payload
 
-router = APIRouter(prefix="/fertilizers", tags=["fertilizers"])
+router = APIRouter(prefix="/api/v1/fertilizers", tags=["fertilizers"])
 
 
 @router.post("/preview", response_model=FertilizerPreviewResponse)

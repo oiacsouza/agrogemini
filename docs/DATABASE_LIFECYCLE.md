@@ -7,6 +7,13 @@ Este guia detalha os procedimentos para gerenciar o esquema e os dados do banco 
 ## 1. Reset Total do Banco
 Caso precise limpar todos os objetos do banco (tabelas, triggers, constraints) para começar do zero:
 
+**Linux / macOS:**
+```bash
+cd backend
+./venv/bin/python -m app.db.reset_db
+```
+
+**Windows (PowerShell):**
 ```powershell
 cd backend
 .\venv\Scripts\python.exe -m app.db.reset_db
@@ -21,12 +28,26 @@ Sempre que você alterar um modelo em `backend/app/models/*.py`, ou após um Res
 
 ### Passo A: Gerar Nova Migração
 O Alembic comparará seus modelos Python com o que existe no Oracle e gerará um arquivo de instrução.
+
+**Linux / macOS:**
+```bash
+./venv/bin/python -m alembic revision --autogenerate -m "Descricao da mudança"
+```
+
+**Windows (PowerShell):**
 ```powershell
 .\venv\Scripts\python.exe -m alembic revision --autogenerate -m "Descricao da mudança"
 ```
 
 ### Passo B: Aplicar no Oracle
 Efetiva a criação/alteração das tabelas no banco de dados.
+
+**Linux / macOS:**
+```bash
+./venv/bin/python -m alembic upgrade head
+```
+
+**Windows (PowerShell):**
 ```powershell
 .\venv\Scripts\python.exe -m alembic upgrade head
 ```
@@ -36,6 +57,12 @@ Efetiva a criação/alteração das tabelas no banco de dados.
 ## 3. População de Dados (Seed)
 Para carregar os planos, laboratórios, fazendas e os **usuários de teste** (Admin, Produtor, Técnico):
 
+**Linux / macOS:**
+```bash
+./venv/bin/python -m app.db.seed
+```
+
+**Windows (PowerShell):**
 ```powershell
 .\venv\Scripts\python.exe -m app.db.seed
 ```
@@ -44,6 +71,16 @@ Para carregar os planos, laboratórios, fazendas e os **usuários de teste** (Ad
 ---
 
 ## 4. Comandos de Verificação
+
+### Linux / macOS
+
+| Objetivo | Comando |
+| :--- | :--- |
+| Ver versão atual do banco | `./venv/bin/python -m alembic current` |
+| Ver histórico de migrations | `./venv/bin/python -m alembic history` |
+| Voltar uma versão (Downgrade) | `./venv/bin/python -m alembic downgrade -1` |
+
+### Windows (PowerShell)
 
 | Objetivo | Comando |
 | :--- | :--- |

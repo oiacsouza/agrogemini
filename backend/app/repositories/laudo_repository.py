@@ -60,6 +60,13 @@ class LaudoRepository:
         await self.session.commit()
         return result.rowcount > 0
 
+    async def delete(self, laudo_id: int) -> bool:
+        result = await self.session.execute(
+            delete(Laudo).where(Laudo.id == laudo_id)
+        )
+        await self.session.commit()
+        return result.rowcount > 0
+
     # ── Results Management ────────────────────────────────────────────────────
 
     async def get_resultados(self, laudo_id: int) -> Sequence[LaudoResultado]:
@@ -69,8 +76,14 @@ class LaudoRepository:
         return result.scalars().all()
 
     async def add_resultado(self, laudo_id: int, data: LaudoResultadoCreate) -> int:
-        new_res = LaudoResultado(laudo_id=laudo_id, **data.model_dump())
+        new_res = LaudoResultado(laudo_id=laudo_id, **data.model_dump(exclude={"laudo_id"}))
         self.session.add(new_res)
         await self.session.flush()
         await self.session.commit()
         return new_res.id
+
+    async def get_resultado_by_id(self, resultado_id: int) -> Optional[LaudoResultado]:
+        result = await self.session.execute(
+            select(LaudoResultado).where(LaudoResultado.id == resultado_id)
+        )
+        return result.scalar_one_or_none()

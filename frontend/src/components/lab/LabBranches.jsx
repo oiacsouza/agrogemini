@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Plus, Pencil, Trash2, MapPin, Users, FlaskConical } from 'lucide-react';
+import { Building2, Plus, Pencil, Trash2, MapPin, Mail, Hash } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Badge } from '../ui/Badge';
 import { toast } from '../ui/Toast';
@@ -7,7 +7,7 @@ import { useLab } from '../../context/LabContext';
 import { useLabTheme } from './useLabTheme';
 import { laboratorioService } from '../../services/api';
 
-const emptyForm = { name: '', city: '', state: '', manager: '' };
+const emptyForm = { name: '', city: '', state: '', email: '', cnpj: '', manager: '' };
 
 export function LabBranches({ t }) {
   const { isDark } = useLab();
@@ -20,6 +20,7 @@ export function LabBranches({ t }) {
   const [editTarget, setEditTarget] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     async function loadBranches() {
@@ -30,10 +31,12 @@ export function LabBranches({ t }) {
           setBranches(data.map(l => ({
             id: l.id,
             name: l.nome,
+            email: l.email,
+            cnpj: l.cnpj,
             city: l.cidade_endereco || 'Sede',
             state: 'GO',
-            employees: 12,
-            samples: 450,
+            employees: 0,
+            samples: 0,
             status: l.ativo === 'Y' ? 'ativa' : 'inativa'
           })));
         }
@@ -47,30 +50,88 @@ export function LabBranches({ t }) {
   }, []);
 
   const openCreate = () => { setEditTarget(null); setForm(emptyForm); setModal(true); };
-  const openEdit = (br) => { setEditTarget(br.id); setForm({ name: br.name, city: br.city, state: br.state, manager: br.manager }); setModal(true); };
-
-  const handleSave = () => {
-    if (!form.name.trim() || !form.city.trim()) { toast.error(`${b.fieldName} e ${b.fieldCity} são obrigatórios.`); return; }
-    if (editTarget) {
-      setBranches(prev => prev.map(br => br.id === editTarget ? { ...br, ...form } : br));
-      toast.success(`${b.title} atualizada!`);
-    } else {
-      setBranches(prev => [...prev, { id: `filial-${Date.now()}`, ...form, employees: 0, samples: 0, status: 'ativa' }]);
-      toast.success(`${b.title} cadastrada!`);
-    }
-    setModal(false);
+  const openEdit = (br) => { 
+    setEditTarget(br.id); 
+    setForm({ 
+      name: br.name, 
+      city: br.city, 
+      state: br.state, 
+      email: br.email || '', 
+      cnpj: br.cnpj || '', 
+      manager: br.manager || '' 
+    }); 
+    setModal(true); 
   };
 
-  const handleDelete = (id) => { setBranches(prev => prev.filter(br => br.id !== id)); setConfirmDelete(null); toast.success(`${b.title} removida.`); };
+  const handleSave = async () => {
+    const cnpjDigits = form.cnpj.replace(/\D/g, '');
+    if (!form.name.trim() || !form.email.trim() || !form.cnpj.trim()) { 
+      toast.error('Nome, Email e CNPJ são obrigatórios.'); 
+      return; 
+    }
+    if (cnpjDigits.length !== 14) {
+      toast.error('CNPJ deve ter 14 dígitos.');
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      const payload = {
+        nome: form.name,
+        email: form.email,
+        cnpj: cnpjDigits,
+        ativo: 'Y'
+      };
+
+      if (editTarget) {
+        const updated = await laboratorioService.update(editTarget, payload);
+        setBranches(prev => prev.map(br => br.id === editTarget ? { 
+          ...br, 
+          name: updated.nome, 
+          email: updated.email, 
+          cnpj: updated.cnpj,
+          status: updated.ativo === 'Y' ? 'ativa' : 'inativa'
+        } : br));
+        toast.success(`${b.title} atualizada!`);
+      } else {
+        const newLab = await laboratorioService.create(payload);
+        
+        setBranches(prev => [...prev, { 
+          id: newLab.id, 
+          name: newLab.nome, 
+          email: newLab.email,
+          cnpj: newLab.cnpj,
+          city: form.city || 'Sede', 
+          state: form.state || 'GO', 
+          employees: 0, 
+          samples: 0, 
+          status: newLab.ativo === 'Y' ? 'ativa' : 'inativa'
+        }]);
+        toast.success(`${b.title} cadastrada!`);
+      }
+      setModal(false);
+    } catch (err) {
+      console.error('Save error', err);
+      toast.error(err.detail || 'Erro ao salvar os dados.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await laboratorioService.delete(id);
+      setBranches(prev => prev.filter(br => br.id !== id));
+      toast.success(`${b.title} removida.`);
+    } catch (err) {
+      console.error('Delete error', err);
+      toast.error(err.detail || 'Erro ao remover. Verifique se existem dependências ativas.');
+    } finally {
+      setConfirmDelete(null); 
+    }
+  };
 
   const inputStyle = { width: '100%', border: `1px solid ${C.border}`, borderRadius: '0.5rem', padding: '0.5rem 0.75rem', fontSize: '0.875rem', outline: 'none', background: C.inputBg, color: C.text, boxSizing: 'border-box' };
-
-  const formFields = [
-    [`${b.fieldName} *`, 'name', 'Ex. Filial Campinas'],
-    [`${b.fieldCity} *`, 'city', 'Ex. Campinas'],
-    [b.fieldState, 'state', 'Ex. SP'],
-    [b.fieldManager, 'manager', 'Ex. João Silva'],
-  ];
 
   return (
     <div style={{ maxWidth: '200rem' }}>
@@ -103,8 +164,8 @@ export function LabBranches({ t }) {
                 </div>
                 <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8125rem', color: C.textMuted }}><MapPin size={13} />{br.city}, {br.state}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8125rem', color: C.textMuted }}><Users size={13} />{br.employees} {b.employees}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8125rem', color: C.textMuted }}><FlaskConical size={13} />{br.samples} {b.samples}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8125rem', color: C.textMuted }}><Mail size={13} />{br.email}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8125rem', color: C.textMuted }}><Hash size={13} />{br.cnpj}</span>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
@@ -123,15 +184,33 @@ export function LabBranches({ t }) {
 
       <Modal isOpen={modal} onClose={() => setModal(false)} title={editTarget ? b.editBranch : b.newBranch}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {formFields.map(([label, key, ph]) => (
-            <div key={key}>
-              <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>{label}</label>
-              <input value={form[key]} placeholder={ph} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} style={inputStyle} />
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>{b.fieldName} *</label>
+            <input value={form.name} placeholder="Ex. Filial Campinas" onChange={e => setForm(p => ({ ...p, name: e.target.value }))} style={inputStyle} />
+          </div>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>Email *</label>
+              <input value={form.email} type="email" placeholder="Ex. filial@lab.com" onChange={e => setForm(p => ({ ...p, email: e.target.value }))} style={inputStyle} />
             </div>
-          ))}
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>CNPJ *</label>
+              <input value={form.cnpj} placeholder="Ex. 00.000.000/0001-00" onChange={e => setForm(p => ({ ...p, cnpj: e.target.value }))} style={inputStyle} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>{b.fieldCity} *</label>
+              <input value={form.city} placeholder="Ex. Campinas" onChange={e => setForm(p => ({ ...p, city: e.target.value }))} style={inputStyle} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>{b.fieldState}</label>
+              <input value={form.state} placeholder="Ex. SP" onChange={e => setForm(p => ({ ...p, state: e.target.value }))} style={inputStyle} />
+            </div>
+          </div>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-            <button onClick={() => setModal(false)} style={{ padding: '0.5rem 1.25rem', border: `1px solid ${C.border}`, borderRadius: '0.5rem', background: C.surface, cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, color: C.textMuted }}>{b.cancel}</button>
-            <button onClick={handleSave} style={{ padding: '0.5rem 1.25rem', border: 'none', borderRadius: '0.5rem', background: '#10b981', color: 'white', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600 }}>{editTarget ? b.save : b.register}</button>
+            <button onClick={() => setModal(false)} disabled={saving} style={{ padding: '0.5rem 1.25rem', border: `1px solid ${C.border}`, borderRadius: '0.5rem', background: C.surface, cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontWeight: 500, color: C.textMuted }}>{b.cancel}</button>
+            <button onClick={handleSave} disabled={saving} style={{ padding: '0.5rem 1.25rem', border: 'none', borderRadius: '0.5rem', background: saving ? '#a7f3d0' : '#10b981', color: 'white', cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontWeight: 600 }}>{editTarget ? b.save : b.register}</button>
           </div>
         </div>
       </Modal>

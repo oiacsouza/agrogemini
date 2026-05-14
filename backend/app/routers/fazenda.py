@@ -61,3 +61,12 @@ async def get_fazenda_usuarios(
     user=Depends(require_role("UE", "ADM")),
 ):
     return await FazendaService(db).get_usuarios(id)
+
+
+@router.get("/{id}/talhoes")
+async def get_fazenda_talhoes(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "ADM")),
+):
+    return await FazendaService(db).get_talhoes(id)

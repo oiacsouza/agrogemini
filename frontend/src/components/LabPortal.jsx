@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+2import React, { useState, useRef, useEffect } from 'react';
 import {
   Leaf, LayoutDashboard, Upload, FileSpreadsheet,
   Search, Bell, Building2, Users, FlaskConical,
@@ -6,16 +6,16 @@ import {
 } from 'lucide-react';
 import { LabProvider, useLab } from '../context/LabContext';
 import { ToastContainer } from './ui/Toast';
-import { LabDashboard }      from './LabDashboard';
-import { LabImport }         from './LabImport';
-import { LabSamples }        from './LabSamples';
-import { LabSampleDetail }   from './LabSampleDetail';
-import { LabBranches }       from './lab/LabBranches';
-import { LabEmployees }      from './lab/LabEmployees';
-import { LabUsers }          from './lab/LabUsers';
-import { LabClients }        from './lab/LabClients';
-import { LabClientProfile }  from './lab/LabClientProfile';
-import { useLabTheme }       from './lab/useLabTheme';
+import { LabDashboard } from './LabDashboard';
+import { LabImport } from './LabImport';
+import { LabSamples } from './LabSamples';
+import { LabSampleDetail } from './LabSampleDetail';
+import { LabBranches } from './lab/LabBranches';
+import { LabEmployees } from './lab/LabEmployees';
+import { LabUsers } from './lab/LabUsers';
+import { LabClients } from './lab/LabClients';
+import { LabClientProfile } from './lab/LabClientProfile';
+import { useLabTheme } from './lab/useLabTheme';
 
 // ── Lab Switcher dropdown ────────────────────────────────────────────────────
 function LabSwitcher({ t }) {
@@ -33,7 +33,7 @@ function LabSwitcher({ t }) {
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
-      <button 
+      <button
         onClick={() => setOpen(!open)}
         style={{
           display: 'flex', alignItems: 'center', gap: '0.625rem',
@@ -49,7 +49,7 @@ function LabSwitcher({ t }) {
         </span>
         <ChevronDown size={14} color="#94a3b8" />
       </button>
-      
+
       {open && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, marginTop: '0.5rem',
@@ -113,17 +113,17 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
   }
 
   const menuItems = [
-    { id: 'dashboard', icon: LayoutDashboard, label: t.portal.menu.dashboard },
-    { id: 'import',    icon: Upload,          label: t.portal.menu.import },
-    { id: 'samples',   icon: FileSpreadsheet, label: t.portal.menu.samples },
-    { id: 'clients',   icon: FlaskConical,    label: t.portal.menu.clients },
-    { id: 'employees', icon: Users,           label: t.portal.menu.employees },
-    { id: 'branches',  icon: Building2,       label: t.portal.menu.branches },
+    { id: 'dashboard', icon: LayoutDashboard, label: t.portal.sidebar.dashboard },
+    { id: 'import', icon: Upload, label: t.portal.sidebar.importSample },
+    { id: 'samples', icon: FileSpreadsheet, label: t.portal.sidebar.samples },
+    { id: 'clients', icon: FlaskConical, label: t.portal.sidebar.clients },
+    { id: 'employees', icon: Users, label: t.portal.sidebar.employees },
+    { id: 'branches', icon: Building2, label: t.portal.sidebar.branches },
   ];
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: C.bg, color: C.text, fontFamily: 'Inter, sans-serif' }}>
-      
+
       {/* ── Sidebar ────────────────────────────────────────── */}
       <aside style={{ width: '17rem', background: C.surface, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh' }}>
         <div style={{ padding: '2rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -131,7 +131,7 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
             <Leaf color="white" size={20} />
           </div>
           <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.025em', color: C.text }}>AgroGemini</span>
-        </div>
+        </div>2
 
         <nav style={{ flex: 1, padding: '0 1rem' }}>
           <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: C.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '0 0.5rem 0.75rem' }}>Menu principal</div>
@@ -174,7 +174,7 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <header style={{ height: '5rem', background: C.surface, borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', position: 'sticky', top: 0, zIndex: 40 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-             {!isProducer && <LabSwitcher t={t} />}
+            {!isProducer && <LabSwitcher t={t} />}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -183,7 +183,7 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
               <input placeholder={t.portal.header.search} style={{ paddingLeft: '2.5rem', paddingRight: '1rem', paddingTop: '0.625rem', paddingBottom: '0.625rem', border: `1px solid ${C.border}`, borderRadius: '0.625rem', background: C.bgAlt, color: C.text, fontSize: '0.875rem', outline: 'none', width: '16rem' }} />
             </div>
 
-            <button 
+            <button
               onClick={() => {
                 const nextLang = lang === 'pt' ? 'en' : lang === 'en' ? 'es' : 'pt';
                 setLang(nextLang);
@@ -208,14 +208,14 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
         <main style={{ padding: '2rem', flex: 1 }}>
           <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
             {activeTab === 'dashboard' && <LabDashboard t={t} onNavigate={handleSetTab} />}
-            {activeTab === 'import'    && <LabImport t={t} />}
-            {activeTab === 'samples'   && <LabSamples t={t} onViewDetail={() => handleSetTab('sample-detail')} />}
+            {activeTab === 'import' && <LabImport t={t} />}
+            {activeTab === 'samples' && <LabSamples t={t} onViewDetail={() => handleSetTab('sample-detail')} />}
             {activeTab === 'sample-detail' && <LabSampleDetail t={t} />}
-            {activeTab === 'clients'   && <LabClients t={t} onViewProfile={(cl) => { setActiveClient(cl); handleSetTab('client-profile'); }} />}
+            {activeTab === 'clients' && <LabClients t={t} onViewProfile={(cl) => { setActiveClient(cl); handleSetTab('client-profile'); }} />}
             {activeTab === 'client-profile' && <LabClientProfile client={activeClient} t={t} onBack={() => handleSetTab('clients')} />}
             {activeTab === 'employees' && <LabEmployees t={t} />}
-            {activeTab === 'branches'  && <LabBranches t={t} />}
-            {activeTab === 'users'     && <LabUsers t={t} />}
+            {activeTab === 'branches' && <LabBranches t={t} />}
+            {activeTab === 'users' && <LabUsers t={t} />}
           </div>
         </main>
       </div>

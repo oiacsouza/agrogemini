@@ -121,6 +121,10 @@ export const translations = {
         sectionMain: "Principal",
         sectionManage: "Gestão"
       },
+      header: {
+        selectLab: "Selecionar Lab",
+        search: "Buscar..."
+      },
       topbar: {
         searchPlaceholder: "Procurar Amostras"
       },
@@ -427,6 +431,10 @@ export const translations = {
         clients: "Clients",
         sectionMain: "Main",
         sectionManage: "Management"
+      },
+      header: {
+        selectLab: "Select Lab",
+        search: "Search..."
       },
       topbar: {
         searchPlaceholder: "Search Samples"

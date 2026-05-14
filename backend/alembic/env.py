@@ -32,8 +32,10 @@ from app.models.permissoes import PermissaoSistema, UsuarioPermissao
 config = context.config
 
 # Dynamic database URL from settings
+# NOTE: Must use ?service_name= to avoid the driver treating it as a SID.
+_host_port, _service = settings.DB_DSN.rsplit("/", 1)
 DATABASE_URL = (
-    f"oracle+oracledb_async://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_DSN}"
+    f"oracle+oracledb_async://{settings.DB_USER}:{settings.DB_PASSWORD}@{_host_port}/?service_name={_service}"
 )
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 

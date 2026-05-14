@@ -192,6 +192,9 @@ export const laboratorioService = {
   removeUsuario:(labId, aid) => api.delete(`/api/v1/laboratorios/${labId}/usuarios/${aid}`),
   // Phones
   getTelefones: (labId)      => api.get(`/api/v1/laboratorios/${labId}/telefones`),
+  // Clients
+  getClientes:  (labId)      => api.get(`/api/v1/laboratorios/${labId}/clientes`),
+  addCliente:   (labId, data)=> api.post(`/api/v1/laboratorios/${labId}/clientes`, data),
 };
 
 // ── Fazendas ─────────────────────────────────────────────────────────────────

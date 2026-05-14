@@ -28,4 +28,7 @@ class ImportacaoService:
 
     async def delete(self, iid: int):
         await self.get_by_id(iid)
-        return await self.repo.delete(iid)
+        success = await self.repo.delete(iid)
+        if not success:
+            raise HTTPException(status_code=500, detail="Não foi possível remover a importação")
+        return {"detail": "Importação removida com sucesso"}

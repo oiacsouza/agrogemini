@@ -40,7 +40,7 @@ class LaboratorioUsuario(Base):
     id: Mapped[int] = mapped_column(Identity(start=1, cycle=False), primary_key=True)
     laboratorio_id: Mapped[int] = mapped_column(ForeignKey("laboratorios.id"), nullable=False)
     usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"), nullable=False)
-    papel: Mapped[str] = mapped_column(String(25), nullable=False) # TECNICO, GESTOR, RESPONSAVEL_TECNICO, ADMINISTRADOR
+    papel: Mapped[str] = mapped_column(String(25), nullable=False) # TECNICO, GESTOR, RESPONSAVEL_TECNICO, ADMINISTRADOR, CLIENTE
     registro_crea: Mapped[Optional[str]] = mapped_column(String(30))
 
     # Relationships
@@ -49,7 +49,10 @@ class LaboratorioUsuario(Base):
 
     __table_args__ = (
         UniqueConstraint("laboratorio_id", "usuario_id", "papel"),
-        CheckConstraint("papel IN ('TECNICO','GESTOR','RESPONSAVEL_TECNICO','ADMINISTRADOR')"),
+        CheckConstraint(
+            "papel IN ('TECNICO','GESTOR','RESPONSAVEL_TECNICO','ADMINISTRADOR','CLIENTE')",
+            name="CK_LAB_USUARIOS_PAPEL",
+        ),
     )
 
 class TelefoneLaboratorio(Base):

@@ -18,7 +18,8 @@ class EnderecoService:
         return e
 
     async def create(self, data):
-        return await self.repo.create(data)
+        new_id = await self.repo.create(data)
+        return await self.get_by_id(new_id)
 
     async def update(self, eid: int, data):
         await self.get_by_id(eid)

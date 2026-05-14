@@ -27,6 +27,11 @@ class LaboratorioService:
         new_id = await self.repo.create(data)
         return await self.get_by_id(new_id)
 
+    async def create_for_user(self, data, user_id: int, papel: str = "ADMINISTRADOR"):
+        lab = await self.create(data)
+        await self.add_usuario(lab.id, user_id, papel)
+        return lab
+
     async def update(self, lid: int, data):
         await self.get_by_id(lid)
         await self.repo.update(lid, data)
@@ -41,10 +46,10 @@ class LaboratorioService:
         return await self.repo.get_usuarios(lab_id)
 
     async def add_usuario(self, lab_id: int, usuario_id: int, papel: str, registro_crea=None):
-        return await self.repo.add_usuario(lab_id, usuario_id, papel, registro_crea)
+        return await self.repo.add_usuario(lab_id, usuario_id, papel)
 
-    async def remove_usuario(self, assoc_id: int):
-        return await self.repo.remove_usuario(assoc_id)
+    async def remove_usuario(self, lab_id: int, usuario_id: int):
+        return await self.repo.remove_usuario(lab_id, usuario_id)
 
     # Phones
     async def get_telefones(self, lab_id: int):
@@ -52,3 +57,11 @@ class LaboratorioService:
 
     async def add_telefone(self, lab_id: int, numero: str, tipo: str):
         return await self.repo.add_telefone(lab_id, numero, tipo)
+
+    # Clients
+    async def get_clientes(self, lab_id: int):
+        return await self.repo.get_clientes(lab_id)
+
+    async def add_cliente(self, lab_id: int, usuario_id: int):
+        await self.get_by_id(lab_id)
+        return await self.repo.add_cliente(lab_id, usuario_id)

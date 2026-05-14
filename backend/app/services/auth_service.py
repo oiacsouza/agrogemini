@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import hash_password, verify_password, create_access_token
 from app.repositories.usuario_repository import UsuarioRepository
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
+from app.models.laboratorio import Laboratorio, LaboratorioUsuario
 
 
 class AuthService:
@@ -73,6 +74,26 @@ class AuthService:
             ativo="Y",
             endereco_id=endereco_id,
         )
+
+        if tipo == "UP":
+            lab = Laboratorio(
+                nome=f"Laboratório {data.nome} {data.sobrenome}".strip(),
+                cnpj=f"9{user_id:013d}",
+                email=data.email,
+                ativo="Y",
+                acreditacao_iso17025="N",
+                endereco_id=endereco_id,
+            )
+            self.session.add(lab)
+            await self.session.flush()
+            self.session.add(
+                LaboratorioUsuario(
+                    laboratorio_id=lab.id,
+                    usuario_id=user_id,
+                    papel="ADMINISTRADOR",
+                )
+            )
+            await self.session.commit()
 
         token = create_access_token({"sub": str(user_id)})
         return TokenResponse(

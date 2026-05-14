@@ -58,22 +58,68 @@ export function LabEmployees({ t }) {
     return errs;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
+    if (!activeLab?.id) { toast.error('Nenhum laboratório selecionado.'); return; }
+    
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const parts = form.name.trim().split(' ');
+      const nome = parts[0];
+      const sobrenome = parts.slice(1).join(' ') || ' ';
+      
+      const payload = {
+        nome: nome,
+        sobrenome: sobrenome,
+        email: form.email,
+        papel: form.role || form.permission, // Fallback if role is empty
+        senha: 'changeme123' // Temporary default password for new users
+      };
+      
+      const res = await laboratorioService.addUsuario(activeLab.id, payload);
+      
       const initials = form.name.trim().split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
-      setEmployees(prev => [...prev, { id: `e-${Date.now()}`, ...form, initials, status: 'ativo' }]);
+      
+      // Assume the backend returns the created ID or we generate a temp one
+      const newId = res?.user_id || res?.id || `e-${Date.now()}`;
+      
+      setEmployees(prev => [...prev, { 
+        id: newId, 
+        name: form.name, 
+        role: form.role,
+        email: form.email,
+        permission: form.permission,
+        initials, 
+        status: 'ativo' 
+      }]);
+      
       toast.success(`${e.title} cadastrado!`);
-      setModal(false); setForm(emptyForm); setErrors({}); setLoading(false);
-    }, 600);
+      setModal(false); 
+      setForm(emptyForm); 
+      setErrors({}); 
+    } catch (err) {
+      console.error('Save employee error:', err);
+      const msg = err.detail || 'Erro ao cadastrar funcionário.';
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = (id) => {
-    setEmployees(prev => prev.filter(emp => emp.id !== id));
-    setConfirmDelete(null);
-    toast.success(`${e.title} removido.`);
+  const handleDelete = async (id) => {
+    if (!activeLab?.id) return;
+    
+    try {
+      await laboratorioService.removeUsuario(activeLab.id, id);
+      setEmployees(prev => prev.filter(emp => emp.id !== id));
+      toast.success(`${e.title} removido.`);
+    } catch (err) {
+      console.error('Delete employee error:', err);
+      toast.error('Erro ao remover funcionário.');
+    } finally {
+      setConfirmDelete(null);
+    }
   };
 
   const handleNameChange = useCallback((ev) => {

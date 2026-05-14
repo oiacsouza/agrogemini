@@ -20,7 +20,7 @@ import { toast } from './ui/Toast';
 import { InputField } from './ui/InputField';
 import { useLab } from '../context/LabContext';
 import { useLabTheme } from './lab/useLabTheme';
-import { usuarioService } from '../services/api';
+import { laboratorioService } from '../services/api';
 
 const emptyClient = { name: '', email: '' };
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -283,6 +283,7 @@ function generatePdf({ sample, report }) {
 export function LabImport({ t }) {
   const {
     isDark,
+    activeLab,
     uploadPlan,
     uploadLimit,
     uploadsUsed,
@@ -315,8 +316,9 @@ export function LabImport({ t }) {
 
   useEffect(() => {
     async function loadClients() {
+      if (!activeLab?.id) return;
       try {
-        const data = await usuarioService.getUsuarios('UE');
+        const data = await laboratorioService.getClientes(activeLab.id);
         if (Array.isArray(data)) {
           setClients(data.map(u => ({
             id: u.id,
@@ -329,7 +331,7 @@ export function LabImport({ t }) {
       }
     }
     loadClients();
-  }, []);
+  }, [activeLab]);
 
   const validate = () => {
     const e = {};
@@ -342,13 +344,19 @@ export function LabImport({ t }) {
   const handleRegister = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
+    if (!activeLab?.id) { toast.error('Nenhum laboratório selecionado.'); return; }
     setLoading(true);
     try {
       const names = form.name.trim().split(' ');
+      const created = await laboratorioService.addCliente(activeLab.id, {
+        nome: names[0],
+        sobrenome: names.slice(1).join(' ') || ' ',
+        email: form.email,
+      });
       const newClient = { 
-        id: `c-${Date.now()}`, 
-        name: form.name, 
-        email: form.email 
+        id: created.id, 
+        name: `${created.nome} ${created.sobrenome}`.trim(), 
+        email: created.email 
       };
       setClients(prev => [...prev, newClient]);
       setSelectedClient(newClient.id);
@@ -357,7 +365,7 @@ export function LabImport({ t }) {
       setForm(emptyClient); 
       setErrors({});
     } catch (err) {
-      toast.error('Erro ao cadastrar cliente.');
+      toast.error(err.detail || 'Erro ao cadastrar cliente.');
     } finally {
       setLoading(false);
     }

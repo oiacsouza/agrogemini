@@ -9,10 +9,10 @@ class ImportacaoRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_all(self, lab_id: int | None = None) -> Sequence[Importacao]:
+    async def get_all(self, lab_id: int | None = None, limit: int = 100) -> Sequence[Importacao]:
         stmt = select(Importacao)
         if lab_id: stmt = stmt.where(Importacao.laboratorio_id == lab_id)
-        result = await self.session.execute(stmt.order_by(Importacao.criado_em.desc()))
+        result = await self.session.execute(stmt.order_by(Importacao.criado_em.desc()).limit(limit))
         return result.scalars().all()
 
     async def get_by_id(self, id: int) -> Optional[Importacao]:
@@ -30,5 +30,10 @@ class ImportacaoRepository:
         update_data = data.model_dump(exclude_unset=True)
         if not update_data: return False
         result = await self.session.execute(update(Importacao).where(Importacao.id == id).values(**update_data))
+        await self.session.commit()
+        return result.rowcount > 0
+
+    async def delete(self, id: int) -> bool:
+        result = await self.session.execute(delete(Importacao).where(Importacao.id == id))
         await self.session.commit()
         return result.rowcount > 0

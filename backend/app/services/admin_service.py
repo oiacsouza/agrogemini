@@ -1,4 +1,4 @@
-from sqlalchemy import select, func, text
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.usuario_repository import UsuarioRepository
@@ -22,20 +22,20 @@ class AdminService:
         total_lab_free = await self.user_repo.count_by_tipo("UC")
 
         # Count total amostras
-        res_amostras = await self.session.execute(select(func.count()).select_from(text("amostras")))
-        total_amostras = res_amostras.scalar()
+        res_amostras = await self.session.execute(text("SELECT COUNT(*) FROM amostras"))
+        total_amostras = res_amostras.scalar() or 0
 
         # Count total laudos
-        res_laudos = await self.session.execute(select(func.count()).select_from(text("laudos")))
-        total_laudos = res_laudos.scalar()
+        res_laudos = await self.session.execute(text("SELECT COUNT(*) FROM laudos"))
+        total_laudos = res_laudos.scalar() or 0
 
         # Count total labs
-        res_labs = await self.session.execute(select(func.count()).select_from(text("laboratorios")))
-        total_laboratorios = res_labs.scalar()
+        res_labs = await self.session.execute(text("SELECT COUNT(*) FROM laboratorios"))
+        total_laboratorios = res_labs.scalar() or 0
 
         # Count total fazendas
-        res_fazendas = await self.session.execute(select(func.count()).select_from(text("fazendas")))
-        total_fazendas = res_fazendas.scalar()
+        res_fazendas = await self.session.execute(text("SELECT COUNT(*) FROM fazendas"))
+        total_fazendas = res_fazendas.scalar() or 0
 
         return {
             "total_usuarios": total_usuarios,

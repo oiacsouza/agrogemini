@@ -79,6 +79,7 @@ class LaudoResultadoBase(BaseModel):
 
 
 class LaudoResultadoCreate(LaudoResultadoBase):
+    laudo_id: Optional[int] = None
     configuracao_id: Optional[int] = None
     unidade: Optional[str] = None
     garantia: Optional[str] = None

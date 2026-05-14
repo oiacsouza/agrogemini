@@ -6,9 +6,11 @@ from sqlalchemy import event, text
 
 from app.core.config import settings
 
-# Connection URL: oracle+oracledb_async://user:password@dsn
+# Connection URL: oracle+oracledb_async://user:password@host:port/?service_name=xxx
+# NOTE: The DSN must use ?service_name= to avoid the driver treating it as a SID.
+_host_port, _service = settings.DB_DSN.rsplit("/", 1)
 DATABASE_URL = (
-    f"oracle+oracledb_async://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_DSN}"
+    f"oracle+oracledb_async://{settings.DB_USER}:{settings.DB_PASSWORD}@{_host_port}/?service_name={_service}"
 )
 
 # Async Engine configuration
