@@ -1,0 +1,7 @@
+Name                             Stmts   Miss  Cover   Missing
+--------------------------------------------------------------
+app/routers/laboratorio.py          89     89     0%   1-209
+app/services/access_control.py      65     29    55%   21, 24, 43, 47, 51-55, 60-62, 70, 79-97
+app/services/auth_service.py        44     24    45%   18, 21, 24, 45-101
+--------------------------------------------------------------
+TOTAL                              198    142    28%

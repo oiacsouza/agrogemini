@@ -49,13 +49,15 @@ class UsuarioRepository:
             email=user_data.email,
             senha_hash=hashed,
             tipo_usuario=user_data.tipo_usuario,
-            ativo=user_data.ativo,
+            ativo=user_data.ativo or "Y",
+            plano_ativo="FREE",
             endereco_id=getattr(user_data, "endereco_id", None)
         )
         self.session.add(new_user)
-        await self.session.flush() # To get the ID
+        await self.session.flush()
         await self.session.commit()
         return new_user.id
+
 
     async def create_raw(self, nome, sobrenome, email, senha_hash, tipo_usuario, ativo, endereco_id=None) -> int:
         new_user = Usuario(

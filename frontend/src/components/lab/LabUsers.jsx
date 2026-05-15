@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Users, Plus, Trash2, Edit } from 'lucide-react';
+import { Users, Plus, Trash2, Edit, Loader2 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Badge } from '../ui/Badge';
 import { toast } from '../ui/Toast';
@@ -10,10 +10,10 @@ import { usuarioService } from '../../services/api';
 
 const emptyForm = { nome: '', sobrenome: '', email: '', senha: '', tipo_usuario: 'UC', ativo: 'Y' };
 const PERMISSIONS = [
-  { value: 'ADM', label: 'Admin' },
-  { value: 'UE',  label: 'Usuário Empresa' },
-  { value: 'UP',  label: 'Usuário Produtor' },
-  { value: 'UC',  label: 'Usuário Comum' }
+  { value: 'ADM', label: 'Administrador' },
+  { value: 'UE',  label: 'Produtor (Cliente)' },
+  { value: 'UP',  label: 'Laboratório Premium' },
+  { value: 'UC',  label: 'Laboratório Free / Funcionário' }
 ];
 
 export function LabUsers({ t }) {
@@ -26,15 +26,19 @@ export function LabUsers({ t }) {
   const [isEdit, setIsEdit] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [loadingList, setLoadingList] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
-  // Load Users from API
   const fetchUsers = useCallback(async () => {
+    setLoadingList(true);
     try {
       const data = await usuarioService.getAll();
-      setUsers(data);
+      setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
+      console.error(err);
       toast.error('Erro ao buscar usuários.');
+    } finally {
+      setLoadingList(false);
     }
   }, []);
 
@@ -44,9 +48,8 @@ export function LabUsers({ t }) {
 
   const validate = () => {
     const errs = {};
-    if (!form.nome.trim()) errs.nome = 'Nome é obrigatório.';
-    if (!form.sobrenome.trim()) errs.sobrenome = 'Sobrenome é obrigatório.';
-    if (!form.email.trim()) errs.email = 'Email é obrigatório.';
+    if (!form.nome?.trim()) errs.nome = 'Nome é obrigatório.';
+    if (!form.email?.trim()) errs.email = 'Email é obrigatório.';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Email inválido.';
     
     if (!isEdit && !form.senha) {
@@ -55,17 +58,16 @@ export function LabUsers({ t }) {
     return errs;
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    if (e) e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     
     setLoading(true);
     try {
       if (isEdit) {
-        // Se a senha estiver em branco na edição, não enviar
         const payload = { ...form };
         if (!payload.senha) delete payload.senha;
-        
         await usuarioService.update(form.id, payload);
         toast.success('Usuário atualizado!');
       } else {
@@ -94,28 +96,34 @@ export function LabUsers({ t }) {
     }
   };
 
-  const openNew = () => {
+  const openNew = (e) => {
+    if (e) e.preventDefault();
     setForm(emptyForm);
     setIsEdit(false);
     setErrors({});
     setModal(true);
   };
 
-  const openEdit = (user) => {
+  const openEdit = (e, user) => {
+    if (e) e.preventDefault();
     setForm({ ...user, senha: '' });
     setIsEdit(true);
     setErrors({});
     setModal(true);
   };
 
+  const getInitials = (u) => {
+    return `${u.nome?.[0] || ''}${u.sobrenome?.[0] || ''}`.toUpperCase() || '?';
+  };
+
   return (
-    <div style={{ maxWidth: '200rem' }}>
+    <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Users size={20} color="#10b981" />
           <div>
-            <h3 style={{ fontWeight: 700, fontSize: '1.125rem', color: C.text, margin: 0 }}>Gerenciamento de Usuários</h3>
-            <p style={{ fontSize: '0.75rem', color: C.textMuted, margin: 0 }}>{users.length} cadastrados</p>
+            <h3 style={{ fontWeight: 700, fontSize: '1.125rem', color: C.text, margin: 0 }}>Gerenciamento de Usuários (Pessoas)</h3>
+            <p style={{ fontSize: '0.75rem', color: C.textMuted, margin: 0 }}>{users.length} usuários cadastrados no sistema</p>
           </div>
         </div>
         <button
@@ -130,42 +138,45 @@ export function LabUsers({ t }) {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${C.border}`, background: C.bgAlt }}>
-              {['Nome', 'Email', 'Tipo', 'Criado em', 'Ações'].map(h => (
+              {['Nome', 'Email', 'Tipo', 'Status', 'Criado em', 'Ações'].map(h => (
                 <th key={h} style={{ padding: '0.875rem 1.25rem', textAlign: 'left', fontSize: '0.6875rem', fontWeight: 800, color: C.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {users.map(u => (
+            {loadingList ? (
+               <tr><td colSpan={6} style={{ padding: '3rem', textAlign: 'center' }}><Loader2 size={24} className="animate-spin" style={{ margin: '0 auto', color: '#10b981' }} /></td></tr>
+            ) : users.map(u => (
               <tr key={u.id} style={{ borderBottom: `1px solid ${C.border}` }}
                 onMouseEnter={ev => ev.currentTarget.style.background = C.bgAlt}
                 onMouseLeave={ev => ev.currentTarget.style.background = 'transparent'}>
                 <td style={{ padding: '1rem 1.25rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '9999px', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>
-                      {u.nome[0]}{u.sobrenome[0]}
+                      {getInitials(u)}
                     </div>
                     <span style={{ fontWeight: 600, fontSize: '0.875rem', color: C.text }}>{u.nome} {u.sobrenome}</span>
                   </div>
                 </td>
                 <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem', color: C.textMuted }}>{u.email}</td>
-                <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem', color: C.textMuted }}>{u.tipo_usuario}</td>
-                <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem', color: C.textMuted }}>{new Date(u.criado_em).toLocaleDateString()}</td>
+                <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem' }}><Badge type={u.tipo_usuario} t={t} /></td>
+                <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem' }}><Badge type={u.ativo === 'Y' ? 'ativo' : 'inativa'} t={t} /></td>
+                <td style={{ padding: '1rem 1.25rem', fontSize: '0.875rem', color: C.textMuted }}>{u.criado_em ? new Date(u.criado_em).toLocaleDateString() : '-'}</td>
                 <td style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                    <button onClick={() => openEdit(u)} style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: '0.5rem', padding: '0.4rem 0.6rem', cursor: 'pointer', display: 'inline-flex', color: C.text }}>
+                    <button onClick={(e) => openEdit(e, u)} style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: '0.5rem', padding: '0.4rem 0.6rem', cursor: 'pointer', display: 'inline-flex', color: C.text }}>
                       <Edit size={14} />
                     </button>
-                    <button onClick={() => setConfirmDelete(u.id)} style={{ background: C.dangerBg, border: `1px solid ${C.dangerBorder}`, borderRadius: '0.5rem', padding: '0.4rem 0.6rem', cursor: 'pointer', display: 'inline-flex', color: '#ef4444' }}>
+                    <button onClick={(e) => { e.preventDefault(); setConfirmDelete(u.id); }} style={{ background: C.dangerBg, border: `1px solid ${C.border}`, borderRadius: '0.5rem', padding: '0.4rem 0.6rem', cursor: 'pointer', display: 'inline-flex', color: '#ef4444' }}>
                       <Trash2 size={14} />
                     </button>
                   </div>
                 </td>
               </tr>
             ))}
-            {users.length === 0 && (
+            {!loadingList && users.length === 0 && (
                 <tr>
-                    <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: C.textMuted, fontSize: '0.875rem' }}>Nenhum usuário encontrado.</td>
+                    <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: C.textMuted, fontSize: '0.875rem' }}>Nenhum usuário encontrado.</td>
                 </tr>
             )}
           </tbody>
@@ -173,7 +184,7 @@ export function LabUsers({ t }) {
       </div>
 
       <Modal isOpen={modal} onClose={() => setModal(false)} title={isEdit ? 'Editar Usuário' : 'Novo Usuário'}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <div style={{ flex: 1 }}>
               <InputField
@@ -183,7 +194,7 @@ export function LabUsers({ t }) {
             </div>
             <div style={{ flex: 1 }}>
               <InputField
-                label="Sobrenome *" placeholder="Ex. Matos"
+                label="Sobrenome" placeholder="Ex. Matos"
                 value={form.sobrenome} onChange={(e) => setForm({...form, sobrenome: e.target.value})} error={errors.sobrenome}
               />
             </div>
@@ -193,7 +204,7 @@ export function LabUsers({ t }) {
             value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} error={errors.email}
           />
           <InputField
-            label={isEdit ? "Nova Senha (opcional)" : "Senha *"} type="password" placeholder="******"
+            label={isEdit ? "Nova Senha (deixe em branco para não alterar)" : "Senha *"} type="password" placeholder="******"
             value={form.senha} onChange={(e) => setForm({...form, senha: e.target.value})} error={errors.senha}
           />
           <div>
@@ -211,13 +222,13 @@ export function LabUsers({ t }) {
             </select>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-            <button onClick={() => setModal(false)} style={{ padding: '0.5rem 1.25rem', border: `1px solid ${C.border}`, borderRadius: '0.5rem', background: C.surface, cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, color: C.textMuted }}>Cancelar</button>
-            <button onClick={handleSave} disabled={loading}
+            <button type="button" onClick={() => setModal(false)} style={{ padding: '0.5rem 1.25rem', border: `1px solid ${C.border}`, borderRadius: '0.5rem', background: C.surface, cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, color: C.textMuted }}>Cancelar</button>
+            <button type="submit" disabled={loading}
               style={{ padding: '0.5rem 1.25rem', border: 'none', borderRadius: '0.5rem', background: loading ? '#a7f3d0' : '#10b981', color: 'white', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontWeight: 600 }}>
               {loading ? 'Salvando...' : 'Salvar'}
             </button>
           </div>
-        </div>
+        </form>
       </Modal>
 
       <Modal isOpen={!!confirmDelete} onClose={() => setConfirmDelete(null)} title="Confirmar Exclusão" width="24rem">

@@ -267,7 +267,7 @@ export function AdminDashboard({ t, onLogout, onNavigateAs }) {
               {[
                 { label: 'Visualizar Portal do Laboratório', desc: 'Acessar como supervisor', icon: FlaskConical, color: '#6366f1', action: 'lab' },
                 { label: 'Visualizar Portal do Produtor', desc: 'Acessar como supervisor', icon: Leaf, color: '#10b981', action: 'farmer' },
-                { label: 'Gerenciar Usuários', desc: 'Lista completa de usuários', icon: Users, color: '#f59e0b', action: 'users' },
+                { label: 'Gerenciar Usuários (Pessoas)', desc: 'Lista completa de todos os perfis', icon: Users, color: '#f59e0b', action: 'users' },
               ].map((item, i) => (
                 <button
                   key={i}

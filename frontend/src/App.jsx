@@ -131,23 +131,38 @@ function App() {
   }
 
   // ── Admin Dashboard ─────────────────────────────────────────────────────
-  if (currentView === 'admin') {
+  if (currentView === 'admin' || currentView === 'admin/users') {
     return (
       <AuthGuard
         requiredRoles={['ADM']}
         onUnauthorized={() => navigate('login')}
       >
-        <AdminDashboard
-          t={t}
-          onLogout={handleLogout}
-          onNavigateAs={(target) => {
-            if (target === 'lab') {
-              navigate('lab');
-            } else if (target === 'farmer') {
-              navigate('produtor');
-            }
-          }}
-        />
+        {currentView === 'admin/users' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f172a' }}>
+            <div style={{ padding: '1rem 2rem', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+               <button onClick={() => navigate('admin')} style={{ color: '#10b981', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>← Voltar ao Painel</button>
+               <h2 style={{ color: '#fff', margin: 0, fontSize: '1.25rem' }}>Gerenciar Usuários (Pessoas)</h2>
+               <div />
+            </div>
+            <div style={{ flex: 1, overflow: 'auto', padding: '2rem' }}>
+               <LabUsers t={t} />
+            </div>
+          </div>
+        ) : (
+          <AdminDashboard
+            t={t}
+            onLogout={handleLogout}
+            onNavigateAs={(target) => {
+              if (target === 'lab') {
+                navigate('lab');
+              } else if (target === 'farmer') {
+                navigate('produtor');
+              } else if (target === 'users') {
+                navigate('admin/users');
+              }
+            }}
+          />
+        )}
       </AuthGuard>
     );
   }

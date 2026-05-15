@@ -1,0 +1,17 @@
+🚀 AgroGemini Automated Test Suite
+====================================
+
+--- INICIANDO TESTE DE AUTENTICAÇÃO E HIERARQUIA ---
+Testando Login Admin (admin@agrogemini.com)...
+✅ Login Admin OK. Token gerado: eyJhbGciOiJIUzI1NiIs...
+
+Testando Visibilidade de Laboratórios para Usuário ID 2 (Gestor Lab Premium)...
+✅ Laboratórios visíveis para Usuário 2: ['Laboratorio de Analises 1', 'Laboratorio de Analises 11', 'Laboratorio de Analises 13', 'Laboratorio de Analises 15', 'Laboratorio de Analises 17', 'Laboratorio de Analises 19', 'Laboratorio de Analises 3', 'Laboratorio de Analises 5', 'Laboratorio de Analises 7', 'Laboratorio de Analises 9', 'RYAN ZUCCHI DOS PASSOS AMORIM']
+✅ Hierarquia OK. Usuário consegue ver sua matriz e filiais descendentes.
+
+--- INICIANDO TESTE DE INTEGRIDADE DE DADOS ---
+Testando restrição de e-mail duplicado...
+✅ Sucesso: O banco bloqueou e-mail duplicado conforme esperado. (Erro: ORA-00001 ou IntegrityError)
+
+====================================
+🏁 Testes concluídos.

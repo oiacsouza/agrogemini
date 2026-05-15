@@ -134,7 +134,7 @@ class LaboratorioService:
                 .where(LaboratorioUsuario.usuario_id == user.id)
                 .where(LaboratorioUsuario.papel == "CLIENTE")
             )
-            if existing_link.scalar_one_or_none() is None:
+            if existing_link.first() is None:
                 self.session.add(
                     LaboratorioUsuario(
                         laboratorio_id=lab_id,
