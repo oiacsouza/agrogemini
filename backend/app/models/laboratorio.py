@@ -15,6 +15,9 @@ class Laboratorio(Base):
     id: Mapped[int] = mapped_column(Identity(start=1, cycle=False), primary_key=True)
     nome: Mapped[str] = mapped_column(String(150), nullable=False)
     cnpj: Mapped[str] = mapped_column(String(14), unique=True, nullable=False)
+    usuario_id: Mapped[Optional[int]] = mapped_column(ForeignKey("usuarios.id"))
+    laboratorio_pai_id: Mapped[Optional[int]] = mapped_column(ForeignKey("laboratorios.id"))
+    tipo_unidade: Mapped[str] = mapped_column(String(10), default="MATRIZ", nullable=False)
     endereco_id: Mapped[Optional[int]] = mapped_column(ForeignKey("enderecos.id"))
     email: Mapped[str] = mapped_column(String(254), unique=True, nullable=False)
     ativo: Mapped[str] = mapped_column(CHAR(1), default="Y", nullable=False)
@@ -25,6 +28,8 @@ class Laboratorio(Base):
 
     # Relationships
     endereco: Mapped[Optional["Endereco"]] = relationship()
+    usuario: Mapped[Optional["Usuario"]] = relationship(foreign_keys=[usuario_id])
+    laboratorio_pai: Mapped[Optional["Laboratorio"]] = relationship(remote_side=[id])
     telefones: Mapped[list["TelefoneLaboratorio"]] = relationship(back_populates="laboratorio", cascade="all, delete-orphan")
     equipe: Mapped[list["LaboratorioUsuario"]] = relationship(back_populates="laboratorio", cascade="all, delete-orphan")
 
@@ -32,6 +37,7 @@ class Laboratorio(Base):
         CheckConstraint("REGEXP_LIKE(cnpj, '^[0-9]{14}$')"),
         CheckConstraint("ativo IN ('Y','N')"),
         CheckConstraint("acreditacao_iso17025 IN ('Y','N')"),
+        CheckConstraint("tipo_unidade IN ('MATRIZ','FILIAL')"),
     )
 
 class LaboratorioUsuario(Base):

@@ -80,6 +80,8 @@ class AuthService:
                 nome=f"Laboratório {data.nome} {data.sobrenome}".strip(),
                 cnpj=f"9{user_id:013d}",
                 email=data.email,
+                usuario_id=user_id,
+                tipo_unidade="MATRIZ",
                 ativo="Y",
                 acreditacao_iso17025="N",
                 endereco_id=endereco_id,

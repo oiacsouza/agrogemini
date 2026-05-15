@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { authService } from '../services/api';
 
+function normalizeUserType(value) {
+  return String(value || '').trim().toUpperCase();
+}
+
 /**
  * AuthGuard — wraps components that require authentication.
  *
@@ -13,22 +17,39 @@ export function AuthGuard({ children, requiredRoles, onUnauthorized, fallback })
   const [status, setStatus] = useState('loading'); // loading | authorized | unauthorized
 
   useEffect(() => {
-    // Check authentication
-    if (!authService.isAuthenticated()) {
-      setStatus('unauthorized');
-      return;
-    }
+    let cancelled = false;
 
-    // Check role if requiredRoles specified
-    if (requiredRoles && requiredRoles.length > 0) {
-      const user = authService.getUser();
-      if (!user || !requiredRoles.includes(user.tipo_usuario)) {
+    async function verifyAccess() {
+      setStatus('loading');
+
+      if (!authService.isAuthenticated()) {
         setStatus('unauthorized');
         return;
       }
+
+      try {
+        const user = await authService.validateSession();
+        if (cancelled) return;
+
+        if (requiredRoles && requiredRoles.length > 0) {
+          const userRole = normalizeUserType(user?.tipo_usuario);
+          const allowedRoles = requiredRoles.map(normalizeUserType);
+          if (!user || !allowedRoles.includes(userRole)) {
+            setStatus('unauthorized');
+            return;
+          }
+        }
+
+        setStatus('authorized');
+      } catch {
+        if (cancelled) return;
+        authService.clearSession();
+        setStatus('unauthorized');
+      }
     }
 
-    setStatus('authorized');
+    verifyAccess();
+    return () => { cancelled = true; };
   }, [requiredRoles]);
 
   if (status === 'loading') {

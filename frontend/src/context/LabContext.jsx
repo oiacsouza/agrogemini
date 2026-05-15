@@ -230,6 +230,7 @@ export function LabProvider({ children }) {
   const [activeStats, setActiveStats] = useState(defaultStats);
   const [activeSamples, setActiveSamples] = useState([]);
   const [statsLoading, setStatsLoading] = useState(false);
+  const [selectedSampleId, setSelectedSampleId] = useState(null);
 
   // ── Theme ───────────────────────────────────────────────────────────────────
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -489,6 +490,9 @@ export function LabProvider({ children }) {
       activeSamples,
       statsLoading,
       refreshDashboard,
+      // Sample detail selection
+      selectedSampleId,
+      setSelectedSampleId,
       // New plan-related values
       userPlan,
       isProducer,

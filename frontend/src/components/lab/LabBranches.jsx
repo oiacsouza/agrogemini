@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Plus, Pencil, Trash2, MapPin, Mail, Hash } from 'lucide-react';
+import { Building2, Plus, Pencil, Trash2, MapPin, Mail, Hash, Loader2 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Badge } from '../ui/Badge';
 import { toast } from '../ui/Toast';
@@ -10,7 +10,7 @@ import { laboratorioService } from '../../services/api';
 const emptyForm = { name: '', city: '', state: '', email: '', cnpj: '', manager: '' };
 
 export function LabBranches({ t }) {
-  const { isDark } = useLab();
+  const { isDark, labs: contextLabs, refreshDashboard } = useLab();
   const C = useLabTheme();
   const b = t.portal.branches;
 
@@ -24,7 +24,22 @@ export function LabBranches({ t }) {
 
   useEffect(() => {
     async function loadBranches() {
-      setLoading(true);
+      // If we already have labs in context, use them as initial state to avoid flicker
+      if (contextLabs.length > 0 && branches.length === 0) {
+        setBranches(contextLabs.map(l => ({
+          id: l.id,
+          name: l.name,
+          email: l._raw?.email || '',
+          cnpj: l._raw?.cnpj || '',
+          city: l.city || 'Sede',
+          state: 'GO',
+          employees: 0,
+          samples: 0,
+          status: l.active ? 'ativa' : 'inativa'
+        })));
+        setLoading(false);
+      }
+
       try {
         const data = await laboratorioService.getMyLabs();
         if (Array.isArray(data)) {
@@ -47,10 +62,17 @@ export function LabBranches({ t }) {
       }
     }
     loadBranches();
-  }, []);
+  }, [contextLabs]);
 
-  const openCreate = () => { setEditTarget(null); setForm(emptyForm); setModal(true); };
-  const openEdit = (br) => { 
+  const openCreate = (e) => { 
+    if (e) e.preventDefault();
+    setEditTarget(null); 
+    setForm(emptyForm); 
+    setModal(true); 
+  };
+  
+  const openEdit = (e, br) => { 
+    if (e) e.preventDefault();
     setEditTarget(br.id); 
     setForm({ 
       name: br.name, 
@@ -63,7 +85,8 @@ export function LabBranches({ t }) {
     setModal(true); 
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    if (e) e.preventDefault();
     const cnpjDigits = form.cnpj.replace(/\D/g, '');
     if (!form.name.trim() || !form.email.trim() || !form.cnpj.trim()) { 
       toast.error('Nome, Email e CNPJ são obrigatórios.'); 
@@ -109,6 +132,7 @@ export function LabBranches({ t }) {
         }]);
         toast.success(`${b.title} cadastrada!`);
       }
+      refreshDashboard(); // Trigger a context refresh
       setModal(false);
     } catch (err) {
       console.error('Save error', err);
@@ -123,6 +147,7 @@ export function LabBranches({ t }) {
       await laboratorioService.delete(id);
       setBranches(prev => prev.filter(br => br.id !== id));
       toast.success(`${b.title} removida.`);
+      refreshDashboard();
     } catch (err) {
       console.error('Delete error', err);
       toast.error(err.detail || 'Erro ao remover. Verifique se existem dependências ativas.');
@@ -134,7 +159,7 @@ export function LabBranches({ t }) {
   const inputStyle = { width: '100%', border: `1px solid ${C.border}`, borderRadius: '0.5rem', padding: '0.5rem 0.75rem', fontSize: '0.875rem', outline: 'none', background: C.inputBg, color: C.text, boxSizing: 'border-box' };
 
   return (
-    <div style={{ maxWidth: '200rem' }}>
+    <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Building2 size={20} color="#10b981" />
@@ -149,8 +174,11 @@ export function LabBranches({ t }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '3rem', color: C.textMuted }}>Carregando unidades...</div>
+        {loading && branches.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '3rem', color: C.textMuted }}>
+             <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 12px' }} />
+             Carregando unidades...
+          </div>
         ) : (
           branches.map(br => (
             <div key={br.id} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '0.75rem', padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
@@ -169,10 +197,10 @@ export function LabBranches({ t }) {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
-                <button onClick={() => openEdit(br)} style={{ background: C.btnBg, border: `1px solid ${C.btnBorder}`, borderRadius: '0.5rem', padding: '0.5rem', cursor: 'pointer', display: 'flex', color: C.textMuted }}>
+                <button onClick={(e) => openEdit(e, br)} style={{ background: C.btnBg, border: `1px solid ${C.btnBorder}`, borderRadius: '0.5rem', padding: '0.5rem', cursor: 'pointer', display: 'flex', color: C.textMuted }}>
                   <Pencil size={15} />
                 </button>
-                <button onClick={() => setConfirmDelete(br.id)} style={{ background: C.dangerBg, border: `1px solid ${C.dangerBorder}`, borderRadius: '0.5rem', padding: '0.5rem', cursor: 'pointer', display: 'flex', color: '#ef4444' }}>
+                <button onClick={(e) => { e.preventDefault(); setConfirmDelete(br.id); }} style={{ background: C.dangerBg, border: `1px solid ${C.dangerBorder}`, borderRadius: '0.5rem', padding: '0.5rem', cursor: 'pointer', display: 'flex', color: '#ef4444' }}>
                   <Trash2 size={15} />
                 </button>
               </div>
@@ -183,7 +211,7 @@ export function LabBranches({ t }) {
       </div>
 
       <Modal isOpen={modal} onClose={() => setModal(false)} title={editTarget ? b.editBranch : b.newBranch}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>{b.fieldName} *</label>
             <input value={form.name} placeholder="Ex. Filial Campinas" onChange={e => setForm(p => ({ ...p, name: e.target.value }))} style={inputStyle} />
@@ -209,10 +237,10 @@ export function LabBranches({ t }) {
             </div>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-            <button onClick={() => setModal(false)} disabled={saving} style={{ padding: '0.5rem 1.25rem', border: `1px solid ${C.border}`, borderRadius: '0.5rem', background: C.surface, cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontWeight: 500, color: C.textMuted }}>{b.cancel}</button>
-            <button onClick={handleSave} disabled={saving} style={{ padding: '0.5rem 1.25rem', border: 'none', borderRadius: '0.5rem', background: saving ? '#a7f3d0' : '#10b981', color: 'white', cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontWeight: 600 }}>{editTarget ? b.save : b.register}</button>
+            <button type="button" onClick={() => setModal(false)} disabled={saving} style={{ padding: '0.5rem 1.25rem', border: `1px solid ${C.border}`, borderRadius: '0.5rem', background: C.surface, cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontWeight: 500, color: C.textMuted }}>{b.cancel}</button>
+            <button type="submit" disabled={saving} style={{ padding: '0.5rem 1.25rem', border: 'none', borderRadius: '0.5rem', background: saving ? '#a7f3d0' : '#10b981', color: 'white', cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontWeight: 600 }}>{editTarget ? b.save : b.register}</button>
           </div>
-        </div>
+        </form>
       </Modal>
 
       <Modal isOpen={!!confirmDelete} onClose={() => setConfirmDelete(null)} title={b.confirmDelete} width="24rem">
@@ -222,6 +250,7 @@ export function LabBranches({ t }) {
           <button onClick={() => handleDelete(confirmDelete)} style={{ padding: '0.5rem 1.25rem', border: 'none', borderRadius: '0.5rem', background: '#ef4444', color: 'white', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600 }}>{b.remove}</button>
         </div>
       </Modal>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

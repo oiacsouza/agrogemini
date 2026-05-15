@@ -1,4 +1,4 @@
-2import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Leaf, LayoutDashboard, Upload, FileSpreadsheet,
   Search, Bell, Building2, Users, FlaskConical,
@@ -94,6 +94,8 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
     isProducer,
     labsLoading,
     activeLab,
+    setSelectedSampleId,
+    selectedSampleId
   } = useLab();
   const [activeClient, setActiveClient] = useState(null);
   const C = useLabTheme();
@@ -121,6 +123,11 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
     { id: 'branches', icon: Building2, label: t.portal.sidebar.branches },
   ];
 
+  const handleViewDetail = (id) => {
+    setSelectedSampleId(id);
+    handleSetTab('sample-detail');
+  };
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: C.bg, color: C.text, fontFamily: 'Inter, sans-serif' }}>
 
@@ -131,7 +138,7 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
             <Leaf color="white" size={20} />
           </div>
           <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.025em', color: C.text }}>AgroGemini</span>
-        </div>2
+        </div>
 
         <nav style={{ flex: 1, padding: '0 1rem' }}>
           <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: C.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '0 0.5rem 0.75rem' }}>Menu principal</div>
@@ -207,10 +214,10 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
 
         <main style={{ padding: '2rem', flex: 1 }}>
           <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
-            {activeTab === 'dashboard' && <LabDashboard t={t} onNavigate={handleSetTab} />}
+            {activeTab === 'dashboard' && <LabDashboard t={t} onNavigate={handleSetTab} onViewDetail={handleViewDetail} />}
             {activeTab === 'import' && <LabImport t={t} />}
-            {activeTab === 'samples' && <LabSamples t={t} onViewDetail={() => handleSetTab('sample-detail')} />}
-            {activeTab === 'sample-detail' && <LabSampleDetail t={t} />}
+            {activeTab === 'samples' && <LabSamples t={t} onViewDetail={handleViewDetail} />}
+            {activeTab === 'sample-detail' && <LabSampleDetail t={t} sampleId={selectedSampleId} onBack={() => handleSetTab('samples')} />}
             {activeTab === 'clients' && <LabClients t={t} onViewProfile={(cl) => { setActiveClient(cl); handleSetTab('client-profile'); }} />}
             {activeTab === 'client-profile' && <LabClientProfile client={activeClient} t={t} onBack={() => handleSetTab('clients')} />}
             {activeTab === 'employees' && <LabEmployees t={t} />}

@@ -19,6 +19,17 @@ class LaudoRepository:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
+    async def get_all_by_labs(self, lab_ids: set[int], limit: int = 100) -> Sequence[Laudo]:
+        if not lab_ids:
+            return []
+        result = await self.session.execute(
+            select(Laudo)
+            .where(Laudo.laboratorio_id.in_(lab_ids))
+            .order_by(Laudo.data_emissao.desc())
+            .limit(limit)
+        )
+        return result.scalars().all()
+
     async def get_by_id(self, laudo_id: int) -> Optional[Laudo]:
         result = await self.session.execute(
             select(Laudo).where(Laudo.id == laudo_id)
@@ -41,6 +52,14 @@ class LaudoRepository:
         )
         result = await self.session.execute(stmt)
         return result.scalars().all()
+
+    async def count_by_labs(self, lab_ids: set[int]) -> int:
+        if not lab_ids:
+            return 0
+        result = await self.session.execute(
+            select(func.count()).select_from(Laudo).where(Laudo.laboratorio_id.in_(lab_ids))
+        )
+        return result.scalar_one()
 
     async def create(self, laudo_data: LaudoCreate) -> int:
         new_laudo = Laudo(**laudo_data.model_dump())

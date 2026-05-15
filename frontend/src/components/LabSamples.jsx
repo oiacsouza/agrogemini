@@ -1,10 +1,10 @@
 import React from 'react';
-import { FileSpreadsheet } from 'lucide-react';
+import { FileSpreadsheet, Download, Eye } from 'lucide-react';
 import { useLab } from '../context/LabContext';
 import { useLabTheme } from './lab/useLabTheme';
 import { Badge } from './ui/Badge';
 
-export function LabSamples({ t, onViewDetails }) {
+export function LabSamples({ t, onViewDetail }) {
   const { activeSamples, isDark } = useLab();
   const C = useLabTheme();
 
@@ -18,6 +18,12 @@ export function LabSamples({ t, onViewDetails }) {
         <span style={{ fontSize: '0.75rem', fontWeight: 700, color: C.text }}>{value}%</span>
       </div>
     );
+  };
+
+  const handleDownload = (e, id) => {
+    e.stopPropagation();
+    // Simulate download for now
+    window.open(`http://localhost:8000/api/v1/laudos/amostra/${id}/pdf`, '_blank');
   };
 
   return (
@@ -61,9 +67,16 @@ export function LabSamples({ t, onViewDetails }) {
                     </td>
                     <td style={{ padding: '0.875rem 1.25rem' }}><HealthBar value={s.health} /></td>
                     <td style={{ padding: '0.875rem 1.25rem', textAlign: 'right' }}>
-                      <button onClick={onViewDetails} style={{ color: '#10b981', fontWeight: 600, fontSize: '0.8125rem', background: 'none', border: 'none', cursor: 'pointer' }}>
-                        {t.portal.dashboard.viewDetails}
-                      </button>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                        {s.status === 'concluido' && (
+                          <button onClick={(e) => handleDownload(e, s.id)} style={{ color: '#10b981', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }} title="Baixar Laudo">
+                            <Download size={16} />
+                          </button>
+                        )}
+                        <button onClick={() => onViewDetail(s.id)} style={{ color: '#10b981', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }} title={t.portal.dashboard.viewDetails}>
+                          <Eye size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

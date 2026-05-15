@@ -8,30 +8,35 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 // ── Token management ─────────────────────────────────────────────────────────
 
 function getToken() {
-  return localStorage.getItem('agrogemini_token');
+  return sessionStorage.getItem('agrogemini_token');
 }
 
 function setToken(token) {
-  localStorage.setItem('agrogemini_token', token);
+  sessionStorage.setItem('agrogemini_token', token);
+  localStorage.removeItem('agrogemini_token');
 }
 
 function removeToken() {
+  sessionStorage.removeItem('agrogemini_token');
   localStorage.removeItem('agrogemini_token');
 }
 
 function setUser(user) {
-  localStorage.setItem('agrogemini_user', JSON.stringify(user));
+  sessionStorage.setItem('agrogemini_user', JSON.stringify(normalizeStoredUser(user)));
+  localStorage.removeItem('agrogemini_user');
 }
 
 function getUser() {
   try {
-    return JSON.parse(localStorage.getItem('agrogemini_user'));
+    const user = JSON.parse(sessionStorage.getItem('agrogemini_user'));
+    return user ? normalizeStoredUser(user) : null;
   } catch {
     return null;
   }
 }
 
 function removeUser() {
+  sessionStorage.removeItem('agrogemini_user');
   localStorage.removeItem('agrogemini_user');
 }
 
@@ -56,8 +61,8 @@ async function request(endpoint, { method = 'GET', body, headers: extraHeaders }
     body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
   });
 
-  // Handle 401 — auto-logout
-  if (res.status === 401) {
+  // Handle 401 — auto-logout (except for login endpoint)
+  if (res.status === 401 && endpoint !== '/api/v1/auth/login') {
     removeToken();
     removeUser();
     window.location.hash = '#login';
@@ -84,6 +89,7 @@ async function request(endpoint, { method = 'GET', body, headers: extraHeaders }
 // ── Convenience shortcuts ────────────────────────────────────────────────────
 
 export const api = {
+  request,
   get:    (ep)          => request(ep),
   post:   (ep, body)    => request(ep, { method: 'POST', body }),
   put:    (ep, body)    => request(ep, { method: 'PUT', body }),
@@ -93,6 +99,13 @@ export const api = {
 
 function normalizeUserType(value) {
   return String(value || '').trim().toUpperCase();
+}
+
+function normalizeStoredUser(user) {
+  return {
+    ...user,
+    tipo_usuario: normalizeUserType(user?.tipo_usuario),
+  };
 }
 
 function resolveUserPlan({ plano, plano_ativo: planoAtivo, tipo_usuario: tipoUsuario } = {}) {
@@ -116,7 +129,7 @@ export const authService = {
       nome: data.nome,
       sobrenome: data.sobrenome,
       email: data.email,
-      tipo_usuario: data.tipo_usuario,
+      tipo_usuario: normalizeUserType(data.tipo_usuario),
       plano: resolveUserPlan(data),
     });
     return data;
@@ -130,7 +143,7 @@ export const authService = {
       nome: data.nome,
       sobrenome: data.sobrenome,
       email: data.email,
-      tipo_usuario: data.tipo_usuario,
+      tipo_usuario: normalizeUserType(data.tipo_usuario),
       plano: resolveUserPlan(data),
     });
     return data;
@@ -138,6 +151,27 @@ export const authService = {
 
   async me() {
     return api.get('/api/v1/auth/me');
+  },
+
+  async validateSession() {
+    if (!getToken()) return null;
+    try {
+      const user = await this.me();
+      const normalized = normalizeStoredUser({
+        id: user.id,
+        nome: user.nome,
+        sobrenome: user.sobrenome,
+        email: user.email,
+        tipo_usuario: user.tipo_usuario,
+        plano: resolveUserPlan(user),
+        plano_ativo: user.plano_ativo,
+      });
+      setUser(normalized);
+      return normalized;
+    } catch (e) {
+      this.clearSession();
+      throw e;
+    }
   },
 
   async mePlan() {
@@ -155,6 +189,10 @@ export const authService = {
 
   getToken,
   getUser,
+  clearSession() {
+    removeToken();
+    removeUser();
+  },
 };
 
 // ── Usuários ─────────────────────────────────────────────────────────────────
@@ -275,4 +313,6 @@ export const adminService = {
   getUsuarios:    (tipo) => api.get(`/api/v1/admin/usuarios${tipo ? `?tipo=${tipo}` : ''}`),
   getLaboratorios:() => api.get('/api/v1/admin/laboratorios'),
   getProdutores:  () => api.get('/api/v1/admin/produtores'),
+  getOpenApi:     () => api.get('/api/v1/admin/openapi'),
+  runSystemChecks:() => api.post('/api/v1/admin/system-checks', {}),
 };

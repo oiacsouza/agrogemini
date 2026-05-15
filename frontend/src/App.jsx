@@ -18,6 +18,10 @@ import { AdminDashboard }     from './components/admin/AdminDashboard';
 import { PlanModal }          from './components/PlanModal';
 import { authService }        from './services/api';
 
+function normalizeUserType(value) {
+  return String(value || '').trim().toUpperCase();
+}
+
 function App() {
   const [lang, setLang] = useState('pt');
   const [showLangMenu, setShowLangMenu] = useState(false);
@@ -77,20 +81,22 @@ function App() {
   const handleLoginSuccess = () => {
     const user = authService.getUser();
     if (!user) {
-      navigate('lab');
+      navigate('login');
       return;
     }
-    switch (user.tipo_usuario) {
+    switch (normalizeUserType(user.tipo_usuario)) {
       case 'UE':  // Produtor → Portal do Produtor
-        navigate('farmer/reports');
+        navigate('produtor');
         break;
       case 'ADM': // Admin → Painel Admin
         navigate('admin');
         break;
       case 'UP':  // Lab Premium → Portal Lab
       case 'UC':  // Lab Free → Portal Lab
-      default:
         navigate('lab');
+        break;
+      default:
+        navigate('landing');
         break;
     }
   };
@@ -135,8 +141,11 @@ function App() {
           t={t}
           onLogout={handleLogout}
           onNavigateAs={(target) => {
-            if (target === 'lab') navigate('lab');
-            else if (target === 'farmer') navigate('farmer/reports');
+            if (target === 'lab') {
+              navigate('lab');
+            } else if (target === 'farmer') {
+              navigate('produtor');
+            }
           }}
         />
       </AuthGuard>
@@ -148,7 +157,7 @@ function App() {
     const activeRoute = currentView === 'lab' ? 'dashboard' : currentView.replace('lab/', '');
     return (
       <AuthGuard
-        requiredRoles={['UP', 'UC', 'ADM', 'UE']}
+        requiredRoles={['UP', 'UC', 'ADM']}
         onUnauthorized={() => navigate('login')}
       >
         <LabPortal 
@@ -164,7 +173,7 @@ function App() {
   }
 
   // ── Farmer Reports ──────────────────────────────────────────────────────
-  if (currentView === 'farmer/reports') {
+  if (currentView === 'produtor' || currentView === 'farmer/reports') {
     return (
       <AuthGuard
         requiredRoles={['UE', 'ADM']}

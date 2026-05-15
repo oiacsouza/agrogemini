@@ -116,7 +116,7 @@ CREATE TABLE laboratorio_usuarios (
     papel VARCHAR2(25) CONSTRAINT NN_LAB_USUARIOS_PAPEL NOT NULL,
     registro_crea VARCHAR2(30),
     CONSTRAINT UQ_LAB_USUARIOS UNIQUE (laboratorio_id, usuario_id, papel),
-    CONSTRAINT CK_LAB_USUARIOS_PAPEL CHECK (papel IN ('TECNICO','GESTOR','RESPONSAVEL_TECNICO','ADMINISTRADOR')),
+    CONSTRAINT CK_LAB_USUARIOS_PAPEL CHECK (papel IN ('TECNICO','GESTOR','RESPONSAVEL_TECNICO','ADMINISTRADOR','CLIENTE')),
     CONSTRAINT FK_LAB_USUARIOS_LABORATORIOS FOREIGN KEY (laboratorio_id) REFERENCES laboratorios(id),
     CONSTRAINT FK_LAB_USUARIOS_USUARIOS FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 )
@@ -190,7 +190,7 @@ COMMENT ON TABLE laboratorio_usuarios IS 'Vínculo entre laboratório e seus usu
 COMMENT ON COLUMN laboratorio_usuarios.id IS 'Identificador da associação.';
 COMMENT ON COLUMN laboratorio_usuarios.laboratorio_id IS 'Laboratório.';
 COMMENT ON COLUMN laboratorio_usuarios.usuario_id IS 'Usuário.';
-COMMENT ON COLUMN laboratorio_usuarios.papel IS 'TECNICO, GESTOR, RESPONSAVEL_TECNICO ou ADMINISTRADOR.';
+COMMENT ON COLUMN laboratorio_usuarios.papel IS 'TECNICO, GESTOR, RESPONSAVEL_TECNICO, ADMINISTRADOR ou CLIENTE.';
 COMMENT ON COLUMN laboratorio_usuarios.registro_crea IS 'Registro CREA/CRQ.';
 COMMENT ON TABLE telefones_laboratorios IS 'Telefones de contato do laboratório.';
 COMMENT ON COLUMN telefones_laboratorios.id IS 'Identificador do telefone.';

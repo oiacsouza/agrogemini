@@ -42,6 +42,11 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não encontrado",
         )
+    if user.ativo != "Y":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Usuário desativado",
+        )
 
     # Convert to dict for compatibility with current code
     return {
@@ -49,7 +54,7 @@ async def get_current_user(
         "nome": user.nome,
         "sobrenome": user.sobrenome,
         "email": user.email,
-        "tipo_usuario": user.tipo_usuario,
+        "tipo_usuario": user.tipo_usuario.strip().upper(),
         "ativo": user.ativo,
         "plano_ativo": user.plano_ativo
     }
@@ -72,13 +77,15 @@ async def get_current_user_optional(
     user = await repo.get_by_id(int(user_id))
     if user is None:
         return None
+    if user.ativo != "Y":
+        return None
     
     return {
         "id": user.id,
         "nome": user.nome,
         "sobrenome": user.sobrenome,
         "email": user.email,
-        "tipo_usuario": user.tipo_usuario,
+        "tipo_usuario": user.tipo_usuario.strip().upper(),
         "ativo": user.ativo,
         "plano_ativo": user.plano_ativo
     }
@@ -99,7 +106,9 @@ def require_role(*allowed_roles: str) -> Callable:
     async def _checker(
         current_user=Depends(get_current_user),
     ):
-        if current_user["tipo_usuario"] not in allowed_roles:
+        user_role = current_user["tipo_usuario"].strip().upper()
+        normalized_allowed_roles = {role.strip().upper() for role in allowed_roles}
+        if user_role not in normalized_allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Acesso negado para este perfil de usuário",

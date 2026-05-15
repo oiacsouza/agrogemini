@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db_session
 from app.core.deps import get_current_user
 from app.schemas.amostra import AmostraCreate, AmostraUpdate
+from app.services.access_control import LabAccessService
 from app.services.amostra_service import AmostraService
 from app.repositories.usuario_repository import UsuarioRepository
 
@@ -22,7 +23,10 @@ async def list_amostras(
     service = AmostraService(db)
     if user["tipo_usuario"] == "UE":
         return await service.get_by_cliente(user["id"])
-    return await service.get_all(lab_id=lab_id, limit=limit)
+    access = LabAccessService(db)
+    if lab_id is not None:
+        return await service.get_all_by_labs(await access.metric_lab_ids_for_user(user, lab_id), limit=limit)
+    return await service.get_all_by_labs(await access.visible_lab_ids_for_user(user), limit=limit)
 
 
 @router.get("/minhas")
@@ -43,7 +47,11 @@ async def list_por_cliente(
     # Producers can only see their own
     if user["tipo_usuario"] == "UE" and user["id"] != cliente_id:
         raise HTTPException(status_code=403, detail="Acesso negado")
-    return await AmostraService(db).get_by_cliente(cliente_id)
+    samples = await AmostraService(db).get_by_cliente(cliente_id)
+    if user["tipo_usuario"] == "UE":
+        return samples
+    visible_labs = await LabAccessService(db).visible_lab_ids_for_user(user)
+    return [sample for sample in samples if sample.laboratorio_id in visible_labs]
 
 
 @router.get("/{amostra_id}")
@@ -60,6 +68,8 @@ async def get_amostra(
     
     if user["tipo_usuario"] == "UE" and cliente_id != user["id"]:
         raise HTTPException(status_code=403, detail="Acesso negado a esta amostra")
+    if user["tipo_usuario"] != "UE":
+        await LabAccessService(db).assert_lab_access(user, amostra.laboratorio_id)
     return amostra
 
 
@@ -72,6 +82,7 @@ async def create_amostra(
     # Producers cannot create samples (only labs can)
     if user["tipo_usuario"] == "UE":
         raise HTTPException(status_code=403, detail="Produtores não podem cadastrar amostras")
+    await LabAccessService(db).assert_lab_access(user, data.laboratorio_id)
 
     # Check sample limit for non-premium lab users
     if user["tipo_usuario"] in ("UP", "UC"):
@@ -102,6 +113,8 @@ async def update_amostra(
     # Producers cannot update samples
     if user["tipo_usuario"] == "UE":
         raise HTTPException(status_code=403, detail="Acesso negado")
+    amostra = await AmostraService(db).get_by_id(amostra_id)
+    await LabAccessService(db).assert_lab_access(user, amostra.laboratorio_id)
     return await AmostraService(db).update(amostra_id, data)
 
 
@@ -114,5 +127,7 @@ async def delete_amostra(
     # Producers cannot delete samples
     if user["tipo_usuario"] == "UE":
         raise HTTPException(status_code=403, detail="Acesso negado")
+    amostra = await AmostraService(db).get_by_id(amostra_id)
+    await LabAccessService(db).assert_lab_access(user, amostra.laboratorio_id)
     await AmostraService(db).delete(amostra_id)
     return {"detail": "Amostra removida"}

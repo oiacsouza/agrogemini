@@ -1,12 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { FlaskConical, Search, ChevronRight, FileText } from 'lucide-react';
+import { AlertCircle, ChevronRight, FileText, FlaskConical, Loader2, Plus, Search } from 'lucide-react';
 import { Badge } from '../ui/Badge';
+import { Modal } from '../ui/Modal';
 import { useLab } from '../../context/LabContext';
 import { useLabTheme } from './useLabTheme';
 import { laboratorioService } from '../../services/api';
 
+function mapClientForUi(user) {
+  const name = `${user.nome || ''} ${user.sobrenome || ''}`.trim() || user.email;
+  const initials = `${user.nome?.[0] || ''}${user.sobrenome?.[0] || ''}`.toUpperCase()
+    || name.slice(0, 2).toUpperCase();
+
+  return {
+    id: user.id,
+    name,
+    email: user.email,
+    phone: user.telefone || 'Sem contato',
+    totalReports: user.total_laudos || 0,
+    lastReport: user.ultimo_laudo ? new Date(user.ultimo_laudo).toLocaleDateString('pt-BR') : '-',
+    status: user.ativo === 'Y' ? 'ativo' : 'inativo',
+    initials,
+    reports: []
+  };
+}
+
 export function LabClients({ onViewProfile, t }) {
-  const { isDark, activeLab } = useLab();
+  const { activeLab } = useLab();
   const C = useLabTheme();
   const c = t.portal.clients;
 
@@ -14,6 +33,11 @@ export function LabClients({ onViewProfile, t }) {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('todos');
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [clientName, setClientName] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
+  const [createError, setCreateError] = useState('');
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     async function loadClients() {
@@ -22,17 +46,7 @@ export function LabClients({ onViewProfile, t }) {
       try {
         const data = await laboratorioService.getClientes(activeLab.id);
         if (Array.isArray(data)) {
-          setClients(data.map(u => ({
-            id: u.id,
-            name: `${u.nome} ${u.sobrenome}`,
-            email: u.email,
-            phone: u.telefone || 'Sem contato',
-            totalReports: u.total_laudos || 0,
-            lastReport: u.ultimo_laudo ? new Date(u.ultimo_laudo).toLocaleDateString('pt-BR') : '-',
-            status: u.ativo === 'Y' ? 'ativo' : 'inativo',
-            initials: `${u.nome?.[0] || ''}${u.sobrenome?.[0] || ''}`.toUpperCase(),
-            reports: []
-          })));
+          setClients(data.map(mapClientForUi));
         }
       } catch (err) {
         console.error('Error loading clients:', err);
@@ -42,6 +56,60 @@ export function LabClients({ onViewProfile, t }) {
     }
     loadClients();
   }, [activeLab]);
+
+  const resetCreateForm = () => {
+    setClientName('');
+    setClientEmail('');
+    setCreateError('');
+    setCreating(false);
+  };
+
+  const closeCreateModal = () => {
+    if (creating) return;
+    setIsCreateOpen(false);
+    resetCreateForm();
+  };
+
+  const handleCreateClient = async (e) => {
+    e.preventDefault();
+    setCreateError('');
+
+    const fullName = clientName.trim();
+    const email = clientEmail.trim();
+
+    if (!activeLab?.id) {
+      setCreateError('Selecione um laboratório antes de cadastrar um cliente.');
+      return;
+    }
+
+    if (!fullName || !email) {
+      setCreateError('Informe nome e email do cliente.');
+      return;
+    }
+
+    const [nome, ...rest] = fullName.split(/\s+/);
+    const sobrenome = rest.join(' ') || ' ';
+
+    setCreating(true);
+    try {
+      const created = await laboratorioService.addCliente(activeLab.id, {
+        nome,
+        sobrenome,
+        email,
+      });
+      const mapped = mapClientForUi(created);
+      setClients(prev => {
+        const withoutDuplicate = prev.filter(client => client.id !== mapped.id);
+        return [mapped, ...withoutDuplicate];
+      });
+      setIsCreateOpen(false);
+      resetCreateForm();
+    } catch (err) {
+      setCreateError(err?.detail || 'Não foi possível cadastrar o cliente.');
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const filtered = clients.filter(cl => {
     const nameMatch = (cl.name || '').toLowerCase().includes(search.toLowerCase());
@@ -64,6 +132,25 @@ export function LabClients({ onViewProfile, t }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setIsCreateOpen(true)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              border: 'none',
+              borderRadius: '0.5rem',
+              padding: '0.55rem 0.8rem',
+              fontSize: '0.875rem',
+              fontWeight: 700,
+              background: '#10b981',
+              color: '#fff',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            <Plus size={16} /> Novo cliente
+          </button>
           <div style={{ position: 'relative' }}>
             <Search style={{ position: 'absolute', left: '0.625rem', top: '50%', transform: 'translateY(-50%)', color: C.textMuted }} size={15} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder={c.searchPlaceholder}
@@ -127,6 +214,70 @@ export function LabClients({ onViewProfile, t }) {
           </tbody>
         </table>
       </div>
+
+      <Modal isOpen={isCreateOpen} onClose={closeCreateModal} title="Novo cliente" width="28rem">
+        <form onSubmit={handleCreateClient} style={{ display: 'grid', gap: '1rem' }}>
+          {createError && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              border: '1px solid rgba(239,68,68,0.35)',
+              borderRadius: '0.5rem',
+              background: 'rgba(239,68,68,0.08)',
+              color: '#ef4444',
+              padding: '0.75rem',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+            }}>
+              <AlertCircle size={16} /> {createError}
+            </div>
+          )}
+
+          <label style={{ display: 'grid', gap: '0.375rem', color: C.label, fontSize: '0.8125rem', fontWeight: 700 }}>
+            Nome do cliente
+            <input
+              value={clientName}
+              onChange={e => setClientName(e.target.value)}
+              placeholder="Ex: João Silva"
+              disabled={creating}
+              style={{ border: `1px solid ${C.border}`, borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.875rem', outline: 'none', background: C.inputBg, color: C.text }}
+            />
+          </label>
+
+          <label style={{ display: 'grid', gap: '0.375rem', color: C.label, fontSize: '0.8125rem', fontWeight: 700 }}>
+            Email
+            <input
+              type="email"
+              value={clientEmail}
+              onChange={e => setClientEmail(e.target.value)}
+              placeholder="cliente@email.com"
+              disabled={creating}
+              style={{ border: `1px solid ${C.border}`, borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.875rem', outline: 'none', background: C.inputBg, color: C.text }}
+            />
+          </label>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={closeCreateModal}
+              disabled={creating}
+              style={{ border: `1px solid ${C.border}`, borderRadius: '0.5rem', padding: '0.6rem 0.9rem', background: C.surface, color: C.textSecondary, cursor: creating ? 'not-allowed' : 'pointer', fontWeight: 700, fontFamily: 'inherit' }}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={creating}
+              style={{ border: 'none', borderRadius: '0.5rem', padding: '0.6rem 0.9rem', background: '#10b981', color: '#fff', cursor: creating ? 'not-allowed' : 'pointer', fontWeight: 700, fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}
+            >
+              {creating && <Loader2 size={16} style={{ animation: 'spin 0.8s linear infinite' }} />}
+              {creating ? 'Cadastrando...' : 'Cadastrar cliente'}
+            </button>
+          </div>
+          <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+        </form>
+      </Modal>
     </div>
   );
 }

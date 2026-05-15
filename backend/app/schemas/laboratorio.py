@@ -8,6 +8,9 @@ class LaboratorioBase(BaseModel):
     nome: str
     cnpj: str
     email: EmailStr
+    usuario_id: Optional[int] = None
+    laboratorio_pai_id: Optional[int] = None
+    tipo_unidade: str = "MATRIZ"
     ativo: str = "Y"
     acreditacao_iso17025: str = "N"
     registro_renasem: Optional[str] = None
@@ -22,6 +25,9 @@ class LaboratorioUpdate(BaseModel):
     nome: Optional[str] = None
     cnpj: Optional[str] = None
     email: Optional[EmailStr] = None
+    usuario_id: Optional[int] = None
+    laboratorio_pai_id: Optional[int] = None
+    tipo_unidade: Optional[str] = None
     ativo: Optional[str] = None
     acreditacao_iso17025: Optional[str] = None
     registro_renasem: Optional[str] = None
@@ -31,6 +37,9 @@ class LaboratorioUpdate(BaseModel):
 
 class LaboratorioResponse(LaboratorioBase):
     id: int
+    usuario_id: Optional[int] = None
+    laboratorio_pai_id: Optional[int] = None
+    tipo_unidade: str = "MATRIZ"
     endereco_id: Optional[int] = None
     criado_em: datetime
 

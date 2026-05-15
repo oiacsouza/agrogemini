@@ -1,19 +1,18 @@
 import React from 'react';
-import { FileText, CheckCircle2, AlertCircle, TrendingUp, FileSpreadsheet } from 'lucide-react';
+import { FileText, CheckCircle2, AlertCircle, TrendingUp, FileSpreadsheet, Download, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLab } from '../context/LabContext';
 import { useLabTheme } from './lab/useLabTheme';
 import { Badge } from './ui/Badge';
 
-// eslint-disable-next-line no-unused-vars
-export function LabDashboard({ t, onViewDetails }) {
+export function LabDashboard({ t, onNavigate, onViewDetail }) {
   const { activeStats, activeSamples, isDark } = useLab();
   const C = useLabTheme();
 
   const stats = [
-    { title: t.portal.dashboard.totalSamples, value: activeStats.total, icon: FileText, bg: '#10b981', trend: '+12.5%' },
-    { title: t.portal.dashboard.processedToday, value: String(activeStats.processed), icon: CheckCircle2, bg: '#10b981', trend: '+8.3%' },
-    { title: t.portal.dashboard.pending, value: String(activeStats.pending), icon: AlertCircle, bg: '#f59e0b', trend: '-15.2%', trendDown: true },
+    { title: t.portal.dashboard.totalSamples, value: activeStats.total_amostras, icon: FileText, bg: '#10b981', trend: '+12.5%' },
+    { title: t.portal.dashboard.processedToday, value: String(activeStats.processadas_hoje), icon: CheckCircle2, bg: '#10b981', trend: '+8.3%' },
+    { title: t.portal.dashboard.pending, value: String(activeStats.pendentes), icon: AlertCircle, bg: '#f59e0b', trend: '-15.2%', trendDown: true },
     { title: t.portal.dashboard.avgHealth, value: `${activeStats.health}%`, icon: TrendingUp, bg: '#10b981', trend: '+3.1%' },
   ];
 
@@ -27,6 +26,11 @@ export function LabDashboard({ t, onViewDetails }) {
         <span style={{ fontSize: '0.75rem', fontWeight: 700, color: C.text }}>{value}%</span>
       </div>
     );
+  };
+
+  const handleDownload = (e, id) => {
+    e.stopPropagation();
+    window.open(`http://localhost:8000/api/v1/laudos/amostra/${id}/pdf`, '_blank');
   };
 
   return (
@@ -59,25 +63,30 @@ export function LabDashboard({ t, onViewDetails }) {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
         style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden' }}
       >
-        <div style={{ padding: '1.25rem 1.5rem', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <FileSpreadsheet size={18} color="#10b981" />
-          <div>
-            <div style={{ fontWeight: 700, fontSize: '1rem', color: C.text }}>{t.portal.dashboard.recentSamples}</div>
-            <div style={{ fontSize: '0.75rem', color: C.textMuted }}>{t.portal.dashboard.recentSamplesText}</div>
+        <div style={{ padding: '1.25rem 1.5rem', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FileSpreadsheet size={18} color="#10b981" />
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '1rem', color: C.text }}>{t.portal.dashboard.recentSamples}</div>
+              <div style={{ fontSize: '0.75rem', color: C.textMuted }}>{t.portal.dashboard.recentSamplesText}</div>
+            </div>
           </div>
+          <button onClick={() => onNavigate('samples')} style={{ background: 'none', border: 'none', color: '#10b981', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer' }}>
+            {t.portal.dashboard.viewAll}
+          </button>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: `1px solid ${C.border}`, background: C.bgAlt }}>
-                {[t.portal.dashboard.headers.date, t.portal.dashboard.headers.producer, t.portal.dashboard.headers.field, t.portal.dashboard.headers.status, t.portal.dashboard.headers.health].map(h => (
+                {[t.portal.dashboard.headers.date, t.portal.dashboard.headers.producer, t.portal.dashboard.headers.field, t.portal.dashboard.headers.status, t.portal.dashboard.headers.health, ''].map(h => (
                   <th key={h} style={{ padding: '0.75rem 1.25rem', textAlign: 'left', fontSize: '0.6875rem', fontWeight: 800, color: C.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {activeSamples.map(s => {
+              {activeSamples.slice(0, 5).map(s => {
                 return (
                   <tr key={s.id} style={{ borderBottom: `1px solid ${C.border}` }}
                     onMouseEnter={e => e.currentTarget.style.background = C.bgAlt}
@@ -95,6 +104,18 @@ export function LabDashboard({ t, onViewDetails }) {
                       <Badge type={s.status} t={t} />
                     </td>
                     <td style={{ padding: '0.875rem 1.25rem' }}><HealthBar value={s.health} /></td>
+                    <td style={{ padding: '0.875rem 1.25rem', textAlign: 'right' }}>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                        {s.status === 'concluido' && (
+                          <button onClick={(e) => handleDownload(e, s.id)} style={{ color: '#10b981', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }} title="Baixar Laudo">
+                            <Download size={16} />
+                          </button>
+                        )}
+                        <button onClick={() => onViewDetail(s.id)} style={{ color: '#10b981', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }} title={t.portal.dashboard.viewDetails}>
+                          <Eye size={16} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}

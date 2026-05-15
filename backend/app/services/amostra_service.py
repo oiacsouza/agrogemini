@@ -11,6 +11,9 @@ class AmostraService:
     async def get_all(self, lab_id: int | None = None, limit: int = 100):
         return await self.repo.get_all(lab_id=lab_id, limit=limit)
 
+    async def get_all_by_labs(self, lab_ids: set[int], limit: int = 100):
+        return await self.repo.get_all_by_labs(lab_ids=lab_ids, limit=limit)
+
     async def get_by_id(self, aid: int):
         a = await self.repo.get_by_id(aid)
         if not a:

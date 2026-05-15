@@ -29,11 +29,15 @@ PROMPT [11/13] Executando 10_extensoes_text.sql
 @@10_extensoes_text.sql
 PROMPT [12/13] Executando 11_vpd_rls.sql
 @@11_vpd_rls.sql
-PROMPT [13/14] Executando 12_roles_grants.sql
+PROMPT [13/17] Executando 12_roles_grants.sql
 @@12_roles_grants.sql
-PROMPT [14/14] Executando 13_seed_usuarios_extras.sql
+PROMPT [14/17] Executando 13_seed_usuarios_extras.sql
 @@13_seed_usuarios_extras.sql
-PROMPT [15/15] Executando 14_plano_produtor.sql
+PROMPT [15/17] Executando 14_plano_produtor.sql
 @@14_plano_produtor.sql
+PROMPT [16/17] Executando 15_allow_lab_client_role.sql
+@@15_allow_lab_client_role.sql
+PROMPT [17/17] Executando 16_laboratorio_hierarchy.sql
+@@16_laboratorio_hierarchy.sql
 
 PROMPT Migracao completa finalizada com sucesso.

@@ -19,6 +19,17 @@ class AmostraRepository:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
+    async def get_all_by_labs(self, lab_ids: set[int], limit: int = 100) -> Sequence[Amostra]:
+        if not lab_ids:
+            return []
+        result = await self.session.execute(
+            select(Amostra)
+            .where(Amostra.laboratorio_id.in_(lab_ids))
+            .order_by(Amostra.id.desc())
+            .limit(limit)
+        )
+        return result.scalars().all()
+
     async def get_by_id(self, amostra_id: int) -> Optional[Amostra]:
         result = await self.session.execute(
             select(Amostra).where(Amostra.id == amostra_id)
@@ -65,3 +76,47 @@ class AmostraRepository:
             select(func.count()).select_from(Amostra).where(Amostra.laboratorio_id == lab_id)
         )
         return result.scalar_one()
+
+    async def count_by_labs(self, lab_ids: set[int]) -> int:
+        if not lab_ids:
+            return 0
+        result = await self.session.execute(
+            select(func.count()).select_from(Amostra).where(Amostra.laboratorio_id.in_(lab_ids))
+        )
+        return result.scalar_one()
+
+    async def count_today_by_labs(self, lab_ids: set[int]) -> int:
+        if not lab_ids:
+            return 0
+        result = await self.session.execute(
+            select(func.count())
+            .select_from(Amostra)
+            .where(Amostra.laboratorio_id.in_(lab_ids))
+            .where(func.trunc(Amostra.criado_em) == func.trunc(func.current_date()))
+        )
+        return result.scalar_one()
+
+    async def count_by_status_for_labs(self, lab_ids: set[int], statuses: list[str]) -> int:
+        if not lab_ids:
+            return 0
+        result = await self.session.execute(
+            select(func.count())
+            .select_from(Amostra)
+            .where(Amostra.laboratorio_id.in_(lab_ids))
+            .where(Amostra.status.in_(statuses))
+        )
+        return result.scalar_one()
+
+    async def monthly_trend_for_labs(self, lab_ids: set[int], months: int = 6) -> list[dict]:
+        if not lab_ids:
+            return []
+        month_expr = func.to_char(Amostra.criado_em, "YYYY-MM")
+        result = await self.session.execute(
+            select(month_expr.label("month"), func.count().label("samples"))
+            .select_from(Amostra)
+            .where(Amostra.laboratorio_id.in_(lab_ids))
+            .group_by(month_expr)
+            .order_by(month_expr.desc())
+            .limit(months)
+        )
+        return [{"month": row.month, "samples": row.samples} for row in reversed(result.all())]

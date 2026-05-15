@@ -15,6 +15,17 @@ class ImportacaoRepository:
         result = await self.session.execute(stmt.order_by(Importacao.criado_em.desc()).limit(limit))
         return result.scalars().all()
 
+    async def get_all_by_labs(self, lab_ids: set[int], limit: int = 100) -> Sequence[Importacao]:
+        if not lab_ids:
+            return []
+        result = await self.session.execute(
+            select(Importacao)
+            .where(Importacao.laboratorio_id.in_(lab_ids))
+            .order_by(Importacao.criado_em.desc())
+            .limit(limit)
+        )
+        return result.scalars().all()
+
     async def get_by_id(self, id: int) -> Optional[Importacao]:
         result = await self.session.execute(select(Importacao).where(Importacao.id == id))
         return result.scalar_one_or_none()
