@@ -11,12 +11,15 @@ from app.core.config import settings
 import urllib.parse
 
 # Se o DSN for uma string TNS gigante da Oracle Cloud (começa com "(description=" ou "(DESCRIPTION=")
-if settings.DB_DSN.strip().upper().startswith("(DESCRIPTION"):
-    encoded_dsn = urllib.parse.quote_plus(settings.DB_DSN)
+# Primeiro, removemos possíveis aspas duplas ou simples que o Render ou o Pydantic possam ter injetado
+clean_dsn = settings.DB_DSN.strip("'\" \t\n\r")
+
+if clean_dsn.upper().startswith("(DESCRIPTION"):
+    encoded_dsn = urllib.parse.quote_plus(clean_dsn)
     DATABASE_URL = f"oracle+oracledb_async://{settings.DB_USER}:{settings.DB_PASSWORD}@{encoded_dsn}"
 else:
     # Fallback para o modo local: host:port/service
-    _host_port, _service = settings.DB_DSN.rsplit("/", 1)
+    _host_port, _service = clean_dsn.rsplit("/", 1)
     DATABASE_URL = f"oracle+oracledb_async://{settings.DB_USER}:{settings.DB_PASSWORD}@{_host_port}/?service_name={_service}"
 
 # Async Engine configuration
