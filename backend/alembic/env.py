@@ -31,14 +31,6 @@ from app.models.permissoes import PermissaoSistema, UsuarioPermissao
 # access to the values within the .ini file in use.
 config = context.config
 
-# Dynamic database URL from settings
-# NOTE: Must use ?service_name= to avoid the driver treating it as a SID.
-_host_port, _service = settings.DB_DSN.rsplit("/", 1)
-DATABASE_URL = (
-    f"oracle+oracledb_async://{settings.DB_USER}:{settings.DB_PASSWORD}@{_host_port}/?service_name={_service}"
-)
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
-
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -74,9 +66,21 @@ async def run_async_migrations() -> None:
     and associate a connection with the context.
     """
 
-    connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
+    from sqlalchemy.ext.asyncio import create_async_engine
+    
+    clean_dsn = settings.DB_DSN.strip("'\" \t\n\r")
+    if clean_dsn.upper().startswith("(DESCRIPTION"):
+        clean_dsn = clean_dsn.replace(" ", "")
+        
+    clean_password = settings.DB_PASSWORD.strip("'\" \t\n\r")
+
+    connectable = create_async_engine(
+        "oracle+oracledb_async://",
+        connect_args={
+            "user": settings.DB_USER,
+            "password": clean_password,
+            "dsn": clean_dsn
+        },
         poolclass=pool.NullPool,
     )
 

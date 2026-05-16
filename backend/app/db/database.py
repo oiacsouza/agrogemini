@@ -14,29 +14,35 @@ from sqlalchemy.engine.url import URL
 # Se o DSN for uma string TNS gigante da Oracle Cloud
 # Removemos aspas, quebras de linha e espaços em branco que quebram o TNS parser do oracledb
 clean_dsn = settings.DB_DSN.strip("'\" \t\n\r")
+clean_password = settings.DB_PASSWORD.strip("'\" \t\n\r")
 
 if clean_dsn.upper().startswith("(DESCRIPTION"):
     # Remove todos os espaços internos da string TNS para evitar erros de parse
     clean_dsn = clean_dsn.replace(" ", "")
-    DATABASE_URL = URL.create(
-        "oracle+oracledb_async",
-        username=settings.DB_USER,
-        password=settings.DB_PASSWORD,
-        host=clean_dsn
+    # Async Engine configuration usando connect_args para ignorar URL encoding de senhas
+    engine = create_async_engine(
+        "oracle+oracledb_async://",
+        connect_args={
+            "user": settings.DB_USER,
+            "password": clean_password,
+            "dsn": clean_dsn
+        },
+        echo=False,
+        pool_pre_ping=True,
+        pool_size=5,
+        max_overflow=10,
     )
 else:
     # Fallback para o modo local: host:port/service
     _host_port, _service = clean_dsn.rsplit("/", 1)
-    DATABASE_URL = f"oracle+oracledb_async://{settings.DB_USER}:{settings.DB_PASSWORD}@{_host_port}/?service_name={_service}"
-
-# Async Engine configuration
-engine = create_async_engine(
-    DATABASE_URL,
-    echo=False,
-    pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10,
-)
+    DATABASE_URL = f"oracle+oracledb_async://{settings.DB_USER}:{clean_password}@{_host_port}/?service_name={_service}"
+    engine = create_async_engine(
+        DATABASE_URL,
+        echo=False,
+        pool_pre_ping=True,
+        pool_size=5,
+        max_overflow=10,
+    )
 
 # Session factory
 AsyncSessionLocal = async_sessionmaker(
