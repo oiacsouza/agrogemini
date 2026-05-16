@@ -8,10 +8,16 @@ from app.core.config import settings
 
 # Connection URL: oracle+oracledb_async://user:password@host:port/?service_name=xxx
 # NOTE: The DSN must use ?service_name= to avoid the driver treating it as a SID.
-_host_port, _service = settings.DB_DSN.rsplit("/", 1)
-DATABASE_URL = (
-    f"oracle+oracledb_async://{settings.DB_USER}:{settings.DB_PASSWORD}@{_host_port}/?service_name={_service}"
-)
+import urllib.parse
+
+# Se o DSN for uma string TNS gigante da Oracle Cloud (começa com "(description=" ou "(DESCRIPTION=")
+if settings.DB_DSN.strip().upper().startswith("(DESCRIPTION"):
+    encoded_dsn = urllib.parse.quote_plus(settings.DB_DSN)
+    DATABASE_URL = f"oracle+oracledb_async://{settings.DB_USER}:{settings.DB_PASSWORD}@{encoded_dsn}"
+else:
+    # Fallback para o modo local: host:port/service
+    _host_port, _service = settings.DB_DSN.rsplit("/", 1)
+    DATABASE_URL = f"oracle+oracledb_async://{settings.DB_USER}:{settings.DB_PASSWORD}@{_host_port}/?service_name={_service}"
 
 # Async Engine configuration
 engine = create_async_engine(

@@ -23,7 +23,8 @@ export function LabSamples({ t, onViewDetail }) {
   const handleDownload = (e, id) => {
     e.stopPropagation();
     // Simulate download for now
-    window.open(`http://localhost:8000/api/v1/laudos/amostra/${id}/pdf`, '_blank');
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    window.open(`${apiBase}/api/v1/laudos/amostra/${id}/pdf`, '_blank');
   };
 
   return (
