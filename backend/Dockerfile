@@ -9,13 +9,7 @@ ENV APP_HOME=/app
 # Cria e define o diretório de trabalho
 WORKDIR $APP_HOME
 
-# Instala dependências de sistema necessárias para o Oracle client, bcrypt e compilação
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libaio1 \
-    wget \
-    unzip \
-    && rm -rf /var/lib/apt/lists/*
+
 
 # Instala os requisitos de Python
 COPY requirements.txt .
