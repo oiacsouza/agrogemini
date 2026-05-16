@@ -9,14 +9,21 @@ from app.core.config import settings
 # Connection URL: oracle+oracledb_async://user:password@host:port/?service_name=xxx
 # NOTE: The DSN must use ?service_name= to avoid the driver treating it as a SID.
 import urllib.parse
+from sqlalchemy.engine.url import URL
 
-# Se o DSN for uma string TNS gigante da Oracle Cloud (começa com "(description=" ou "(DESCRIPTION=")
-# Primeiro, removemos possíveis aspas duplas ou simples que o Render ou o Pydantic possam ter injetado
+# Se o DSN for uma string TNS gigante da Oracle Cloud
+# Removemos aspas, quebras de linha e espaços em branco que quebram o TNS parser do oracledb
 clean_dsn = settings.DB_DSN.strip("'\" \t\n\r")
 
 if clean_dsn.upper().startswith("(DESCRIPTION"):
-    encoded_dsn = urllib.parse.quote_plus(clean_dsn)
-    DATABASE_URL = f"oracle+oracledb_async://{settings.DB_USER}:{settings.DB_PASSWORD}@{encoded_dsn}"
+    # Remove todos os espaços internos da string TNS para evitar erros de parse
+    clean_dsn = clean_dsn.replace(" ", "")
+    DATABASE_URL = URL.create(
+        "oracle+oracledb_async",
+        username=settings.DB_USER,
+        password=settings.DB_PASSWORD,
+        host=clean_dsn
+    )
 else:
     # Fallback para o modo local: host:port/service
     _host_port, _service = clean_dsn.rsplit("/", 1)
