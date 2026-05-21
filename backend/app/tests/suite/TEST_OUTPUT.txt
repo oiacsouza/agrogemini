@@ -1,0 +1,494 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.5, pytest-9.0.3, pluggy-1.6.0 -- /home/zucchi/Projetos/agrogemini/backend/venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/zucchi/Projetos/agrogemini/backend
+configfile: pytest.ini
+plugins: anyio-4.13.0, asyncio-1.3.0, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 367 items
+
+app/tests/test_api_routes.py::TestHealthEndpoint::test_health_returns_200_with_mock_db PASSED [  0%]
+app/tests/test_api_routes.py::TestAuthValidation::test_login_missing_password_returns_422 PASSED [  0%]
+app/tests/test_api_routes.py::TestAuthValidation::test_login_missing_email_returns_422 PASSED [  0%]
+app/tests/test_api_routes.py::TestAuthValidation::test_login_invalid_email_format_returns_422 PASSED [  1%]
+app/tests/test_api_routes.py::TestAuthValidation::test_register_missing_fields_returns_422 PASSED [  1%]
+app/tests/test_api_routes.py::TestAuthValidation::test_login_with_real_service_returns_401_for_unknown_user PASSED [  1%]
+app/tests/test_api_routes.py::TestAuthValidation::test_me_returns_mock_user PASSED [  1%]
+app/tests/test_api_routes.py::TestAuthValidation::test_me_plan_returns_plan_info PASSED [  2%]
+app/tests/test_api_routes.py::TestFazendaValidation::test_create_fazenda_invalid_cnpj_returns_422 PASSED [  2%]
+app/tests/test_api_routes.py::TestFazendaValidation::test_create_fazenda_missing_nome_returns_422 PASSED [  2%]
+app/tests/test_api_routes.py::TestFazendaValidation::test_create_fazenda_missing_cpf_cnpj_returns_422 PASSED [  2%]
+app/tests/test_api_routes.py::TestFazendaValidation::test_list_fazendas_with_mocked_service PASSED [  3%]
+app/tests/test_api_routes.py::TestFazendaValidation::test_get_fazenda_mocked PASSED [  3%]
+app/tests/test_api_routes.py::TestUnauthorizedAccess::test_fazendas_no_auth_returns_error PASSED [  3%]
+app/tests/test_api_routes.py::TestUnauthorizedAccess::test_laboratorios_no_auth_returns_error PASSED [  4%]
+app/tests/test_api_routes.py::TestExceptionHandlers::test_validation_error_format PASSED [  4%]
+app/tests/test_api_routes.py::TestExceptionHandlers::test_404_not_found PASSED [  4%]
+app/tests/test_core_deps.py::TestRequireRole::test_admin_can_access_admin_only_route PASSED [  4%]
+app/tests/test_core_deps.py::TestRequireRole::test_non_admin_gets_forbidden PASSED [  5%]
+app/tests/test_core_deps.py::TestRequireRole::test_require_role_shortcuts_exist PASSED [  5%]
+app/tests/test_core_deps.py::TestGetCurrentUserUnit::test_no_credentials_raises_401 PASSED [  5%]
+app/tests/test_core_deps.py::TestGetCurrentUserUnit::test_invalid_token_raises_401 PASSED [  5%]
+app/tests/test_core_deps.py::TestGetCurrentUserUnit::test_token_without_sub_raises_401 PASSED [  6%]
+app/tests/test_core_deps.py::TestGetCurrentUserUnit::test_user_not_found_raises_401 PASSED [  6%]
+app/tests/test_core_deps.py::TestGetCurrentUserUnit::test_inactive_user_raises_403 PASSED [  6%]
+app/tests/test_core_deps.py::TestGetCurrentUserUnit::test_valid_user_returns_dict PASSED [  7%]
+app/tests/test_core_deps.py::TestGetCurrentUserOptional::test_no_credentials_returns_none PASSED [  7%]
+app/tests/test_core_deps.py::TestGetCurrentUserOptional::test_invalid_token_returns_none PASSED [  7%]
+app/tests/test_core_deps.py::TestGetCurrentUserOptional::test_token_without_sub_returns_none PASSED [  7%]
+app/tests/test_core_deps.py::TestGetCurrentUserOptional::test_user_not_found_returns_none PASSED [  8%]
+app/tests/test_core_deps.py::TestGetCurrentUserOptional::test_inactive_user_returns_none PASSED [  8%]
+app/tests/test_core_deps.py::TestGetCurrentUserOptional::test_valid_user_returns_dict PASSED [  8%]
+app/tests/test_core_security.py::TestHashPassword::test_returns_string PASSED [  8%]
+app/tests/test_core_security.py::TestHashPassword::test_hash_not_equal_to_plain PASSED [  9%]
+app/tests/test_core_security.py::TestHashPassword::test_different_calls_produce_different_hashes PASSED [  9%]
+app/tests/test_core_security.py::TestHashPassword::test_empty_string_hashes PASSED [  9%]
+app/tests/test_core_security.py::TestVerifyPassword::test_correct_password_returns_true PASSED [ 10%]
+app/tests/test_core_security.py::TestVerifyPassword::test_wrong_password_returns_false PASSED [ 10%]
+app/tests/test_core_security.py::TestVerifyPassword::test_invalid_hash_returns_false PASSED [ 10%]
+app/tests/test_core_security.py::TestVerifyPassword::test_empty_password_against_hash PASSED [ 10%]
+app/tests/test_core_security.py::TestCreateAccessToken::test_returns_string PASSED [ 11%]
+app/tests/test_core_security.py::TestCreateAccessToken::test_token_has_three_parts PASSED [ 11%]
+app/tests/test_core_security.py::TestCreateAccessToken::test_custom_expires_delta PASSED [ 11%]
+app/tests/test_core_security.py::TestCreateAccessToken::test_different_data_produces_different_tokens PASSED [ 11%]
+app/tests/test_core_security.py::TestDecodeToken::test_valid_token_returns_payload PASSED [ 12%]
+app/tests/test_core_security.py::TestDecodeToken::test_invalid_token_returns_none PASSED [ 12%]
+app/tests/test_core_security.py::TestDecodeToken::test_empty_string_returns_none PASSED [ 12%]
+app/tests/test_core_security.py::TestDecodeToken::test_garbage_string_returns_none PASSED [ 13%]
+app/tests/test_core_security.py::TestDecodeToken::test_round_trip_data_integrity PASSED [ 13%]
+app/tests/test_core_validators.py::TestValidateCPF::test_valid_cpf[529.982.247-25] PASSED [ 13%]
+app/tests/test_core_validators.py::TestValidateCPF::test_valid_cpf[52998224725] PASSED [ 13%]
+app/tests/test_core_validators.py::TestValidateCPF::test_valid_cpf[111.444.777-35] PASSED [ 14%]
+app/tests/test_core_validators.py::TestValidateCPF::test_valid_cpf[11144477735] PASSED [ 14%]
+app/tests/test_core_validators.py::TestValidateCPF::test_invalid_cpf[000.000.000-00] PASSED [ 14%]
+app/tests/test_core_validators.py::TestValidateCPF::test_invalid_cpf[111.111.111-11] PASSED [ 14%]
+app/tests/test_core_validators.py::TestValidateCPF::test_invalid_cpf[11111111111] PASSED [ 15%]
+app/tests/test_core_validators.py::TestValidateCPF::test_invalid_cpf[123.456.789-00] PASSED [ 15%]
+app/tests/test_core_validators.py::TestValidateCPF::test_invalid_cpf[12345678] PASSED [ 15%]
+app/tests/test_core_validators.py::TestValidateCPF::test_invalid_cpf[123456789012] PASSED [ 16%]
+app/tests/test_core_validators.py::TestValidateCPF::test_invalid_cpf[] PASSED [ 16%]
+app/tests/test_core_validators.py::TestValidateCNPJ::test_valid_cnpj[11.222.333/0001-81] PASSED [ 16%]
+app/tests/test_core_validators.py::TestValidateCNPJ::test_valid_cnpj[11222333000181] PASSED [ 16%]
+app/tests/test_core_validators.py::TestValidateCNPJ::test_valid_cnpj[45.997.418/0001-53] PASSED [ 17%]
+app/tests/test_core_validators.py::TestValidateCNPJ::test_valid_cnpj[45997418000153] PASSED [ 17%]
+app/tests/test_core_validators.py::TestValidateCNPJ::test_invalid_cnpj[00.000.000/0000-00] PASSED [ 17%]
+app/tests/test_core_validators.py::TestValidateCNPJ::test_invalid_cnpj[11.111.111/1111-11] PASSED [ 17%]
+app/tests/test_core_validators.py::TestValidateCNPJ::test_invalid_cnpj[11111111111111] PASSED [ 18%]
+app/tests/test_core_validators.py::TestValidateCNPJ::test_invalid_cnpj[11.222.333/0001-00] PASSED [ 18%]
+app/tests/test_core_validators.py::TestValidateCNPJ::test_invalid_cnpj[1234567] PASSED [ 18%]
+app/tests/test_core_validators.py::TestValidateCNPJ::test_invalid_cnpj[123456789012345] PASSED [ 19%]
+app/tests/test_core_validators.py::TestValidateCNPJ::test_invalid_cnpj[] PASSED [ 19%]
+app/tests/test_core_validators.py::TestValidateCpfCnpj::test_valid_cpf_dispatched_correctly PASSED [ 19%]
+app/tests/test_core_validators.py::TestValidateCpfCnpj::test_valid_cnpj_dispatched_correctly PASSED [ 19%]
+app/tests/test_core_validators.py::TestValidateCpfCnpj::test_invalid_cpf_dispatched_correctly PASSED [ 20%]
+app/tests/test_core_validators.py::TestValidateCpfCnpj::test_invalid_cnpj_dispatched_correctly PASSED [ 20%]
+app/tests/test_core_validators.py::TestValidateCpfCnpj::test_wrong_length_returns_false PASSED [ 20%]
+app/tests/test_core_validators.py::TestValidateCpfCnpj::test_empty_returns_false PASSED [ 20%]
+app/tests/test_core_validators.py::TestValidateCpfCnpj::test_letters_only_returns_false PASSED [ 21%]
+app/tests/test_error_prevention.py::test_create_fazenda_invalid_cnpj PASSED [ 21%]
+app/tests/test_error_prevention.py::test_login_missing_fields PASSED     [ 21%]
+app/tests/test_fertilizer_parser.py::TestPpmToPercent::test_none_returns_none PASSED [ 22%]
+app/tests/test_fertilizer_parser.py::TestPpmToPercent::test_basic_conversion PASSED [ 22%]
+app/tests/test_fertilizer_parser.py::TestPpmToPercent::test_rounding PASSED [ 22%]
+app/tests/test_fertilizer_parser.py::TestPpmToPercent::test_custom_decimals PASSED [ 22%]
+app/tests/test_fertilizer_parser.py::TestPpmToPercent::test_zero PASSED  [ 23%]
+app/tests/test_fertilizer_parser.py::TestParseFloat::test_valid_number PASSED [ 23%]
+app/tests/test_fertilizer_parser.py::TestParseFloat::test_comma_decimal PASSED [ 23%]
+app/tests/test_fertilizer_parser.py::TestParseFloat::test_empty_returns_none PASSED [ 23%]
+app/tests/test_fertilizer_parser.py::TestParseFloat::test_whitespace_returns_none PASSED [ 24%]
+app/tests/test_fertilizer_parser.py::TestParseFloat::test_text_returns_none PASSED [ 24%]
+app/tests/test_fertilizer_parser.py::TestParseFloat::test_integer_string PASSED [ 24%]
+app/tests/test_fertilizer_parser.py::TestNormalizeHelpers::test_normalize_token_strips_special_chars PASSED [ 25%]
+app/tests/test_fertilizer_parser.py::TestNormalizeHelpers::test_normalize_token_lowercase PASSED [ 25%]
+app/tests/test_fertilizer_parser.py::TestNormalizeHelpers::test_normalize_cell_strips_whitespace PASSED [ 25%]
+app/tests/test_fertilizer_parser.py::TestNormalizeHelpers::test_normalize_cell_non_string PASSED [ 25%]
+app/tests/test_fertilizer_parser.py::TestColRefToIndex::test_a1_returns_1 PASSED [ 26%]
+app/tests/test_fertilizer_parser.py::TestColRefToIndex::test_b1_returns_2 PASSED [ 26%]
+app/tests/test_fertilizer_parser.py::TestColRefToIndex::test_z1_returns_26 PASSED [ 26%]
+app/tests/test_fertilizer_parser.py::TestColRefToIndex::test_aa1_returns_27 PASSED [ 26%]
+app/tests/test_fertilizer_parser.py::TestColRefToIndex::test_empty_ref_returns_0 PASSED [ 27%]
+app/tests/test_fertilizer_parser.py::TestColRefToIndex::test_numeric_only_returns_0 PASSED [ 27%]
+app/tests/test_fertilizer_parser.py::TestFindHeaderIndex::test_finds_header_at_index_0 PASSED [ 27%]
+app/tests/test_fertilizer_parser.py::TestFindHeaderIndex::test_finds_header_at_index_2 PASSED [ 28%]
+app/tests/test_fertilizer_parser.py::TestFindHeaderIndex::test_returns_none_when_not_found PASSED [ 28%]
+app/tests/test_fertilizer_parser.py::TestFindHeaderIndex::test_short_row_skipped PASSED [ 28%]
+app/tests/test_fertilizer_parser.py::TestBuildColumnSymbols::test_first_two_columns_fixed PASSED [ 28%]
+app/tests/test_fertilizer_parser.py::TestBuildColumnSymbols::test_element_symbols_extracted PASSED [ 29%]
+app/tests/test_fertilizer_parser.py::TestBuildColumnSymbols::test_unrecognized_column_gets_fallback PASSED [ 29%]
+app/tests/test_fertilizer_parser.py::TestBuildColumnSymbols::test_empty_header_list PASSED [ 29%]
+app/tests/test_fertilizer_parser.py::TestIsControlRow::test_control_row_detected[H2O-] PASSED [ 29%]
+app/tests/test_fertilizer_parser.py::TestIsControlRow::test_control_row_detected[-BRANCO] PASSED [ 30%]
+app/tests/test_fertilizer_parser.py::TestIsControlRow::test_control_row_detected[PADRAO-L001] PASSED [ 30%]
+app/tests/test_fertilizer_parser.py::TestIsControlRow::test_control_row_detected[S001-CLEANOUT] PASSED [ 30%]
+app/tests/test_fertilizer_parser.py::TestIsControlRow::test_control_row_detected[AGUA-] PASSED [ 31%]
+app/tests/test_fertilizer_parser.py::TestIsControlRow::test_non_control_row PASSED [ 31%]
+app/tests/test_fertilizer_parser.py::TestIsControlRow::test_case_insensitive PASSED [ 31%]
+app/tests/test_fertilizer_parser.py::TestBuildSampleFromRow::test_valid_row_builds_sample PASSED [ 31%]
+app/tests/test_fertilizer_parser.py::TestBuildSampleFromRow::test_empty_row_returns_none PASSED [ 32%]
+app/tests/test_fertilizer_parser.py::TestBuildSampleFromRow::test_both_ids_empty_returns_none PASSED [ 32%]
+app/tests/test_fertilizer_parser.py::TestBuildSampleFromRow::test_control_row_flagged PASSED [ 32%]
+app/tests/test_fertilizer_parser.py::TestBuildSampleFromRow::test_missing_value_skipped PASSED [ 32%]
+app/tests/test_fertilizer_parser.py::TestBuildSampleFromRow::test_sample_id_uses_machine_id_when_line_empty PASSED [ 33%]
+app/tests/test_fertilizer_parser.py::TestParseFertilizerCSV::test_parse_valid_csv PASSED [ 33%]
+app/tests/test_fertilizer_parser.py::TestParseFertilizerCSV::test_parse_csv_include_controls PASSED [ 33%]
+app/tests/test_fertilizer_parser.py::TestParseFertilizerCSV::test_available_elements_sorted PASSED [ 34%]
+app/tests/test_fertilizer_parser.py::TestParseFertilizerCSV::test_file_name_preserved PASSED [ 34%]
+app/tests/test_fertilizer_parser.py::TestParseFertilizerCSV::test_empty_data_raises_value_error PASSED [ 34%]
+app/tests/test_fertilizer_parser.py::TestParseFertilizerCSV::test_no_header_raises_value_error PASSED [ 34%]
+app/tests/test_fertilizer_parser.py::TestParseFertilizerCSV::test_unsupported_extension_raises_value_error PASSED [ 35%]
+app/tests/test_fertilizer_parser.py::TestParseFertilizerCSV::test_total_rows_count PASSED [ 35%]
+app/tests/test_fertilizer_parser.py::TestParseFertilizerXLSX::test_parse_valid_xlsx PASSED [ 35%]
+app/tests/test_fertilizer_parser.py::TestParseFertilizerXLSX::test_xlsx_with_controls_excluded PASSED [ 35%]
+app/tests/test_fertilizer_parser.py::TestParseFertilizerXLSX::test_xlsx_include_controls PASSED [ 36%]
+app/tests/test_fertilizer_parser.py::TestReadRows::test_csv_extension_routed PASSED [ 36%]
+app/tests/test_fertilizer_parser.py::TestReadRows::test_xlsx_extension_routed PASSED [ 36%]
+app/tests/test_fertilizer_parser.py::TestReadRows::test_unsupported_raises PASSED [ 37%]
+app/tests/test_fertilizer_pdf.py::TestFit::test_short_string_unchanged PASSED [ 37%]
+app/tests/test_fertilizer_pdf.py::TestFit::test_none_returns_empty PASSED [ 37%]
+app/tests/test_fertilizer_pdf.py::TestFit::test_long_string_truncated PASSED [ 37%]
+app/tests/test_fertilizer_pdf.py::TestFit::test_exact_length_unchanged PASSED [ 38%]
+app/tests/test_fertilizer_pdf.py::TestFormatDecimal::test_none_returns_empty PASSED [ 38%]
+app/tests/test_fertilizer_pdf.py::TestFormatDecimal::test_value_formatted PASSED [ 38%]
+app/tests/test_fertilizer_pdf.py::TestFormatDecimal::test_decimal_uses_comma PASSED [ 38%]
+app/tests/test_fertilizer_pdf.py::TestRenderFertilizerReportPdf::test_returns_bytes PASSED [ 39%]
+app/tests/test_fertilizer_pdf.py::TestRenderFertilizerReportPdf::test_pdf_has_pdf_header PASSED [ 39%]
+app/tests/test_fertilizer_pdf.py::TestRenderFertilizerReportPdf::test_no_city_uses_default PASSED [ 39%]
+app/tests/test_fertilizer_pdf.py::TestRenderFertilizerReportPdf::test_no_technical_name_uses_default PASSED [ 40%]
+app/tests/test_fertilizer_pdf.py::TestRenderFertilizerReportPdf::test_no_technical_role_uses_default PASSED [ 40%]
+app/tests/test_fertilizer_pdf.py::TestRenderFertilizerReportPdf::test_empty_results PASSED [ 40%]
+app/tests/test_fertilizer_pdf.py::TestRenderFertilizerReportPdf::test_none_optional_fields PASSED [ 40%]
+app/tests/test_fertilizer_pdf.py::TestRenderFertilizerReportPdf::test_result_with_none_guarantee PASSED [ 41%]
+app/tests/test_fertilizer_pdf.py::TestDrawHelpers::test_draw_section_title PASSED [ 41%]
+app/tests/test_fertilizer_pdf.py::TestDrawHelpers::test_draw_two_columns_equal_rows PASSED [ 41%]
+app/tests/test_fertilizer_pdf.py::TestDrawHelpers::test_draw_two_columns_unequal_rows PASSED [ 41%]
+app/tests/test_fertilizer_pdf.py::TestDrawHelpers::test_draw_two_columns_none_values PASSED [ 42%]
+app/tests/test_fertilizer_pdf.py::TestDrawHelpers::test_draw_results_table PASSED [ 42%]
+app/tests/test_fertilizer_pdf.py::TestDrawHelpers::test_draw_results_table_empty PASSED [ 42%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_returns_payload_response PASSED [ 43%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_results_contain_three_items PASSED [ 43%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_calcium_result PASSED [ 43%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_magnesium_result PASSED [ 43%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_sulfur_result PASSED [ 44%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_none_results_when_no_measurements PASSED [ 44%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_default_technical_responsible_name PASSED [ 44%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_custom_technical_responsible_name PASSED [ 44%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_default_auth_url PASSED [ 45%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_custom_auth_url PASSED [ 45%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_auth_code_generated_when_none PASSED [ 45%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_auth_code_preserved_when_provided PASSED [ 46%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_description_fallback_to_sample_line PASSED [ 46%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_description_overrides_sample_line PASSED [ 46%]
+app/tests/test_fertilizer_report.py::TestBuildFertilizerReportPayload::test_optional_fields_pass_through PASSED [ 46%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_get_all PASSED [ 47%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_get_by_id_found PASSED [ 47%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_get_by_id_not_found PASSED [ 47%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_get_by_email PASSED [ 47%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_get_by_email_with_password PASSED [ 48%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_get_by_tipo PASSED [ 48%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_create_raw PASSED [ 48%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_update_with_data PASSED [ 49%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_update_no_data PASSED [ 49%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_update_with_senha PASSED [ 49%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_update_ultimo_acesso PASSED [ 49%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_delete_found PASSED [ 50%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_delete_not_found PASSED [ 50%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_get_user_plan_adm PASSED [ 50%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_get_user_plan_ue_with_plan PASSED [ 50%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_get_user_plan_ue_no_plan PASSED [ 51%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_get_user_plan_up PASSED [ 51%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_count_by_tipo PASSED [ 51%]
+app/tests/test_repositories.py::TestUsuarioRepository::test_count_all PASSED [ 52%]
+app/tests/test_repositories.py::TestFazendaRepository::test_get_all PASSED [ 52%]
+app/tests/test_repositories.py::TestFazendaRepository::test_get_by_id PASSED [ 52%]
+app/tests/test_repositories.py::TestFazendaRepository::test_get_by_cpf_cnpj PASSED [ 52%]
+app/tests/test_repositories.py::TestFazendaRepository::test_update_with_data PASSED [ 53%]
+app/tests/test_repositories.py::TestFazendaRepository::test_update_no_data PASSED [ 53%]
+app/tests/test_repositories.py::TestFazendaRepository::test_delete PASSED [ 53%]
+app/tests/test_repositories.py::TestFazendaRepository::test_get_usuarios PASSED [ 53%]
+app/tests/test_repositories.py::TestFazendaRepository::test_add_usuario PASSED [ 54%]
+app/tests/test_routes_extra.py::TestLaboratorioRoutes::test_list_labs_adm PASSED [ 54%]
+app/tests/test_routes_extra.py::TestLaboratorioRoutes::test_get_lab_with_access PASSED [ 54%]
+app/tests/test_routes_extra.py::TestLaboratorioRoutes::test_list_my_labs PASSED [ 55%]
+app/tests/test_routes_extra.py::TestLaboratorioRoutes::test_get_lab_usuarios PASSED [ 55%]
+app/tests/test_routes_extra.py::TestLaboratorioRoutes::test_get_lab_telefones PASSED [ 55%]
+app/tests/test_routes_extra.py::TestLaboratorioRoutes::test_get_lab_clientes PASSED [ 55%]
+app/tests/test_routes_extra.py::TestLaboratorioRoutes::test_delete_laboratorio PASSED [ 56%]
+app/tests/test_routes_extra.py::TestLaboratorioRoutes::test_create_lab_missing_fields PASSED [ 56%]
+app/tests/test_routes_extra.py::TestDashboardRoutes::test_dashboard_endpoint PASSED [ 56%]
+app/tests/test_routes_extra.py::TestDashboardRoutes::test_stats_endpoint PASSED [ 56%]
+app/tests/test_routes_extra.py::TestDashboardRoutes::test_trends_endpoint PASSED [ 57%]
+app/tests/test_routes_extra.py::TestAdminRoutes::test_list_users PASSED  [ 57%]
+app/tests/test_routes_extra.py::TestAdminRoutes::test_list_labs PASSED   [ 57%]
+app/tests/test_routes_extra.py::TestAdminRoutes::test_list_producers PASSED [ 58%]
+app/tests/test_routes_extra.py::TestAdminRoutes::test_openapi_catalog PASSED [ 58%]
+app/tests/test_routes_extra.py::TestAdminRoutes::test_system_checks_post PASSED [ 58%]
+app/tests/test_routes_extra.py::TestAdminRoutes::test_admin_dashboard PASSED [ 58%]
+app/tests/test_routes_extra.py::TestAmostraRoutes::test_list_amostras_as_adm PASSED [ 59%]
+app/tests/test_routes_extra.py::TestAmostraRoutes::test_get_amostra_not_found PASSED [ 59%]
+app/tests/test_routes_extra.py::TestAmostraRoutes::test_get_amostras_by_cliente_as_adm PASSED [ 59%]
+app/tests/test_routes_extra.py::TestAmostraRoutes::test_minhas_amostras PASSED [ 59%]
+app/tests/test_routes_extra.py::TestLaudoRoutes::test_list_laudos PASSED [ 60%]
+app/tests/test_routes_extra.py::TestLaudoRoutes::test_get_laudo_not_found PASSED [ 60%]
+app/tests/test_routes_extra.py::TestLaudoRoutes::test_get_resultados PASSED [ 60%]
+app/tests/test_routes_extra.py::TestLaudoRoutes::test_get_laudos_by_amostra FAILED [ 61%]
+app/tests/test_routes_extra.py::TestLaudoRoutes::test_get_laudos_by_cliente PASSED [ 61%]
+app/tests/test_routes_extra.py::TestLaudoRoutes::test_delete_laudo PASSED [ 61%]
+app/tests/test_routes_extra.py::TestTalhaoRoutes::test_list_talhoes PASSED [ 61%]
+app/tests/test_routes_extra.py::TestTalhaoRoutes::test_get_talhao_not_found PASSED [ 62%]
+app/tests/test_routes_extra.py::TestTalhaoRoutes::test_delete_talhao PASSED [ 62%]
+app/tests/test_routes_extra.py::TestUsuarioRoutes::test_list_usuarios PASSED [ 62%]
+app/tests/test_routes_extra.py::TestUsuarioRoutes::test_get_usuario_not_found PASSED [ 62%]
+app/tests/test_routes_extra.py::TestUsuarioRoutes::test_delete_usuario PASSED [ 63%]
+app/tests/test_routes_extra.py::TestEnderecoRoutes::test_list_enderecos PASSED [ 63%]
+app/tests/test_routes_extra.py::TestEnderecoRoutes::test_get_endereco_not_found PASSED [ 63%]
+app/tests/test_routes_extra.py::TestEnderecoRoutes::test_delete_endereco PASSED [ 64%]
+app/tests/test_routes_extra.py::TestImportacaoRoutes::test_list_importacoes PASSED [ 64%]
+app/tests/test_routes_extra.py::TestImportacaoRoutes::test_get_importacao_not_found PASSED [ 64%]
+app/tests/test_routes_extra.py::TestFertilizerRoutes::test_preview_unsupported_format PASSED [ 64%]
+app/tests/test_routes_extra.py::TestFertilizerRoutes::test_preview_valid_csv FAILED [ 65%]
+app/tests/test_routes_extra.py::TestFertilizerRoutes::test_build_report_payload FAILED [ 65%]
+app/tests/test_routes_extra.py::TestFertilizerRoutes::test_render_pdf FAILED [ 65%]
+app/tests/test_services_crud.py::TestFazendaService::test_get_all PASSED [ 65%]
+app/tests/test_services_crud.py::TestFazendaService::test_get_by_id_found PASSED [ 66%]
+app/tests/test_services_crud.py::TestFazendaService::test_get_by_id_not_found_raises_404 PASSED [ 66%]
+app/tests/test_services_crud.py::TestFazendaService::test_create PASSED  [ 66%]
+app/tests/test_services_crud.py::TestFazendaService::test_update PASSED  [ 67%]
+app/tests/test_services_crud.py::TestFazendaService::test_delete PASSED  [ 67%]
+app/tests/test_services_crud.py::TestFazendaService::test_get_talhoes PASSED [ 67%]
+app/tests/test_services_crud.py::TestFazendaService::test_get_usuarios PASSED [ 67%]
+app/tests/test_services_crud.py::TestFazendaService::test_add_usuario PASSED [ 68%]
+app/tests/test_services_crud.py::TestFazendaService::test_get_all_talhoes PASSED [ 68%]
+app/tests/test_services_crud.py::TestFazendaService::test_get_talhao_by_id_found PASSED [ 68%]
+app/tests/test_services_crud.py::TestFazendaService::test_get_talhao_by_id_not_found PASSED [ 68%]
+app/tests/test_services_crud.py::TestFazendaService::test_create_talhao PASSED [ 69%]
+app/tests/test_services_crud.py::TestFazendaService::test_update_talhao PASSED [ 69%]
+app/tests/test_services_crud.py::TestFazendaService::test_delete_talhao_success PASSED [ 69%]
+app/tests/test_services_crud.py::TestFazendaService::test_delete_talhao_failure_raises_500 PASSED [ 70%]
+app/tests/test_services_crud.py::TestAmostraService::test_get_all PASSED [ 70%]
+app/tests/test_services_crud.py::TestAmostraService::test_get_all_with_lab_id PASSED [ 70%]
+app/tests/test_services_crud.py::TestAmostraService::test_get_all_by_labs PASSED [ 70%]
+app/tests/test_services_crud.py::TestAmostraService::test_get_by_id_found PASSED [ 71%]
+app/tests/test_services_crud.py::TestAmostraService::test_get_by_id_not_found PASSED [ 71%]
+app/tests/test_services_crud.py::TestAmostraService::test_get_by_cliente PASSED [ 71%]
+app/tests/test_services_crud.py::TestAmostraService::test_create PASSED  [ 71%]
+app/tests/test_services_crud.py::TestAmostraService::test_update PASSED  [ 72%]
+app/tests/test_services_crud.py::TestAmostraService::test_delete PASSED  [ 72%]
+app/tests/test_services_crud.py::TestLaudoService::test_get_all PASSED   [ 72%]
+app/tests/test_services_crud.py::TestLaudoService::test_get_all_by_labs PASSED [ 73%]
+app/tests/test_services_crud.py::TestLaudoService::test_get_by_id_found PASSED [ 73%]
+app/tests/test_services_crud.py::TestLaudoService::test_get_by_id_not_found PASSED [ 73%]
+app/tests/test_services_crud.py::TestLaudoService::test_get_by_amostra PASSED [ 73%]
+app/tests/test_services_crud.py::TestLaudoService::test_get_by_cliente PASSED [ 74%]
+app/tests/test_services_crud.py::TestLaudoService::test_create PASSED    [ 74%]
+app/tests/test_services_crud.py::TestLaudoService::test_update PASSED    [ 74%]
+app/tests/test_services_crud.py::TestLaudoService::test_delete_success PASSED [ 74%]
+app/tests/test_services_crud.py::TestLaudoService::test_delete_failure_raises_500 PASSED [ 75%]
+app/tests/test_services_crud.py::TestLaudoService::test_get_resultados PASSED [ 75%]
+app/tests/test_services_crud.py::TestLaudoService::test_add_resultado PASSED [ 75%]
+app/tests/test_services_crud.py::TestDashboardService::test_get_stats PASSED [ 76%]
+app/tests/test_services_crud.py::TestDashboardService::test_get_trends PASSED [ 76%]
+app/tests/test_services_crud.py::TestDashboardService::test_get_dashboard PASSED [ 76%]
+app/tests/test_services_crud.py::TestAdminService::test_get_dashboard PASSED [ 76%]
+app/tests/test_services_crud.py::TestAdminService::test_get_all_users_no_filter PASSED [ 77%]
+app/tests/test_services_crud.py::TestAdminService::test_get_all_users_with_filter PASSED [ 77%]
+app/tests/test_services_crud.py::TestAdminService::test_get_all_labs PASSED [ 77%]
+app/tests/test_services_crud.py::TestAdminService::test_get_all_producers PASSED [ 77%]
+app/tests/test_services_extra.py::TestEnderecoService::test_get_all PASSED [ 78%]
+app/tests/test_services_extra.py::TestEnderecoService::test_get_by_id_found PASSED [ 78%]
+app/tests/test_services_extra.py::TestEnderecoService::test_get_by_id_not_found PASSED [ 78%]
+app/tests/test_services_extra.py::TestEnderecoService::test_create PASSED [ 79%]
+app/tests/test_services_extra.py::TestEnderecoService::test_update PASSED [ 79%]
+app/tests/test_services_extra.py::TestEnderecoService::test_delete PASSED [ 79%]
+app/tests/test_services_extra.py::TestImportacaoService::test_get_all PASSED [ 79%]
+app/tests/test_services_extra.py::TestImportacaoService::test_get_all_with_lab PASSED [ 80%]
+app/tests/test_services_extra.py::TestImportacaoService::test_get_all_by_labs PASSED [ 80%]
+app/tests/test_services_extra.py::TestImportacaoService::test_get_by_id_found PASSED [ 80%]
+app/tests/test_services_extra.py::TestImportacaoService::test_get_by_id_not_found PASSED [ 80%]
+app/tests/test_services_extra.py::TestImportacaoService::test_create PASSED [ 81%]
+app/tests/test_services_extra.py::TestImportacaoService::test_update PASSED [ 81%]
+app/tests/test_services_extra.py::TestImportacaoService::test_delete_success PASSED [ 81%]
+app/tests/test_services_extra.py::TestImportacaoService::test_delete_failure_raises_500 PASSED [ 82%]
+app/tests/test_services_extra.py::TestUsuarioService::test_get_all PASSED [ 82%]
+app/tests/test_services_extra.py::TestUsuarioService::test_get_usuarios PASSED [ 82%]
+app/tests/test_services_extra.py::TestUsuarioService::test_get_by_id_found PASSED [ 82%]
+app/tests/test_services_extra.py::TestUsuarioService::test_get_by_id_not_found PASSED [ 83%]
+app/tests/test_services_extra.py::TestUsuarioService::test_get_usuarios_by_tipo PASSED [ 83%]
+app/tests/test_services_extra.py::TestUsuarioService::test_create_usuario_new_email PASSED [ 83%]
+app/tests/test_services_extra.py::TestUsuarioService::test_create_usuario_duplicate_email_raises_400 PASSED [ 83%]
+app/tests/test_services_extra.py::TestUsuarioService::test_update_usuario_same_email PASSED [ 84%]
+app/tests/test_services_extra.py::TestUsuarioService::test_update_usuario_new_email_taken PASSED [ 84%]
+app/tests/test_services_extra.py::TestUsuarioService::test_update_usuario_new_email_free PASSED [ 84%]
+app/tests/test_services_extra.py::TestUsuarioService::test_delete_usuario_success PASSED [ 85%]
+app/tests/test_services_extra.py::TestUsuarioService::test_delete_usuario_failure_raises_500 PASSED [ 85%]
+app/tests/test_services_extra.py::TestAuthService::test_login_user_not_found PASSED [ 85%]
+app/tests/test_services_extra.py::TestAuthService::test_login_wrong_password PASSED [ 85%]
+app/tests/test_services_extra.py::TestAuthService::test_login_inactive_user PASSED [ 86%]
+app/tests/test_services_extra.py::TestAuthService::test_login_success PASSED [ 86%]
+app/tests/test_services_extra.py::TestAuthService::test_register_duplicate_email PASSED [ 86%]
+app/tests/test_services_extra.py::TestAuthService::test_register_ue_user PASSED [ 86%]
+app/tests/test_services_extra.py::TestAuthService::test_register_up_user_creates_lab PASSED [ 87%]
+app/tests/test_services_extra.py::TestAuthService::test_register_unknown_tipo_defaults_to_uc PASSED [ 87%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_get_all PASSED [ 87%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_get_with_stats PASSED [ 88%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_get_by_id_found PASSED [ 88%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_get_by_id_not_found PASSED [ 88%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_get_by_user PASSED [ 88%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_create PASSED [ 89%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_create_for_user_with_usuario_id_none PASSED [ 89%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_create_for_user_with_usuario_id_set PASSED [ 89%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_update PASSED [ 89%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_delete PASSED [ 90%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_get_usuarios PASSED [ 90%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_add_usuario PASSED [ 90%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_remove_usuario PASSED [ 91%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_get_telefones PASSED [ 91%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_add_telefone PASSED [ 91%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_get_clientes PASSED [ 91%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_add_cliente PASSED [ 92%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_create_or_link_cliente_lab_not_found PASSED [ 92%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_create_or_link_cliente_missing_fields PASSED [ 92%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_create_or_link_cliente_existing_non_ue PASSED [ 92%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_create_or_link_cliente_existing_inactive_ue PASSED [ 93%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_create_or_link_cliente_new_user PASSED [ 93%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_create_or_link_cliente_existing_link PASSED [ 93%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_create_or_link_cliente_integrity_error_cliente PASSED [ 94%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_create_or_link_cliente_integrity_error_other PASSED [ 94%]
+app/tests/test_services_laboratorio.py::TestLaboratorioService::test_create_or_link_cliente_sqlalchemy_error PASSED [ 94%]
+app/tests/test_services_laboratorio.py::TestLabAccessService::test_adm_sees_all_labs PASSED [ 94%]
+app/tests/test_services_laboratorio.py::TestLabAccessService::test_lab_user_sees_own_and_children PASSED [ 95%]
+app/tests/test_services_laboratorio.py::TestLabAccessService::test_assert_lab_access_allowed PASSED [ 95%]
+app/tests/test_services_laboratorio.py::TestLabAccessService::test_assert_lab_access_denied PASSED [ 95%]
+app/tests/test_services_laboratorio.py::TestLabAccessService::test_visible_labs_for_user_empty PASSED [ 95%]
+app/tests/test_services_laboratorio.py::TestLabAccessService::test_visible_labs_for_user_with_results PASSED [ 96%]
+app/tests/test_services_laboratorio.py::TestLabAccessService::test_metric_lab_ids_for_user PASSED [ 96%]
+app/tests/test_services_laboratorio.py::TestLabAccessService::test_lab_user_with_parent_lab PASSED [ 96%]
+app/tests/test_system_checks.py::TestRouteDepNames::test_returns_set PASSED [ 97%]
+app/tests/test_system_checks.py::TestRouteDepNames::test_no_deps_returns_empty PASSED [ 97%]
+app/tests/test_system_checks.py::TestRunSystemChecks::test_checks_dict_structure PASSED [ 97%]
+app/tests/test_system_checks.py::TestRunSystemChecks::test_admin_openapi_route_exists PASSED [ 97%]
+app/tests/test_system_checks.py::TestRunSystemChecks::test_auth_check_exists PASSED [ 98%]
+app/tests/test_system_checks.py::TestRunSystemChecks::test_public_paths_not_flagged PASSED [ 98%]
+app/tests/test_system_checks.py::TestRunSystemChecks::test_empty_app_passes_openapi_check_as_failed PASSED [ 98%]
+app/tests/test_system_checks.py::TestRunSystemChecks::test_unprotected_routes_detected PASSED [ 98%]
+app/tests/test_system_checks.py::TestRunSystemChecks::test_protected_route_not_flagged PASSED [ 99%]
+app/tests/test_system_checks.py::TestRunSystemChecks::test_total_equals_len_checks PASSED [ 99%]
+app/tests/test_system_checks.py::TestRunSystemChecks::test_failed_count_consistent PASSED [ 99%]
+app/tests/test_system_checks.py::TestRunSystemChecks::test_overall_status_passed_when_no_failures PASSED [100%]
+
+=================================== FAILURES ===================================
+__________________ TestLaudoRoutes.test_get_laudos_by_amostra __________________
+app/tests/test_routes_extra.py:222: in test_get_laudos_by_amostra
+    assert r.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+----------------------------- Captured stderr call -----------------------------
+INFO:httpx:HTTP Request: GET http://testserver/api/v1/laudos/amostra/1 "HTTP/1.1 500 Internal Server Error"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: GET http://testserver/api/v1/laudos/amostra/1 "HTTP/1.1 500 Internal Server Error"
+_________________ TestFertilizerRoutes.test_preview_valid_csv __________________
+app/tests/test_routes_extra.py:349: in test_preview_valid_csv
+    assert r.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <Response [404 Not Found]>.status_code
+----------------------------- Captured stderr call -----------------------------
+INFO:httpx:HTTP Request: POST http://testserver/api/v1/fertilizer/preview "HTTP/1.1 404 Not Found"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/api/v1/fertilizer/preview "HTTP/1.1 404 Not Found"
+________________ TestFertilizerRoutes.test_build_report_payload ________________
+app/tests/test_routes_extra.py:362: in test_build_report_payload
+    assert r.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <Response [404 Not Found]>.status_code
+----------------------------- Captured stderr call -----------------------------
+INFO:httpx:HTTP Request: POST http://testserver/api/v1/fertilizer/report-payload "HTTP/1.1 404 Not Found"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/api/v1/fertilizer/report-payload "HTTP/1.1 404 Not Found"
+_____________________ TestFertilizerRoutes.test_render_pdf _____________________
+app/tests/test_routes_extra.py:370: in test_render_pdf
+    assert r.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <Response [404 Not Found]>.status_code
+----------------------------- Captured stderr call -----------------------------
+INFO:httpx:HTTP Request: POST http://testserver/api/v1/fertilizer/render-pdf "HTTP/1.1 404 Not Found"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/api/v1/fertilizer/render-pdf "HTTP/1.1 404 Not Found"
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.14.5-final-0 ________________
+
+Name                                     Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------
+app/__init__.py                              0      0   100%
+app/core/config.py                          11      0   100%
+app/core/deps.py                            51      0   100%
+app/core/security.py                        23      0   100%
+app/core/validators.py                      31      0   100%
+app/models/__init__.py                      12      0   100%
+app/models/admin.py                         16      0   100%
+app/models/amostra_laudo.py                 97      0   100%
+app/models/auditoria_arquivos.py            36      0   100%
+app/models/base.py                           6      0   100%
+app/models/comercial.py                     31      0   100%
+app/models/endereco.py                      18      0   100%
+app/models/fazenda.py                       29      0   100%
+app/models/inteligencia.py                  56      0   100%
+app/models/laboratorio.py                   44      0   100%
+app/models/permissoes.py                    22      0   100%
+app/models/talhao.py                        21      0   100%
+app/models/usuario.py                       29      0   100%
+app/repositories/fazenda_repository.py      46      5    89%   32-36
+app/repositories/usuario_repository.py      68      6    91%   45-59
+app/routers/__init__.py                      8      0   100%
+app/routers/admin.py                        31      0   100%
+app/routers/amostra.py                      69     33    52%   25, 28, 49, 52, 67-73, 83-103, 114-118, 128-133
+app/routers/auth.py                         30      2    93%   21-22
+app/routers/dashboard.py                    19      0   100%
+app/routers/endereco.py                     22      2    91%   35, 45
+app/routers/fazenda.py                      28      5    82%   35, 45, 54, 63, 72
+app/routers/fertilizer.py                   26      8    69%   25, 41, 46-52
+app/routers/health.py                       12      1    92%   15
+app/routers/importacao.py                   31     10    68%   30-31, 40-41, 51-53, 62-64
+app/routers/laboratorio.py                 127     74    42%   34-57, 92-95, 105-106, 136-209, 219-221, 252-253
+app/routers/laudo.py                        49     10    80%   31-33, 55, 65-66, 76-78, 108
+app/routers/talhao.py                       22      2    91%   35, 45
+app/routers/usuario.py                      23      2    91%   36, 46
+app/schemas/__init__.py                      0      0   100%
+app/schemas/amostra.py                      37      0   100%
+app/schemas/auth.py                         22      0   100%
+app/schemas/dashboard.py                     9      0   100%
+app/schemas/endereco.py                     22      0   100%
+app/schemas/fazenda.py                      49      0   100%
+app/schemas/fertilizer.py                   61      0   100%
+app/schemas/importacao.py                   20      0   100%
+app/schemas/laboratorio.py                  44      0   100%
+app/schemas/laudo.py                        64      0   100%
+app/schemas/usuario.py                      16      0   100%
+app/services/__init__.py                     0      0   100%
+app/services/access_control.py              65      8    88%   43, 53, 86, 91-95
+app/services/admin_service.py               38      0   100%
+app/services/amostra_service.py             28      0   100%
+app/services/auth_service.py                43      1    98%   54
+app/services/dashboard_service.py           22      0   100%
+app/services/endereco_service.py            24      0   100%
+app/services/fazenda_service.py             54      0   100%
+app/services/fertilizer_parser.py          175     15    91%   87, 95, 101, 104, 106, 120, 127-128, 137, 150-151, 155, 161-163
+app/services/fertilizer_pdf.py             117      0   100%
+app/services/fertilizer_report.py            6      0   100%
+app/services/importacao_service.py          29      0   100%
+app/services/laboratorio_service.py         95      0   100%
+app/services/laudo_service.py               39      0   100%
+app/services/system_checks.py               25      0   100%
+app/services/usuario_service.py             47      0   100%
+----------------------------------------------------------------------
+TOTAL                                     2295    184    92%
+Coverage HTML written to dir app/tests/htmlcov
+Coverage XML written to file app/tests/coverage.xml
+=========================== short test summary info ============================
+FAILED app/tests/test_routes_extra.py::TestLaudoRoutes::test_get_laudos_by_amostra - assert 500 == 200
+ +  where 500 = <Response [500 Internal Server Error]>.status_code
+FAILED app/tests/test_routes_extra.py::TestFertilizerRoutes::test_preview_valid_csv - assert 404 == 200
+ +  where 404 = <Response [404 Not Found]>.status_code
+FAILED app/tests/test_routes_extra.py::TestFertilizerRoutes::test_build_report_payload - assert 404 == 200
+ +  where 404 = <Response [404 Not Found]>.status_code
+FAILED app/tests/test_routes_extra.py::TestFertilizerRoutes::test_render_pdf - assert 404 == 200
+ +  where 404 = <Response [404 Not Found]>.status_code
+======================== 4 failed, 363 passed in 9.28s =========================

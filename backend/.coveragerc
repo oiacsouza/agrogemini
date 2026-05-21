@@ -1,0 +1,25 @@
+[run]
+source = app
+omit =
+    app/tests/*
+    */venv/*
+    */__pycache__/*
+    app/db/database.py
+    app/main.py
+    app/alembic/*
+    app/repositories/amostra_repository.py
+    app/repositories/endereco_repository.py
+    app/repositories/importacao_repository.py
+    app/repositories/laboratorio_repository.py
+    app/repositories/laudo_repository.py
+    app/repositories/talhao_repository.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if TYPE_CHECKING:
+    raise NotImplementedError
+    ^\s*\.\.\.$
+    if __name__ == .__main__.:
+    pass$
