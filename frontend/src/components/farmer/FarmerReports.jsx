@@ -17,33 +17,48 @@ export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, on
   const [farms,  setFarms]  = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     async function loadFarmsAndReports() {
       setLoading(true);
+      setError('');
       try {
         const user = authService.getUser();
         if (!user) return;
 
         // Fetch user's farms and reports
-        const [userFarms, userReports] = await Promise.all([
+        const [farmsResult, reportsResult] = await Promise.allSettled([
           fazendaService.getAll(),
           laudoService.getByCliente(user.id)
         ]);
+        const userFarms = farmsResult.status === 'fulfilled' && Array.isArray(farmsResult.value)
+          ? farmsResult.value
+          : [];
+        const userReports = reportsResult.status === 'fulfilled' && Array.isArray(reportsResult.value)
+          ? reportsResult.value
+          : [];
+        if (reportsResult.status === 'rejected') {
+          setError(reportsResult.reason?.detail || 'NÃ£o foi possÃ­vel carregar os laudos do produtor.');
+        }
+        const farmNames = new Set(userFarms.map(farm => farm.nome).filter(Boolean));
+        userReports.forEach(report => {
+          farmNames.add(report.propriedade || report.razao_social || 'Sem propriedade');
+        });
 
         // Merge them for display
-        const mapped = userFarms.map(farm => ({
-          id: farm.id,
-          name: farm.nome,
+        const mapped = Array.from(farmNames).map((farmName, index) => ({
+          id: userFarms.find(farm => farm.nome === farmName)?.id || `report-farm-${index}`,
+          name: farmName,
           expanded: true,
           reports: userReports
-            .filter(r => r.propriedade === farm.nome)
+            .filter(r => (r.propriedade || r.razao_social || 'Sem propriedade') === farmName)
             .map(r => ({
               id: r.id,
               title: `Laudo #${r.numero_laudo}`,
               field: r.propriedade || 'Talhão Principal',
               date: r.data_emissao,
-              status: r.status.toLowerCase(),
+              status: String(r.status || 'RASCUNHO').toLowerCase(),
               score: 85, // Fallback score
               _raw: r
             }))
@@ -51,6 +66,7 @@ export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, on
         setFarms(mapped);
       } catch (err) {
         console.error('Error loading farmer data:', err);
+        setError(err?.detail || 'NÃ£o foi possÃ­vel carregar o portal do produtor.');
       } finally {
         setLoading(false);
       }
@@ -193,7 +209,7 @@ export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, on
         }}>
           {!loading && filtered.length === 0 && (
              <div style={{ textAlign: 'center', padding: '40px', color: tk.textSecondary }}>
-                Nenhuma fazenda ou laudo encontrado.
+                {error || 'Nenhuma fazenda ou laudo encontrado.'}
              </div>
           )}
           {filtered.map(farm => (
@@ -235,7 +251,7 @@ export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, on
                   report={report}
                   t={t}
                   isDark={isDark}
-                  onView={() => onViewReport?.(report)}
+                  onView={() => onViewReport?.({ ...report._raw, ...report })}
                 />
               ))}
             </div>

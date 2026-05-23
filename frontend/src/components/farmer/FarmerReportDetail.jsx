@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, MapPin, Droplets, Leaf, TrendingUp, AlertCircle, Download, Share2, CheckCircle, Lock } from 'lucide-react';
 import { useFarmerTheme }        from './hooks/useFarmerTheme';
 import { FarmerNutrientBar }     from './ui/FarmerNutrientBar';
@@ -44,19 +44,10 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
 
   const user = authService.getUser();
   const isPremium = user?.plano === 'PREMIUM' || user?.tipo_usuario === 'ADM';
-  const [showUpgradePopup, setShowUpgradePopup] = useState(false);
-  const [declinedUpgrade, setDeclinedUpgrade] = useState(false);
-
-  useEffect(() => {
-    if (!isPremium && user?.tipo_usuario === 'UE') {
-      const dismissed = sessionStorage.getItem('upgrade_popup_dismissed');
-      if (!dismissed) {
-        setShowUpgradePopup(true);
-      } else {
-        setDeclinedUpgrade(true);
-      }
-    }
-  }, [isPremium, user?.tipo_usuario]);
+  const shouldOfferUpgrade = !isPremium && user?.tipo_usuario === 'UE';
+  const initialUpgradeDismissed = shouldOfferUpgrade && sessionStorage.getItem('upgrade_popup_dismissed');
+  const [showUpgradePopup, setShowUpgradePopup] = useState(shouldOfferUpgrade && !initialUpgradeDismissed);
+  const [declinedUpgrade, setDeclinedUpgrade] = useState(Boolean(initialUpgradeDismissed));
 
   const showPremiumSections = isPremium || (!declinedUpgrade && !showUpgradePopup);
 

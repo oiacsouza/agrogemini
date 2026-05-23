@@ -7,11 +7,10 @@ import { amostraService, laudoService } from '../services/api';
 import { Badge } from './ui/Badge';
 
 export function LabSampleDetail({ t, sampleId, onBack }) {
-  const { isDark, activeLab } = useLab();
+  const { isDark } = useLab();
   const C = useLabTheme();
   
   const [sample, setSample] = useState(null);
-  const [laudo, setLaudo] = useState(null);
   const [results, setResults] = useState([]);
   const [nutrientData, setNutrientData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +26,6 @@ export function LabSampleDetail({ t, sampleId, onBack }) {
         try {
           const l = await laudoService.getByAmostra(sampleId);
           if (l) {
-            setLaudo(l);
             const res = await laudoService.getResultados(l.id);
             setResults(res);
             
@@ -39,7 +37,7 @@ export function LabSampleDetail({ t, sampleId, onBack }) {
             }));
             setNutrientData(mapped);
           }
-        } catch (err) {
+        } catch {
           console.log('No laudo found for this sample yet.');
         }
       } catch (err) {

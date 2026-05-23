@@ -4,7 +4,6 @@ import { Modal } from '../ui/Modal';
 import { Badge } from '../ui/Badge';
 import { toast } from '../ui/Toast';
 import { InputField } from '../ui/InputField';
-import { useLab } from '../../context/LabContext';
 import { useLabTheme } from './useLabTheme';
 import { usuarioService } from '../../services/api';
 
@@ -17,7 +16,6 @@ const PERMISSIONS = [
 ];
 
 export function LabUsers({ t }) {
-  const { isDark } = useLab();
   const C = useLabTheme();
 
   const [users, setUsers] = useState([]);
@@ -91,7 +89,7 @@ export function LabUsers({ t }) {
       setConfirmDelete(null);
       toast.success('Usuário removido com sucesso.');
       fetchUsers();
-    } catch (err) {
+    } catch {
       toast.error('Erro ao remover usuário.');
     }
   };

@@ -13,6 +13,11 @@ class FazendaService:
     async def get_all(self):
         return await self.repo.get_all()
 
+    async def get_for_user(self, user):
+        if user["tipo_usuario"] == "ADM":
+            return await self.repo.get_all()
+        return await self.repo.get_by_user(user["id"])
+
     async def get_by_id(self, fid: int):
         f = await self.repo.get_by_id(fid)
         if not f:
@@ -22,6 +27,12 @@ class FazendaService:
     async def create(self, data):
         new_id = await self.repo.create(data)
         return await self.get_by_id(new_id)
+
+    async def create_for_user(self, data, user):
+        fazenda = await self.create(data)
+        if user["tipo_usuario"] == "UE":
+            await self.repo.add_usuario(fazenda.id, user["id"], "DONO")
+        return fazenda
 
     async def update(self, fid: int, data):
         await self.get_by_id(fid)

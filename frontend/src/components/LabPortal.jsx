@@ -93,7 +93,6 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
     toggleDark,
     isProducer,
     labsLoading,
-    activeLab,
     setSelectedSampleId,
     selectedSampleId
   } = useLab();

@@ -10,7 +10,7 @@ import { laboratorioService } from '../../services/api';
 const emptyForm = { name: '', city: '', state: '', email: '', cnpj: '', manager: '' };
 
 export function LabBranches({ t }) {
-  const { isDark, labs: contextLabs, refreshDashboard } = useLab();
+  const { activeLab, labs: contextLabs, refreshDashboard } = useLab();
   const C = useLabTheme();
   const b = t.portal.branches;
 
@@ -21,11 +21,12 @@ export function LabBranches({ t }) {
   const [form, setForm] = useState(emptyForm);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [saving, setSaving] = useState(false);
+  const parentLab = contextLabs.find(lab => lab._raw?.tipo_unidade === 'MATRIZ' || !lab._raw?.laboratorio_pai_id) || activeLab;
 
   useEffect(() => {
     async function loadBranches() {
       // If we already have labs in context, use them as initial state to avoid flicker
-      if (contextLabs.length > 0 && branches.length === 0) {
+      if (contextLabs.length > 0) {
         setBranches(contextLabs.map(l => ({
           id: l.id,
           name: l.name,
@@ -35,7 +36,9 @@ export function LabBranches({ t }) {
           state: 'GO',
           employees: 0,
           samples: 0,
-          status: l.active ? 'ativa' : 'inativa'
+          status: l.active ? 'ativa' : 'inativa',
+          type: l._raw?.tipo_unidade || l.type,
+          parentId: l._raw?.laboratorio_pai_id || null
         })));
         setLoading(false);
       }
@@ -52,7 +55,9 @@ export function LabBranches({ t }) {
             state: 'GO',
             employees: 0,
             samples: 0,
-            status: l.ativo === 'Y' ? 'ativa' : 'inativa'
+            status: l.ativo === 'Y' ? 'ativa' : 'inativa',
+            type: l.tipo_unidade,
+            parentId: l.laboratorio_pai_id
           })));
         }
       } catch (err) {
@@ -103,7 +108,9 @@ export function LabBranches({ t }) {
         nome: form.name,
         email: form.email,
         cnpj: cnpjDigits,
-        ativo: 'Y'
+        ativo: 'Y',
+        tipo_unidade: editTarget ? undefined : 'FILIAL',
+        laboratorio_pai_id: editTarget ? undefined : parentLab?.id
       };
 
       if (editTarget) {
@@ -113,7 +120,9 @@ export function LabBranches({ t }) {
           name: updated.nome, 
           email: updated.email, 
           cnpj: updated.cnpj,
-          status: updated.ativo === 'Y' ? 'ativa' : 'inativa'
+          status: updated.ativo === 'Y' ? 'ativa' : 'inativa',
+          type: updated.tipo_unidade,
+          parentId: updated.laboratorio_pai_id
         } : br));
         toast.success(`${b.title} atualizada!`);
       } else {
@@ -128,7 +137,9 @@ export function LabBranches({ t }) {
           state: form.state || 'GO', 
           employees: 0, 
           samples: 0, 
-          status: newLab.ativo === 'Y' ? 'ativa' : 'inativa'
+          status: newLab.ativo === 'Y' ? 'ativa' : 'inativa',
+          type: newLab.tipo_unidade,
+          parentId: newLab.laboratorio_pai_id
         }]);
         toast.success(`${b.title} cadastrada!`);
       }

@@ -12,7 +12,7 @@ const emptyForm = { name: '', role: '', email: '', permission: 'tecnico' };
 const PERMISSIONS = ['admin', 'tecnico', 'viewer'];
 
 export function LabEmployees({ t }) {
-  const { isDark, activeLab } = useLab();
+  const { activeLab } = useLab();
   const e = t.portal.employees;
   const C = useLabTheme();
 
@@ -24,31 +24,32 @@ export function LabEmployees({ t }) {
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
-  useEffect(() => {
-    async function loadEmployees() {
-      if (!activeLab?.id) return;
-      setLoadingEmployees(true);
-      try {
-        const data = await laboratorioService.getUsuarios(activeLab.id);
-        if (Array.isArray(data)) {
-          setEmployees(data.map(item => ({
-            id: item.user.id,
-            name: `${item.user.nome} ${item.user.sobrenome}`,
-            role: item.papel,
-            email: item.user.email,
-            permission: item.papel.toLowerCase().includes('admin') ? 'admin' : 'tecnico',
-            status: item.user.ativo === 'Y' ? 'ativo' : 'inativa',
-            initials: `${item.user.nome?.[0] || ''}${item.user.sobrenome?.[0] || ''}`.toUpperCase()
-          })));
-        }
-      } catch (err) {
-        console.error('Error loading employees:', err);
-      } finally {
-        setLoadingEmployees(false);
+  const loadEmployees = useCallback(async () => {
+    if (!activeLab?.id) return;
+    setLoadingEmployees(true);
+    try {
+      const data = await laboratorioService.getUsuarios(activeLab.id);
+      if (Array.isArray(data)) {
+        setEmployees(data.map(item => ({
+          id: item.user.id,
+          name: `${item.user.nome} ${item.user.sobrenome}`,
+          role: item.papel,
+          email: item.user.email,
+          permission: item.papel.toLowerCase().includes('admin') ? 'admin' : 'tecnico',
+          status: item.user.ativo === 'Y' ? 'ativo' : 'inativa',
+          initials: `${item.user.nome?.[0] || ''}${item.user.sobrenome?.[0] || ''}`.toUpperCase()
+        })));
       }
+    } catch (err) {
+      console.error('Error loading employees:', err);
+    } finally {
+      setLoadingEmployees(false);
     }
-    loadEmployees();
   }, [activeLab]);
+
+  useEffect(() => {
+    loadEmployees();
+  }, [loadEmployees]);
 
   const validate = () => {
     const errs = {};
@@ -77,23 +78,8 @@ export function LabEmployees({ t }) {
         senha: 'changeme123' // Temporary default password for new users
       };
       
-      const res = await laboratorioService.addUsuario(activeLab.id, payload);
-      
-      const initials = form.name.trim().split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
-      
-      // Assume the backend returns the created ID or we generate a temp one
-      const newId = res?.user_id || res?.id || `e-${Date.now()}`;
-      
-      setEmployees(prev => [...prev, { 
-        id: newId, 
-        name: form.name, 
-        role: form.role,
-        email: form.email,
-        permission: form.permission,
-        initials, 
-        status: 'ativo' 
-      }]);
-      
+      await laboratorioService.addUsuario(activeLab.id, payload);
+      await loadEmployees();
       toast.success(`${e.title} cadastrado!`);
       setModal(false); 
       setForm(emptyForm); 

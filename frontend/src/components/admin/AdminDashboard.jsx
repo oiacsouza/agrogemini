@@ -9,7 +9,7 @@ import { adminService, authService } from '../../services/api';
 /**
  * AdminDashboard — Full-access admin panel with system-wide stats.
  */
-export function AdminDashboard({ t, onLogout, onNavigateAs }) {
+export function AdminDashboard({ onLogout, onNavigateAs }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

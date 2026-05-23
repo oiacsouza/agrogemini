@@ -28,7 +28,6 @@ export function PlanModal({
   isOpen,
   onClose,
   onSelectPlan,
-  t: _t,
   initialTab = 'produtor',
   contextTitle = '',
   contextMessage = '',

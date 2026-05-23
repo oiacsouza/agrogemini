@@ -5,7 +5,7 @@ import { useLabTheme } from './lab/useLabTheme';
 import { Badge } from './ui/Badge';
 
 export function LabSamples({ t, onViewDetail }) {
-  const { activeSamples, isDark } = useLab();
+  const { activeSamples } = useLab();
   const C = useLabTheme();
 
   const HealthBar = ({ value }) => {

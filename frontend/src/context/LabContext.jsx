@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authService, laboratorioService, dashboardService, amostraService } from '../services/api';
 
@@ -298,8 +299,9 @@ export function LabProvider({ children }) {
         setLabs([]);
         setActiveLabState(null);
       } finally {
-        if (cancelled) return;
-        setLabsLoading(false);
+        if (!cancelled) {
+          setLabsLoading(false);
+        }
       }
     }
 

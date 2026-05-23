@@ -891,7 +891,7 @@ export function LabImport({ t }) {
       <PlanModal
         isOpen={showPlanModal}
         onClose={() => setShowPlanModal(false)}
-        onSelectPlan={(planId) => {
+        onSelectPlan={() => {
           setShowPlanModal(false);
           toast.info('Fluxo de upgrade disponível apenas via backend.');
         }}

@@ -1,11 +1,9 @@
 import React from 'react';
 import { ArrowLeft, Mail, Phone, FileText, CheckCircle2, AlertCircle, TrendingUp } from 'lucide-react';
 import { Badge } from '../ui/Badge';
-import { useLab } from '../../context/LabContext';
 import { useLabTheme } from './useLabTheme';
 
 export function LabClientProfile({ client, onBack, onViewDetail, t }) {
-  const { isDark } = useLab();
   const C = useLabTheme();
   const c = t.portal.clients;
   const ds = t.portal.dashboard.status;
