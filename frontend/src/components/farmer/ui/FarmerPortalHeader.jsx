@@ -14,8 +14,9 @@ export function FarmerPortalHeader({ lang, setLang, isDark, toggleDark, onLogout
       background: tk.headerBg,
       borderBottom: `1px solid ${tk.cardBorder}`,
       boxShadow: tk.headerShadow,
-      position: 'relative',
-      zIndex: 1
+      position: 'sticky',
+      top: 0,
+      zIndex: 10
     }}>
       <div
         onClick={onLogout}

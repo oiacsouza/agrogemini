@@ -112,13 +112,13 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
         </div>
       </div>
 
-      <div style={{ flex: 1, padding: '16px 16px 28px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px 140px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
 
           <SectionCard tk={tk}>
             <SectionTitle icon={<TrendingUp size={16} color={tk.greenText} />} label={fpd.keyInsights} tk={tk} />
 
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 10 }}>
               <FarmerInsightChip
                 icon={<Droplets size={18} color={tk.chipPh.text} />}
                 label={fp.phTitle || "pH Level"}
@@ -262,9 +262,13 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
       </div>
 
       <div style={{
-        background: tk.pageBg,
-        padding: '0 16px 28px',
-        display: 'flex',
+        position:  'fixed',
+        bottom:    0,
+        left:      0,
+        right:     0,
+        background: tk.bottomBarBg,
+        padding:   '16px 16px 28px',
+        display:   'flex',
         justifyContent: 'center',
       }}>
         <div style={{ display: 'flex', gap: 10, width: '100%', maxWidth: 720 }}>
