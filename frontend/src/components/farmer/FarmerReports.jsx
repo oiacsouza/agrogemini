@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Search, SlidersHorizontal, ChevronUp, ChevronDown, Leaf, Plus } from 'lucide-react';
 import { useFarmerTheme } from './hooks/useFarmerTheme';
 import { FarmerReportCard } from './ui/FarmerReportCard';
 import { FarmerPortalHeader } from './ui/FarmerPortalHeader';
-import { fazendaService, laudoService, authService } from '../../services/api';
+import { fazendaService, laudoService, amostraService, authService } from '../../services/api';
 
 /**
  * FarmerReports - Screen 1 of the rural producer portal.
@@ -18,6 +18,7 @@ export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, on
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [error, setError] = useState('');
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     async function loadFarmsAndReports() {
@@ -27,21 +28,37 @@ export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, on
         const user = authService.getUser();
         if (!user) return;
 
-        const [farmsResult, reportsResult] = await Promise.allSettled([
+        const [farmsResult, reportsResult, samplesResult] = await Promise.allSettled([
           fazendaService.getAll(),
           laudoService.getByCliente(user.id),
+          amostraService.getByCliente(user.id),
         ]);
         const userFarms = farmsResult.status === 'fulfilled' && Array.isArray(farmsResult.value)
           ? farmsResult.value
           : [];
-        const userReports = reportsResult.status === 'fulfilled' && Array.isArray(reportsResult.value)
+        let userReports = reportsResult.status === 'fulfilled' && Array.isArray(reportsResult.value)
           ? reportsResult.value
+          : [];
+        const userSamples = samplesResult.status === 'fulfilled' && Array.isArray(samplesResult.value)
+          ? samplesResult.value
           : [];
         if (reportsResult.status === 'rejected') {
           setError(reportsResult.reason?.detail || 'Nao foi possivel carregar os laudos do produtor.');
         }
 
+        if (!userReports.length && userSamples.length) {
+          const reportResults = await Promise.allSettled(
+            userSamples.map(sample => laudoService.getByAmostra(sample.id))
+          );
+          userReports = reportResults
+            .filter(result => result.status === 'fulfilled' && result.value)
+            .map(result => result.value);
+        }
+
         const farmNames = new Set(userFarms.map(farm => farm.nome).filter(Boolean));
+        userSamples.forEach(sample => {
+          farmNames.add(sample.propriedade || sample.talhao_identificacao || sample.tipo_amostra || 'Sem propriedade');
+        });
         userReports.forEach(report => {
           farmNames.add(report.propriedade || report.razao_social || 'Sem propriedade');
         });
@@ -79,6 +96,67 @@ export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, on
   const toggleFarm = (id) =>
     setFarms(prev => prev.map(farm => farm.id === id ? { ...farm, expanded: !farm.expanded } : farm));
 
+  const handleAttachPdf = (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      setError('Selecione um arquivo PDF para anexar como laudo.');
+      return;
+    }
+
+    const attachedAt = new Date();
+    const pdfUrl = URL.createObjectURL(file);
+    const report = {
+      id: `pdf-${attachedAt.getTime()}`,
+      title: file.name.replace(/\.pdf$/i, ''),
+      field: 'PDF anexado pelo produtor',
+      date: attachedAt.toLocaleDateString('pt-BR'),
+      time: attachedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      status: 'anexado',
+      score: 0,
+      localPdfUrl: pdfUrl,
+      fileName: file.name,
+      _raw: {
+        id: `pdf-${attachedAt.getTime()}`,
+        numero_laudo: file.name.replace(/\.pdf$/i, ''),
+        propriedade: 'Laudos anexados',
+        data_emissao: attachedAt.toISOString(),
+        status: 'ANEXADO',
+        localPdfUrl: pdfUrl,
+        fileName: file.name,
+      },
+    };
+
+    setError('');
+    setFarms(prev => {
+      const existing = prev.find(farm => farm.id === 'attached-pdfs');
+      if (existing) {
+        return prev.map(farm => farm.id === 'attached-pdfs'
+          ? { ...farm, expanded: true, reports: [report, ...farm.reports] }
+          : farm
+        );
+      }
+      return [
+        {
+          id: 'attached-pdfs',
+          name: 'Laudos anexados',
+          expanded: true,
+          reports: [report],
+        },
+        ...prev,
+      ];
+    });
+  };
+
+  const openReportPdf = (report) => {
+    const pdfUrl = report.localPdfUrl || report.pdf_path || report._raw?.pdf_path;
+    if (pdfUrl) {
+      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   const filtered = farms
     .map(farm => ({
       ...farm,
@@ -115,8 +193,8 @@ export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, on
           <button
             id="fr-new-btn"
             type="button"
-            aria-label={fp.linkReport}
-            onClick={onGoToLab}
+            aria-label="Anexar laudo em PDF"
+            onClick={() => fileInputRef.current?.click()}
             style={{
               background: tk.green,
               color: '#fff',
@@ -134,6 +212,13 @@ export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, on
           >
             <Plus size={20} />
           </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf,.pdf"
+            onChange={handleAttachPdf}
+            style={{ display: 'none' }}
+          />
         </div>
 
         <div style={{ position: 'relative', marginBottom: 12 }}>
@@ -256,6 +341,7 @@ export function FarmerReports({ t, isDark = false, toggleDark, lang, setLang, on
                   t={t}
                   isDark={isDark}
                   onView={() => onViewReport?.({ ...report._raw, ...report })}
+                  onDownload={(report.localPdfUrl || report.pdf_path || report._raw?.pdf_path) ? () => openReportPdf(report) : undefined}
                 />
               ))}
             </div>

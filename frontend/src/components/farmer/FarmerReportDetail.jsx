@@ -16,9 +16,9 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
 
   // Derive display data from raw report
   const d = {
-    farmName: report?.propriedade || 'Fazenda',
-    field: report?.field || 'Talhão Principal',
-    date: report?.data_emissao ? new Date(report.data_emissao).toLocaleDateString('pt-BR') : '-',
+    farmName: report?.propriedade || report?.field || 'Fazenda',
+    field: report?.field || report?.fileName || 'Talhão Principal',
+    date: report?.data_emissao ? new Date(report.data_emissao).toLocaleDateString('pt-BR') : (report?.date || '-'),
     score: 85,
     scorePct: 85,
     ph: '6.2',
@@ -38,12 +38,17 @@ export function FarmerReportDetail({ t, isDark = false, report, onBack }) {
 
   const [downloading, setDownloading] = useState(false);
   const handleDownload = () => {
+    const pdfUrl = report?.localPdfUrl || report?.pdf_path;
+    if (pdfUrl) {
+      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
     setDownloading(true);
     setTimeout(() => setDownloading(false), 1600);
   };
 
   const user = authService.getUser();
-  const isPremium = user?.plano === 'PREMIUM' || user?.tipo_usuario === 'ADM';
+  const isPremium = user?.plano === 'PREMIUM' || user?.plano_ativo === 'PREMIUM' || user?.tipo_usuario === 'ADM';
   const shouldOfferUpgrade = !isPremium && user?.tipo_usuario === 'UE';
   const initialUpgradeDismissed = shouldOfferUpgrade && sessionStorage.getItem('upgrade_popup_dismissed');
   const [showUpgradePopup, setShowUpgradePopup] = useState(shouldOfferUpgrade && !initialUpgradeDismissed);

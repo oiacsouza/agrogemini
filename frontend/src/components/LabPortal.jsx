@@ -131,7 +131,7 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
     <div style={{ display: 'flex', minHeight: '100vh', background: C.bg, color: C.text, fontFamily: 'Inter, sans-serif' }}>
 
       {/* ── Sidebar ────────────────────────────────────────── */}
-      <aside style={{ width: '17rem', background: C.surface, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', flexShrink: 0 }}>
+      <aside style={{ width: '17rem', background: C.surface, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', minHeight: '100vh', flexShrink: 0 }}>
         <div style={{ padding: '2rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ background: 'linear-gradient(135deg, #10b981, #059669)', width: '2.5rem', height: '2.5rem', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(16,185,129,0.2)' }}>
             <Leaf color="white" size={20} />
