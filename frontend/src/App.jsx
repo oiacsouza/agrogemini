@@ -41,7 +41,8 @@ function App() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      const nextScrolled = window.scrollY > 50;
+      setScrolled((previous) => previous === nextScrolled ? previous : nextScrolled);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
