@@ -21,18 +21,6 @@ async def list_laudos(
     return await LaudoService(db).get_all_by_labs(await access.metric_lab_ids_for_user(user, lab_id), limit)
 
 
-@router.get("/{id}", response_model=LaudoResponse)
-async def get_laudo(
-    id: int,
-    db: AsyncSession = Depends(get_db_session),
-    user=Depends(require_role("UE", "UP", "UC", "ADM")),
-):
-    laudo = await LaudoService(db).get_by_id(id)
-    if user["tipo_usuario"] != "UE":
-        await LabAccessService(db).assert_lab_access(user, laudo.laboratorio_id)
-    return laudo
-
-
 @router.get("/amostra/{amostra_id}", response_model=LaudoResponse)
 async def get_laudo_by_amostra(
     amostra_id: int,
@@ -54,6 +42,18 @@ async def get_laudos_by_cliente(
     if user["tipo_usuario"] == "UE" and user["id"] != cliente_id:
         raise HTTPException(status_code=403, detail="Acesso negado")
     return await LaudoService(db).get_by_cliente(cliente_id)
+
+
+@router.get("/{id}", response_model=LaudoResponse)
+async def get_laudo(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "UP", "UC", "ADM")),
+):
+    laudo = await LaudoService(db).get_by_id(id)
+    if user["tipo_usuario"] != "UE":
+        await LabAccessService(db).assert_lab_access(user, laudo.laboratorio_id)
+    return laudo
 
 
 @router.post("/", response_model=LaudoResponse)
