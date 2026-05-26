@@ -12,13 +12,18 @@ router = APIRouter(prefix="/api/v1/laudos", tags=["Laudos"])
 
 @router.get("/", response_model=list[LaudoResponse])
 async def list_laudos(
-    lab_id: int = Query(..., description="ID do laboratório"),
+    lab_id: int | None = Query(None, description="ID do laboratório"),
     limit: int = Query(100),
     db: AsyncSession = Depends(get_db_session),
-    user=Depends(require_role("UP", "UC", "ADM")),
+    user=Depends(require_role("UE", "UP", "UC", "ADM")),
 ):
+    if user["tipo_usuario"] == "UE":
+        return await LaudoService(db).get_by_cliente(user["id"])
+        
     access = LabAccessService(db)
-    return await LaudoService(db).get_all_by_labs(await access.metric_lab_ids_for_user(user, lab_id), limit)
+    if lab_id is not None:
+        return await LaudoService(db).get_all_by_labs(await access.metric_lab_ids_for_user(user, lab_id), limit)
+    return await LaudoService(db).get_all_by_labs(await access.visible_lab_ids_for_user(user), limit)
 
 
 @router.get("/amostra/{amostra_id}", response_model=LaudoResponse)

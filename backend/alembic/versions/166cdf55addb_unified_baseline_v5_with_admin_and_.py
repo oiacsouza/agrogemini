@@ -67,7 +67,6 @@ def upgrade() -> None:
     sa.Column('ativo', sa.CHAR(length=1), nullable=False),
     sa.CheckConstraint("ativo IN ('Y','N')"),
     sa.CheckConstraint("permite_api IN ('Y','N')"),
-    sa.CheckConstraint("tipo IN ('BASICO','PREMIUM')"),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('tipo')
     )

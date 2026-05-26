@@ -190,7 +190,7 @@ function App() {
     const activeRoute = currentView === 'lab' ? 'dashboard' : currentView.replace('lab/', '');
     return (
       <AuthGuard
-        requiredRoles={['UP', 'UC', 'ADM']}
+        requiredRoles={['UE', 'UP', 'UC', 'ADM']}
         onUnauthorized={() => navigate('login')}
       >
         <LabPortal 

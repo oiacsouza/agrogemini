@@ -43,8 +43,6 @@ class LabAccessService:
                 continue
 
             visible.add(lab_id)
-            if lab.laboratorio_pai_id:
-                visible.add(lab.laboratorio_pai_id)
 
             stack = list(children_by_parent.get(lab_id, []))
             while stack:
@@ -73,7 +71,18 @@ class LabAccessService:
             .where(Laboratorio.id.in_(visible_ids))
             .order_by(Laboratorio.nome)
         )
-        return result.scalars().all()
+        labs = result.scalars().all()
+
+        user_id = int(user["id"])
+        role_result = await self.session.execute(
+            select(LaboratorioUsuario.laboratorio_id, LaboratorioUsuario.papel)
+            .where(LaboratorioUsuario.usuario_id == user_id)
+        )
+        roles_map = {row[0]: row[1] for row in role_result.all()}
+        for lab in labs:
+            lab.meu_papel = roles_map.get(lab.id, "ADMINISTRADOR" if user.get("tipo_usuario") == "ADM" else "TECNICO")
+
+        return labs
 
     async def metric_lab_ids_for_user(self, user: dict, lab_id: int) -> set[int]:
         await self.assert_lab_access(user, lab_id)

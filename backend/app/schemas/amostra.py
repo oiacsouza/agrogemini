@@ -10,7 +10,7 @@ class AmostraBase(BaseModel):
     laboratorio_id: int
     codigo_interno: str
     tipo_amostra: str
-    data_entrada: date
+    data_entrada: datetime
     status: str = "RECEBIDA"
     prioridade: str = "MEDIA"
 
@@ -22,14 +22,14 @@ class AmostraCreate(AmostraBase):
     lote: Optional[str] = None
     tonelada: Optional[float] = None
     metodo_extracao: Optional[str] = None
-    data_coleta: Optional[date] = None
-    data_saida: Optional[date] = None
+    data_coleta: Optional[datetime] = None
+    data_saida: Optional[datetime] = None
 
 
 class AmostraUpdate(BaseModel):
     status: Optional[str] = None
     prioridade: Optional[str] = None
-    data_saida: Optional[date] = None
+    data_saida: Optional[datetime] = None
     descricao: Optional[str] = None
     lote: Optional[str] = None
     tonelada: Optional[float] = None
@@ -50,9 +50,9 @@ class AmostraResponse(BaseModel):
     lote: Optional[str] = None
     tonelada: Optional[float] = None
     metodo_extracao: Optional[str] = None
-    data_coleta: Optional[date] = None
-    data_entrada: date
-    data_saida: Optional[date] = None
+    data_coleta: Optional[datetime] = None
+    data_entrada: datetime
+    data_saida: Optional[datetime] = None
     status: str
     prioridade: str
     criado_em: datetime

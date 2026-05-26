@@ -27,7 +27,8 @@ export function LabBranches({ t }) {
     async function loadBranches() {
       // If we already have labs in context, use them as initial state to avoid flicker
       if (contextLabs.length > 0) {
-        setBranches(contextLabs.map(l => ({
+        const filiaisCtx = contextLabs.filter(l => l._raw?.tipo_unidade === 'FILIAL' && l._raw?.laboratorio_pai_id === parentLab?.id);
+        setBranches(filiaisCtx.map(l => ({
           id: l.id,
           name: l.name,
           email: l._raw?.email || '',
@@ -46,7 +47,8 @@ export function LabBranches({ t }) {
       try {
         const data = await laboratorioService.getMyLabs();
         if (Array.isArray(data)) {
-          setBranches(data.map(l => ({
+          const filiaisData = data.filter(l => l.tipo_unidade === 'FILIAL' && l.laboratorio_pai_id === parentLab?.id);
+          setBranches(filiaisData.map(l => ({
             id: l.id,
             name: l.nome,
             email: l.email,

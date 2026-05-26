@@ -19,7 +19,7 @@ class LabUsuarioCreate(BaseModel):
     sobrenome: str
     email: str
     papel: str
-    senha: str
+    senha: str | None = None
 
 class LabClienteCreate(BaseModel):
     nome: str
@@ -166,11 +166,12 @@ async def add_lab_usuario(
     else:
         logger.info("Creating new user...")
         # 2. Create the user
+        senha_padrao = data.senha if data.senha else "Senha123!"
         user_data = UsuarioCreate(
             nome=data.nome,
             sobrenome=data.sobrenome,
             email=data.email,
-            senha=data.senha,
+            senha=senha_padrao,
             tipo_usuario="UC",  # Collaborator
             ativo="Y"
         )
@@ -178,6 +179,12 @@ async def add_lab_usuario(
             new_user_obj = await UsuarioService(db).create(user_data)
             user_id = new_user_obj.id
             logger.info(f"User created: {user_id}")
+            
+            # Envio de email simulado
+            logging.getLogger("agrogemini.email").info(
+                f"Email enviado para {data.email} informando a criação de conta como funcionário no laboratório. "
+                f"Sua senha de acesso é: '{senha_padrao}'. Por favor, altere-a no primeiro acesso."
+            )
         except HTTPException as e:
             logger.error(f"HTTP error creating user: {e.detail}")
             raise e

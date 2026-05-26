@@ -42,6 +42,7 @@ class LaboratorioResponse(LaboratorioBase):
     tipo_unidade: str = "MATRIZ"
     endereco_id: Optional[int] = None
     criado_em: datetime
+    meu_papel: Optional[str] = None
 
     model_config = {"from_attributes": True}
 

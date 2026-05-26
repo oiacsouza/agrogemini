@@ -30,9 +30,9 @@ BEGIN
         ) VALUES (
             v_usuario_id, v_laboratorio_id, 'LAUDOS', :NEW.id, v_operacao,
             CASE WHEN UPDATING THEN
-                JSON_OBJECT('id' : :OLD.id, 'status' : :OLD.status, 'numero_laudo' : :OLD.numero_laudo)
+                JSON_OBJECT('id' VALUE :OLD.id, 'status' VALUE :OLD.status, 'numero_laudo' VALUE :OLD.numero_laudo)
             ELSE NULL END,
-            JSON_OBJECT('id' : :NEW.id, 'status' : :NEW.status, 'numero_laudo' : :NEW.numero_laudo),
+            JSON_OBJECT('id' VALUE :NEW.id, 'status' VALUE :NEW.status, 'numero_laudo' VALUE :NEW.numero_laudo),
             v_ip_origem, SYSTIMESTAMP
         );
     ELSE
@@ -41,7 +41,7 @@ BEGIN
             dados_anteriores, dados_novos, ip_origem, criado_em
         ) VALUES (
             v_usuario_id, v_laboratorio_id, 'LAUDOS', :OLD.id, v_operacao,
-            JSON_OBJECT('id' : :OLD.id, 'status' : :OLD.status, 'numero_laudo' : :OLD.numero_laudo),
+            JSON_OBJECT('id' VALUE :OLD.id, 'status' VALUE :OLD.status, 'numero_laudo' VALUE :OLD.numero_laudo),
             NULL, v_ip_origem, SYSTIMESTAMP
         );
     END IF;

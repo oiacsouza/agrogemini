@@ -113,7 +113,7 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
     );
   }
 
-  const menuItems = [
+  let menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: t.portal.sidebar.dashboard },
     { id: 'import', icon: Upload, label: t.portal.sidebar.importSample },
     { id: 'samples', icon: FileSpreadsheet, label: t.portal.sidebar.samples },
@@ -121,6 +121,13 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
     { id: 'employees', icon: Users, label: t.portal.sidebar.employees },
     { id: 'branches', icon: Building2, label: t.portal.sidebar.branches },
   ];
+
+  if (isProducer) {
+    menuItems = [
+      { id: 'dashboard', icon: LayoutDashboard, label: t.portal.sidebar.dashboard },
+      { id: 'samples', icon: FileSpreadsheet, label: t.portal.sidebar.samples },
+    ];
+  }
 
   const handleViewDetail = (id) => {
     setSelectedSampleId(id);

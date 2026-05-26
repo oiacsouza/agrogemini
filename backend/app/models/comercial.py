@@ -21,7 +21,6 @@ class PlanoAssinatura(Base):
     ativo: Mapped[str] = mapped_column(CHAR(1), default="Y", nullable=False)
 
     __table_args__ = (
-        CheckConstraint("tipo IN ('BASICO','PREMIUM')"),
         CheckConstraint("permite_api IN ('Y','N')"),
         CheckConstraint("ativo IN ('Y','N')"),
     )
