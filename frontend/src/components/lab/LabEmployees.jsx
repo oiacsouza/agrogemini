@@ -7,6 +7,7 @@ import { InputField } from '../ui/InputField';
 import { useLab } from '../../context/LabContext';
 import { useLabTheme } from './useLabTheme';
 import { laboratorioService } from '../../services/api';
+import { maskOnlyLetters, maskMaxLength } from '../../utils/masks';
 
 const emptyForm = { name: '', role: '', email: '', permission: 'tecnico' };
 const PERMISSIONS = ['admin', 'tecnico', 'viewer'];
@@ -109,7 +110,7 @@ export function LabEmployees({ t }) {
   };
 
   const handleNameChange = useCallback((ev) => {
-    const v = ev.target.value;
+    const v = maskOnlyLetters(maskMaxLength(ev.target.value, 100));
     setForm(p => ({ ...p, name: v }));
     setErrors(p => ({ ...p, name: undefined }));
   }, []);

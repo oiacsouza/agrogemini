@@ -6,6 +6,7 @@ import { toast } from '../ui/Toast';
 import { useLab } from '../../context/LabContext';
 import { useLabTheme } from './useLabTheme';
 import { laboratorioService } from '../../services/api';
+import { maskCNPJ, maskUF, maskMaxLength, maskOnlyLetters, unmask } from '../../utils/masks';
 
 const emptyForm = { name: '', city: '', state: '', email: '', cnpj: '', manager: '' };
 
@@ -94,7 +95,7 @@ export function LabBranches({ t }) {
 
   const handleSave = async (e) => {
     if (e) e.preventDefault();
-    const cnpjDigits = form.cnpj.replace(/\D/g, '');
+    const cnpjDigits = unmask(form.cnpj);
     if (!form.name.trim() || !form.email.trim() || !form.cnpj.trim()) { 
       toast.error('Nome, Email e CNPJ são obrigatórios.'); 
       return; 
@@ -227,7 +228,7 @@ export function LabBranches({ t }) {
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>{b.fieldName} *</label>
-            <input value={form.name} placeholder="Ex. Filial Campinas" onChange={e => setForm(p => ({ ...p, name: e.target.value }))} style={inputStyle} />
+            <input value={form.name} placeholder="Ex. Filial Campinas" onChange={e => setForm(p => ({ ...p, name: maskOnlyLetters(maskMaxLength(e.target.value, 100)) }))} style={inputStyle} maxLength={100} />
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <div style={{ flex: 1 }}>
@@ -236,17 +237,17 @@ export function LabBranches({ t }) {
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>CNPJ *</label>
-              <input value={form.cnpj} placeholder="Ex. 00.000.000/0001-00" onChange={e => setForm(p => ({ ...p, cnpj: e.target.value }))} style={inputStyle} />
+              <input value={form.cnpj} placeholder="00.000.000/0001-00" onChange={e => setForm(p => ({ ...p, cnpj: maskCNPJ(e.target.value) }))} style={inputStyle} />
             </div>
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>{b.fieldCity} *</label>
-              <input value={form.city} placeholder="Ex. Campinas" onChange={e => setForm(p => ({ ...p, city: e.target.value }))} style={inputStyle} />
+              <input value={form.city} placeholder="Ex. Campinas" onChange={e => setForm(p => ({ ...p, city: maskOnlyLetters(maskMaxLength(e.target.value, 100)) }))} style={inputStyle} maxLength={100} />
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>{b.fieldState}</label>
-              <input value={form.state} placeholder="Ex. SP" onChange={e => setForm(p => ({ ...p, state: e.target.value }))} style={inputStyle} />
+              <input value={form.state} placeholder="SP" onChange={e => setForm(p => ({ ...p, state: maskUF(e.target.value) }))} style={inputStyle} maxLength={2} />
             </div>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>

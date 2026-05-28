@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLabTheme } from '../lab/useLabTheme'; // This file will work as a bridge for any inputs needing Lab styling or can receive tokens.
 
-export function InputField({ label, type = 'text', placeholder, value, onChange, error }) {
+export function InputField({ label, type = 'text', placeholder, value, onChange, error, maxLength, inputMode }) {
   // If useLabTheme throws error because used outside context, we can just optionally pass theme or try-catch.
   // Actually, LabImport and LabEmployees are safely inside LabProvider.
   const C = useLabTheme();
@@ -29,6 +29,8 @@ export function InputField({ label, type = 'text', placeholder, value, onChange,
         placeholder={placeholder}
         onChange={onChange}
         style={inputStyle}
+        maxLength={maxLength}
+        inputMode={inputMode}
       />
       {error && <p style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '0.25rem' }}>{error}</p>}
     </div>

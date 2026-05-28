@@ -5,6 +5,7 @@ import { Modal } from '../ui/Modal';
 import { useLab } from '../../context/LabContext';
 import { useLabTheme } from './useLabTheme';
 import { laboratorioService } from '../../services/api';
+import { maskOnlyLetters, maskMaxLength } from '../../utils/masks';
 
 function mapClientForUi(user) {
   const name = `${user.nome || ''} ${user.sobrenome || ''}`.trim() || user.email;
@@ -235,7 +236,7 @@ export function LabClients({ onViewProfile, t }) {
             Nome do cliente
             <input
               value={clientName}
-              onChange={e => setClientName(e.target.value)}
+              onChange={e => setClientName(maskOnlyLetters(maskMaxLength(e.target.value, 100)))}
               placeholder="Ex: João Silva"
               disabled={creating}
               style={{ border: `1px solid ${C.border}`, borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.875rem', outline: 'none', background: C.inputBg, color: C.text }}
