@@ -1,0 +1,35 @@
+.executemany(operation, seq_of_parameters)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RyanZ\Desktop\projets\agrogemini\backend\venv\Lib\site-packages\oracledb\cursor.py", line 1012, in 
+executemany
+    await self._impl.executemany(
+        self, num_execs, bool(batcherrors), bool(arraydmlrowcounts)
+    )
+  File "src\\oracledb\\impl/thin/cursor.pyx", line 325, in executemany
+  File "src\\oracledb\\impl/thin/protocol.pyx", line 811, in _process_single_message
+  File "src\\oracledb\\impl/thin/protocol.pyx", line 812, in 
+oracledb.thin_impl.BaseAsyncProtocol._process_single_message
+  File "src\\oracledb\\impl/thin/protocol.pyx", line 789, in _process_message
+  File "src\\oracledb\\impl/thin/messages.pyx", line 74, in oracledb.thin_impl.Message._check_and_raise_exception
+sqlalchemy.exc.IntegrityError: (oracledb.exceptions.IntegrityError) ORA-02290: check constraint (ADMIN.SYS_C0028658) 
+violated
+Help: https://docs.oracle.com/error-help/db/ora-02290/
+[SQL: INSERT INTO planos_assinaturas (tipo, valor, descricao, limite_amostras, limite_usuarios, permite_api, ativo) 
+VALUES (:tipo, :valor, :descricao, :limite_amostras, :limite_usuarios, :permite_api, :ativo) RETURNING 
+planos_assinaturas.id INTO :ret_0]
+[parameters: [{'tipo': 'FREE', 'valor': Decimal('0.00'), 'descricao': 'Plano gratuito para lab e produtor', 
+'limite_amostras': 10, 'limite_usuarios': 1, 'permite_api': 'N', 'ativo': 'Y', 'ret_0': <oracledb.Var of type 
+DB_TYPE_VARCHAR with value [[], None, None, None, None, None]>}, {'tipo': 'PREMIUM LAB', 'valor': Decimal('1299.90'), 
+'descricao': 'Plano premium para laborat¾rio', 'limite_amostras': 5000, 'limite_usuarios': 50, 'permite_api': 'Y', 
+'ativo': 'Y', 'ret_0': <oracledb.Var of type DB_TYPE_VARCHAR with value [[], None, None, None, None, None]>}, {'tipo': 
+'PREMIUM PROD', 'valor': Decimal('199.90'), 'descricao': 'Plano premium para produtor', 'limite_amostras': 500, 
+'limite_usuarios': 5, 'permite_api': 'N', 'ativo': 'Y', 'ret_0': <oracledb.Var of type DB_TYPE_VARCHAR with value [[], 
+None, None, None, None, None]>}, {'tipo': 'FUNCIONARIO LAB', 'valor': Decimal('0.00'), 'descricao': 'Acesso restrito a 
+funcionarios do lab', 'limite_amostras': 0, 'limite_usuarios': 1, 'permite_api': 'N', 'ativo': 'Y', 'ret_0': 
+<oracledb.Var of type DB_TYPE_VARCHAR with value [[], None, None, None, None, None]>}, {'tipo': 'ADM-PLAN', 'valor': 
+Decimal('0.00'), 'descricao': 'Plano administrativo do sistema', 'limite_amostras': 999999, 'limite_usuarios': 999, 
+'permite_api': 'Y', 'ativo': 'Y', 'ret_0': <oracledb.Var of type DB_TYPE_VARCHAR with value [[], None, None, None, 
+None, None]>}, {'tipo': 'FILIAL LAB', 'valor': Decimal('499.90'), 'descricao': 'Acesso para filiais de lab', 
+'limite_amostras': 500, 'limite_usuarios': 10, 'permite_api': 'Y', 'ativo': 'Y', 'ret_0': <oracledb.Var of type 
+DB_TYPE_VARCHAR with value [[], None, None, None, None, None]>}]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
