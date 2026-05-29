@@ -93,7 +93,6 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
     toggleDark,
     isProducer,
     labsLoading,
-    activeLab,
     setSelectedSampleId,
     selectedSampleId
   } = useLab();
@@ -114,7 +113,7 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
     );
   }
 
-  const menuItems = [
+  let menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: t.portal.sidebar.dashboard },
     { id: 'import', icon: Upload, label: t.portal.sidebar.importSample },
     { id: 'samples', icon: FileSpreadsheet, label: t.portal.sidebar.samples },
@@ -123,16 +122,23 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
     { id: 'branches', icon: Building2, label: t.portal.sidebar.branches },
   ];
 
+  if (isProducer) {
+    menuItems = [
+      { id: 'dashboard', icon: LayoutDashboard, label: t.portal.sidebar.dashboard },
+      { id: 'samples', icon: FileSpreadsheet, label: t.portal.sidebar.samples },
+    ];
+  }
+
   const handleViewDetail = (id) => {
     setSelectedSampleId(id);
     handleSetTab('sample-detail');
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: C.bg, color: C.text, fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: C.bg, color: C.text, fontFamily: 'Inter, sans-serif', paddingLeft: '17rem' }}>
 
       {/* ── Sidebar ────────────────────────────────────────── */}
-      <aside style={{ width: '17rem', background: C.surface, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh' }}>
+      <aside style={{ width: '17rem', background: C.surface, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, bottom: 0, height: '100vh', zIndex: 60 }}>
         <div style={{ padding: '2rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ background: 'linear-gradient(135deg, #10b981, #059669)', width: '2.5rem', height: '2.5rem', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(16,185,129,0.2)' }}>
             <Leaf color="white" size={20} />
@@ -219,7 +225,7 @@ function PortalInner({ onLogout, t, lang, setLang, activeTab, onNavigate }) {
             {activeTab === 'samples' && <LabSamples t={t} onViewDetail={handleViewDetail} />}
             {activeTab === 'sample-detail' && <LabSampleDetail t={t} sampleId={selectedSampleId} onBack={() => handleSetTab('samples')} />}
             {activeTab === 'clients' && <LabClients t={t} onViewProfile={(cl) => { setActiveClient(cl); handleSetTab('client-profile'); }} />}
-            {activeTab === 'client-profile' && <LabClientProfile client={activeClient} t={t} onBack={() => handleSetTab('clients')} />}
+            {activeTab === 'client-profile' && <LabClientProfile client={activeClient} t={t} onBack={() => handleSetTab('clients')} onViewDetail={(r) => handleViewDetail(r.sampleId || r.amostra_id || r.id)} />}
             {activeTab === 'employees' && <LabEmployees t={t} />}
             {activeTab === 'branches' && <LabBranches t={t} />}
             {activeTab === 'users' && <LabUsers t={t} />}

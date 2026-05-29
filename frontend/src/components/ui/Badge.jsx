@@ -38,7 +38,6 @@ const DARK = {
 export function Badge({ type, t }) {
   let isDark = false;
   try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const ctx = useLab();
     isDark = ctx.isDark;
   } catch {

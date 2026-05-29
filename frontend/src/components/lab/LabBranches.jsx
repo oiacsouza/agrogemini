@@ -6,11 +6,12 @@ import { toast } from '../ui/Toast';
 import { useLab } from '../../context/LabContext';
 import { useLabTheme } from './useLabTheme';
 import { laboratorioService } from '../../services/api';
+import { maskCNPJ, maskUF, maskMaxLength, maskOnlyLetters, unmask } from '../../utils/masks';
 
 const emptyForm = { name: '', city: '', state: '', email: '', cnpj: '', manager: '' };
 
 export function LabBranches({ t }) {
-  const { isDark, labs: contextLabs, refreshDashboard } = useLab();
+  const { activeLab, labs: contextLabs, refreshDashboard } = useLab();
   const C = useLabTheme();
   const b = t.portal.branches;
 
@@ -21,12 +22,14 @@ export function LabBranches({ t }) {
   const [form, setForm] = useState(emptyForm);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [saving, setSaving] = useState(false);
+  const parentLab = contextLabs.find(lab => lab._raw?.tipo_unidade === 'MATRIZ' || !lab._raw?.laboratorio_pai_id) || activeLab;
 
   useEffect(() => {
     async function loadBranches() {
       // If we already have labs in context, use them as initial state to avoid flicker
-      if (contextLabs.length > 0 && branches.length === 0) {
-        setBranches(contextLabs.map(l => ({
+      if (contextLabs.length > 0) {
+        const filiaisCtx = contextLabs.filter(l => l._raw?.tipo_unidade === 'FILIAL' && l._raw?.laboratorio_pai_id === parentLab?.id);
+        setBranches(filiaisCtx.map(l => ({
           id: l.id,
           name: l.name,
           email: l._raw?.email || '',
@@ -35,7 +38,9 @@ export function LabBranches({ t }) {
           state: 'GO',
           employees: 0,
           samples: 0,
-          status: l.active ? 'ativa' : 'inativa'
+          status: l.active ? 'ativa' : 'inativa',
+          type: l._raw?.tipo_unidade || l.type,
+          parentId: l._raw?.laboratorio_pai_id || null
         })));
         setLoading(false);
       }
@@ -43,7 +48,8 @@ export function LabBranches({ t }) {
       try {
         const data = await laboratorioService.getMyLabs();
         if (Array.isArray(data)) {
-          setBranches(data.map(l => ({
+          const filiaisData = data.filter(l => l.tipo_unidade === 'FILIAL' && l.laboratorio_pai_id === parentLab?.id);
+          setBranches(filiaisData.map(l => ({
             id: l.id,
             name: l.nome,
             email: l.email,
@@ -52,7 +58,9 @@ export function LabBranches({ t }) {
             state: 'GO',
             employees: 0,
             samples: 0,
-            status: l.ativo === 'Y' ? 'ativa' : 'inativa'
+            status: l.ativo === 'Y' ? 'ativa' : 'inativa',
+            type: l.tipo_unidade,
+            parentId: l.laboratorio_pai_id
           })));
         }
       } catch (err) {
@@ -87,7 +95,7 @@ export function LabBranches({ t }) {
 
   const handleSave = async (e) => {
     if (e) e.preventDefault();
-    const cnpjDigits = form.cnpj.replace(/\D/g, '');
+    const cnpjDigits = unmask(form.cnpj);
     if (!form.name.trim() || !form.email.trim() || !form.cnpj.trim()) { 
       toast.error('Nome, Email e CNPJ são obrigatórios.'); 
       return; 
@@ -103,7 +111,9 @@ export function LabBranches({ t }) {
         nome: form.name,
         email: form.email,
         cnpj: cnpjDigits,
-        ativo: 'Y'
+        ativo: 'Y',
+        tipo_unidade: editTarget ? undefined : 'FILIAL',
+        laboratorio_pai_id: editTarget ? undefined : parentLab?.id
       };
 
       if (editTarget) {
@@ -113,7 +123,9 @@ export function LabBranches({ t }) {
           name: updated.nome, 
           email: updated.email, 
           cnpj: updated.cnpj,
-          status: updated.ativo === 'Y' ? 'ativa' : 'inativa'
+          status: updated.ativo === 'Y' ? 'ativa' : 'inativa',
+          type: updated.tipo_unidade,
+          parentId: updated.laboratorio_pai_id
         } : br));
         toast.success(`${b.title} atualizada!`);
       } else {
@@ -128,7 +140,9 @@ export function LabBranches({ t }) {
           state: form.state || 'GO', 
           employees: 0, 
           samples: 0, 
-          status: newLab.ativo === 'Y' ? 'ativa' : 'inativa'
+          status: newLab.ativo === 'Y' ? 'ativa' : 'inativa',
+          type: newLab.tipo_unidade,
+          parentId: newLab.laboratorio_pai_id
         }]);
         toast.success(`${b.title} cadastrada!`);
       }
@@ -214,7 +228,7 @@ export function LabBranches({ t }) {
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>{b.fieldName} *</label>
-            <input value={form.name} placeholder="Ex. Filial Campinas" onChange={e => setForm(p => ({ ...p, name: e.target.value }))} style={inputStyle} />
+            <input value={form.name} placeholder="Ex. Filial Campinas" onChange={e => setForm(p => ({ ...p, name: maskOnlyLetters(maskMaxLength(e.target.value, 100)) }))} style={inputStyle} maxLength={100} />
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <div style={{ flex: 1 }}>
@@ -223,17 +237,17 @@ export function LabBranches({ t }) {
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>CNPJ *</label>
-              <input value={form.cnpj} placeholder="Ex. 00.000.000/0001-00" onChange={e => setForm(p => ({ ...p, cnpj: e.target.value }))} style={inputStyle} />
+              <input value={form.cnpj} placeholder="00.000.000/0001-00" onChange={e => setForm(p => ({ ...p, cnpj: maskCNPJ(e.target.value) }))} style={inputStyle} />
             </div>
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>{b.fieldCity} *</label>
-              <input value={form.city} placeholder="Ex. Campinas" onChange={e => setForm(p => ({ ...p, city: e.target.value }))} style={inputStyle} />
+              <input value={form.city} placeholder="Ex. Campinas" onChange={e => setForm(p => ({ ...p, city: maskOnlyLetters(maskMaxLength(e.target.value, 100)) }))} style={inputStyle} maxLength={100} />
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: C.label, marginBottom: '0.375rem' }}>{b.fieldState}</label>
-              <input value={form.state} placeholder="Ex. SP" onChange={e => setForm(p => ({ ...p, state: e.target.value }))} style={inputStyle} />
+              <input value={form.state} placeholder="SP" onChange={e => setForm(p => ({ ...p, state: maskUF(e.target.value) }))} style={inputStyle} maxLength={2} />
             </div>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>

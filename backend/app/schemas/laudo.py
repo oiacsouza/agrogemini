@@ -11,7 +11,7 @@ class LaudoBase(BaseModel):
     laboratorio_id: int
     tipo_laudo: str
     numero_laudo: str
-    data_emissao: date
+    data_emissao: datetime
     status: str = "RASCUNHO"
 
 
@@ -22,8 +22,8 @@ class LaudoCreate(LaudoBase):
     razao_social: Optional[str] = None
     propriedade: Optional[str] = None
     cidade: Optional[str] = None
-    data_entrada: Optional[date] = None
-    data_saida: Optional[date] = None
+    data_entrada: Optional[datetime] = None
+    data_saida: Optional[datetime] = None
     pdf_path: Optional[str] = None
     hash_autenticacao: Optional[str] = None
     observacoes: Optional[str] = None
@@ -34,7 +34,7 @@ class LaudoCreate(LaudoBase):
 
 class LaudoUpdate(BaseModel):
     status: Optional[str] = None
-    data_saida: Optional[date] = None
+    data_saida: Optional[datetime] = None
     pdf_path: Optional[str] = None
     hash_autenticacao: Optional[str] = None
     observacoes: Optional[str] = None
@@ -54,9 +54,9 @@ class LaudoResponse(BaseModel):
     razao_social: Optional[str] = None
     propriedade: Optional[str] = None
     cidade: Optional[str] = None
-    data_entrada: Optional[date] = None
-    data_saida: Optional[date] = None
-    data_emissao: date
+    data_entrada: Optional[datetime] = None
+    data_saida: Optional[datetime] = None
+    data_emissao: datetime
     status: str
     pdf_path: Optional[str] = None
     hash_autenticacao: Optional[str] = None

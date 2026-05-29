@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { Leaf, Loader2 } from 'lucide-react';
 import { authService } from '../services/api';

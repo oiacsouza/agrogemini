@@ -131,6 +131,7 @@ export const authService = {
       email: data.email,
       tipo_usuario: normalizeUserType(data.tipo_usuario),
       plano: resolveUserPlan(data),
+      plano_ativo: data.plano_ativo || data.plano,
     });
     return data;
   },
@@ -145,6 +146,7 @@ export const authService = {
       email: data.email,
       tipo_usuario: normalizeUserType(data.tipo_usuario),
       plano: resolveUserPlan(data),
+      plano_ativo: data.plano_ativo || data.plano,
     });
     return data;
   },

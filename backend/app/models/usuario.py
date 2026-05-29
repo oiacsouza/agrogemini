@@ -18,7 +18,7 @@ class Usuario(Base):
     ativo: Mapped[str] = mapped_column(CHAR(1), default="Y", nullable=False)
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now)
     ultimo_acesso: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    plano_ativo: Mapped[str] = mapped_column(String(10), default="FREE")
+    plano_ativo: Mapped[str] = mapped_column(String(20), default="FREE")
 
     # Relationships - Pure string references
     endereco = relationship("Endereco", back_populates="usuarios")

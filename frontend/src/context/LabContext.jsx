@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authService, laboratorioService, dashboardService, amostraService } from '../services/api';
 
@@ -142,6 +143,7 @@ function mapLabForUi(lab, index = 0) {
     city: lab?.city || lab?.cidade_endereco || lab?.email || 'Brasil',
     type: lab?.type || typeFromIndex,
     active: typeof lab?.active === 'boolean' ? lab.active : (lab?.ativo !== 'N'),
+    meu_papel: lab?.meu_papel || 'TECNICO',
     _raw: lab,
   };
 }
@@ -285,9 +287,22 @@ export function LabProvider({ children }) {
         if (cancelled) return;
 
         if (Array.isArray(data) && data.length > 0) {
-          const mapped = data.map(mapLabForUi);
+          const roleWeight = {
+            'ADMINISTRADOR': 4,
+            'GESTOR': 3,
+            'RESPONSAVEL_TECNICO': 2,
+            'TECNICO': 1,
+            'CLIENTE': 0
+          };
+          const sorted = [...data].sort((a, b) => {
+             const weightA = roleWeight[a.meu_papel] || 0;
+             const weightB = roleWeight[b.meu_papel] || 0;
+             return weightB - weightA;
+          });
+          const mapped = sorted.map(mapLabForUi);
           setLabs(mapped);
-          setActiveLabState(resolveInitialLab(mapped));
+          // Ignore sessionStorage on first load to always pick the highest permission
+          setActiveLabState(mapped[0]);
         } else {
           setLabs([]);
           setActiveLabState(null);
@@ -298,8 +313,9 @@ export function LabProvider({ children }) {
         setLabs([]);
         setActiveLabState(null);
       } finally {
-        if (cancelled) return;
-        setLabsLoading(false);
+        if (!cancelled) {
+          setLabsLoading(false);
+        }
       }
     }
 

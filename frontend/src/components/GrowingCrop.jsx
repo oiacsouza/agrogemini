@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import React, { useRef } from 'react';
 import { motion, useTransform, useMotionValue, useMotionValueEvent, animate } from 'framer-motion';
 

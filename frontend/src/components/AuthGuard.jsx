@@ -15,6 +15,7 @@ function normalizeUserType(value) {
  */
 export function AuthGuard({ children, requiredRoles, onUnauthorized, fallback }) {
   const [status, setStatus] = useState('loading'); // loading | authorized | unauthorized
+  const roleKey = requiredRoles?.map(normalizeUserType).join('|') || '';
 
   useEffect(() => {
     let cancelled = false;
@@ -31,9 +32,9 @@ export function AuthGuard({ children, requiredRoles, onUnauthorized, fallback })
         const user = await authService.validateSession();
         if (cancelled) return;
 
-        if (requiredRoles && requiredRoles.length > 0) {
+        if (roleKey) {
           const userRole = normalizeUserType(user?.tipo_usuario);
-          const allowedRoles = requiredRoles.map(normalizeUserType);
+          const allowedRoles = roleKey.split('|');
           if (!user || !allowedRoles.includes(userRole)) {
             setStatus('unauthorized');
             return;
@@ -50,7 +51,7 @@ export function AuthGuard({ children, requiredRoles, onUnauthorized, fallback })
 
     verifyAccess();
     return () => { cancelled = true; };
-  }, [requiredRoles]);
+  }, [roleKey]);
 
   if (status === 'loading') {
     return fallback || <AuthLoadingScreen />;

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { AlertCircle, ChevronRight, FileText, FlaskConical, Loader2, Plus, Search } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { Modal } from '../ui/Modal';
 import { useLab } from '../../context/LabContext';
 import { useLabTheme } from './useLabTheme';
 import { laboratorioService } from '../../services/api';
+import { maskOnlyLetters, maskMaxLength } from '../../utils/masks';
 
 function mapClientForUi(user) {
   const name = `${user.nome || ''} ${user.sobrenome || ''}`.trim() || user.email;
@@ -39,23 +40,24 @@ export function LabClients({ onViewProfile, t }) {
   const [createError, setCreateError] = useState('');
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    async function loadClients() {
-      if (!activeLab?.id) return;
-      setLoading(true);
-      try {
-        const data = await laboratorioService.getClientes(activeLab.id);
-        if (Array.isArray(data)) {
-          setClients(data.map(mapClientForUi));
-        }
-      } catch (err) {
-        console.error('Error loading clients:', err);
-      } finally {
-        setLoading(false);
+  const loadClients = useCallback(async () => {
+    if (!activeLab?.id) return;
+    setLoading(true);
+    try {
+      const data = await laboratorioService.getClientes(activeLab.id);
+      if (Array.isArray(data)) {
+        setClients(data.map(mapClientForUi));
       }
+    } catch (err) {
+      console.error('Error loading clients:', err);
+    } finally {
+      setLoading(false);
     }
-    loadClients();
   }, [activeLab]);
+
+  useEffect(() => {
+    loadClients();
+  }, [loadClients]);
 
   const resetCreateForm = () => {
     setClientName('');
@@ -92,16 +94,12 @@ export function LabClients({ onViewProfile, t }) {
 
     setCreating(true);
     try {
-      const created = await laboratorioService.addCliente(activeLab.id, {
+      await laboratorioService.addCliente(activeLab.id, {
         nome,
         sobrenome,
         email,
       });
-      const mapped = mapClientForUi(created);
-      setClients(prev => {
-        const withoutDuplicate = prev.filter(client => client.id !== mapped.id);
-        return [mapped, ...withoutDuplicate];
-      });
+      await loadClients();
       setIsCreateOpen(false);
       resetCreateForm();
     } catch (err) {
@@ -238,7 +236,7 @@ export function LabClients({ onViewProfile, t }) {
             Nome do cliente
             <input
               value={clientName}
-              onChange={e => setClientName(e.target.value)}
+              onChange={e => setClientName(maskOnlyLetters(maskMaxLength(e.target.value, 100)))}
               placeholder="Ex: João Silva"
               disabled={creating}
               style={{ border: `1px solid ${C.border}`, borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.875rem', outline: 'none', background: C.inputBg, color: C.text }}

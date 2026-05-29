@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Leaf, Loader2 } from 'lucide-react';
 import { authService } from '../services/api';
+import { maskPhone, maskCEP, maskUF, maskOnlyNumbers, maskOnlyLetters, maskMaxLength, unmask } from '../utils/masks';
 
 const initialForm = {
   nome: '', sobrenome: '', email: '', senha: '', confirmarSenha: '',
@@ -15,7 +16,10 @@ export function Register({ onBack, onLogin, t }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
+  const set = (field, maskFn) => (e) => {
+    const raw = e.target.value;
+    setForm({ ...form, [field]: maskFn ? maskFn(raw) : raw });
+  };
 
   const validateStep1 = () => {
     if (!form.nome.trim() || !form.sobrenome.trim() || !form.email.trim() || !form.senha) {
@@ -54,8 +58,8 @@ export function Register({ onBack, onLogin, t }) {
         email: form.email,
         senha: form.senha,
         tipo_usuario: form.tipo_usuario,
-        telefone: form.telefone || null,
-        cep: form.cep || null,
+        telefone: unmask(form.telefone) || null,
+        cep: unmask(form.cep) || null,
         logradouro: form.logradouro || null,
         numero: form.numero || null,
         complemento: form.complemento || null,
@@ -138,11 +142,11 @@ export function Register({ onBack, onLogin, t }) {
                   <div className="grid grid-cols-2 gap-2 lg:gap-4">
                     <div className="space-y-0.5 lg:space-y-2">
                       <label className={labelCls}>{t.register.firstName}</label>
-                      <input type="text" value={form.nome} onChange={set('nome')} placeholder={t.register.firstNameHint} className={inputCls} />
+                      <input type="text" value={form.nome} onChange={set('nome', v => maskOnlyLetters(maskMaxLength(v, 50)))} placeholder={t.register.firstNameHint} className={inputCls} maxLength={50} />
                     </div>
                     <div className="space-y-0.5 lg:space-y-2">
                       <label className={labelCls}>{t.register.lastName}</label>
-                      <input type="text" value={form.sobrenome} onChange={set('sobrenome')} placeholder={t.register.lastNameHint} className={inputCls} />
+                      <input type="text" value={form.sobrenome} onChange={set('sobrenome', v => maskOnlyLetters(maskMaxLength(v, 80)))} placeholder={t.register.lastNameHint} className={inputCls} maxLength={80} />
                     </div>
                   </div>
 
@@ -154,7 +158,7 @@ export function Register({ onBack, onLogin, t }) {
                   <div className="grid grid-cols-2 gap-2 lg:gap-4">
                     <div className="space-y-0.5 lg:space-y-2">
                       <label className={labelCls}>{t.register.phone}</label>
-                      <input type="tel" value={form.telefone} onChange={set('telefone')} placeholder={t.register.phoneHint} className={inputCls} />
+                      <input type="tel" value={form.telefone} onChange={set('telefone', maskPhone)} placeholder="(00) 00000-0000" className={inputCls} />
                     </div>
                     <div className="space-y-0.5 lg:space-y-2">
                       <label className={labelCls}>{t.register.userType}</label>
@@ -201,39 +205,39 @@ export function Register({ onBack, onLogin, t }) {
                   <div className="grid grid-cols-4 gap-2 lg:gap-4">
                     <div className="space-y-0.5 lg:space-y-2 col-span-1">
                       <label className={labelCls}>{t.register.zipcode}</label>
-                      <input type="text" value={form.cep} onChange={set('cep')} placeholder={t.register.zipcodeHint} className={inputCls} />
+                      <input type="text" value={form.cep} onChange={set('cep', maskCEP)} placeholder="00000-000" className={inputCls} />
                     </div>
                     <div className="space-y-0.5 lg:space-y-2 col-span-3">
                       <label className={labelCls}>{t.register.street}</label>
-                      <input type="text" value={form.logradouro} onChange={set('logradouro')} placeholder={t.register.streetHint} className={inputCls} />
+                      <input type="text" value={form.logradouro} onChange={set('logradouro', v => maskMaxLength(v, 200))} placeholder={t.register.streetHint} className={inputCls} maxLength={200} />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-4 gap-2 lg:gap-4">
                     <div className="space-y-0.5 lg:space-y-2 col-span-1">
                       <label className={labelCls}>{t.register.number}</label>
-                      <input type="text" value={form.numero} onChange={set('numero')} placeholder={t.register.numberHint} className={inputCls} />
+                      <input type="text" value={form.numero} onChange={set('numero', v => maskOnlyNumbers(v).slice(0, 6))} placeholder="123" className={inputCls} maxLength={6} />
                     </div>
                     <div className="space-y-0.5 lg:space-y-2 col-span-3">
                       <label className={labelCls}>{t.register.neighborhood}</label>
-                      <input type="text" value={form.bairro} onChange={set('bairro')} placeholder={t.register.neighborhoodHint} className={inputCls} />
+                      <input type="text" value={form.bairro} onChange={set('bairro', v => maskMaxLength(v, 100))} placeholder={t.register.neighborhoodHint} className={inputCls} maxLength={100} />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 lg:gap-4">
                      <div className="space-y-0.5 lg:space-y-2">
                       <label className={labelCls}>{t.register.city}</label>
-                      <input type="text" value={form.cidade} onChange={set('cidade')} placeholder={t.register.cityHint} className={inputCls} />
+                      <input type="text" value={form.cidade} onChange={set('cidade', v => maskOnlyLetters(maskMaxLength(v, 100)))} placeholder={t.register.cityHint} className={inputCls} maxLength={100} />
                     </div>
                     <div className="space-y-0.5 lg:space-y-2">
                       <label className={labelCls}>{t.register.state}</label>
-                      <input type="text" value={form.estado} onChange={set('estado')} placeholder={t.register.stateHint} className={inputCls} />
+                      <input type="text" value={form.estado} onChange={set('estado', maskUF)} placeholder="SP" className={inputCls} maxLength={2} />
                     </div>
                   </div>
 
                   <div className="space-y-0.5 lg:space-y-2">
                     <label className={labelCls}>{t.register.complement}</label>
-                    <input type="text" value={form.complemento} onChange={set('complemento')} placeholder={t.register.complementHint} className={inputCls} />
+                    <input type="text" value={form.complemento} onChange={set('complemento', v => maskMaxLength(v, 100))} placeholder={t.register.complementHint} className={inputCls} maxLength={100} />
                   </div>
 
                   <div className="pt-2 lg:pt-6">

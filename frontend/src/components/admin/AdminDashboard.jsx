@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import {
   Users, FlaskConical, Leaf, FileSpreadsheet,
   Building2, TrendingUp, Shield, Eye,
-  Loader2, AlertCircle, LogOut, Play, Code2
+  Loader2, AlertCircle, LogOut, Play, Code2,
+  DollarSign, TrendingDown
 } from 'lucide-react';
 import { adminService, authService } from '../../services/api';
 
 /**
  * AdminDashboard — Full-access admin panel with system-wide stats.
  */
-export function AdminDashboard({ t, onLogout, onNavigateAs }) {
+export function AdminDashboard({ onLogout, onNavigateAs }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -216,6 +217,60 @@ export function AdminDashboard({ t, onLogout, onNavigateAs }) {
 
         {data && (
           <>
+            {/* Financial metrics */}
+            {data.financeiro && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: 16, marginBottom: 24,
+              }}>
+                {[
+                  { label: 'Receita Mensal Atual', value: data.financeiro.receita_mensal, color: '#10b981' },
+                  { label: 'Receita Esperada', value: data.financeiro.receita_esperada, color: '#3b82f6' },
+                  { label: 'Média (Meses Anteriores)', value: data.financeiro.media_meses_anteriores, color: '#8b5cf6' },
+                ].map((card, i) => {
+                  const isMain = i === 0;
+                  const growth = data.financeiro.crescimento_percentual;
+                  const isPositive = growth >= 0;
+                  return (
+                    <div key={i} style={{
+                      background: 'linear-gradient(145deg, #1e293b, #0f172a)',
+                      borderRadius: 16, padding: '24px', border: `1px solid ${card.color}30`,
+                      position: 'relative', overflow: 'hidden'
+                    }}>
+                      <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, background: `${card.color}15`, borderRadius: '50%', filter: 'blur(24px)' }} />
+                      
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                        <div style={{ color: '#94a3b8', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {card.label}
+                        </div>
+                        {isMain && (
+                          <div style={{
+                            background: isPositive ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+                            color: isPositive ? '#10b981' : '#ef4444',
+                            padding: '4px 10px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 800,
+                            display: 'flex', alignItems: 'center', gap: 4
+                          }}>
+                            {isPositive ? <TrendingUp size={12} strokeWidth={3} /> : <TrendingDown size={12} strokeWidth={3} />}
+                            {isPositive ? '+' : ''}{growth}%
+                          </div>
+                        )}
+                        {!isMain && (
+                          <div style={{ background: `${card.color}20`, padding: 6, borderRadius: '50%' }}>
+                            <DollarSign size={16} color={card.color} />
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ color: '#f8fafc', fontSize: '2rem', fontWeight: 800, display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                        <span style={{ fontSize: '1rem', color: '#64748b' }}>R$</span>
+                        {card.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            
             {/* Stat cards grid */}
             <div style={{
               display: 'grid',
@@ -303,9 +358,19 @@ export function AdminDashboard({ t, onLogout, onNavigateAs }) {
               ))}
             </div>
 
-            <h3 style={{ color: '#f1f5f9', fontSize: '1rem', fontWeight: 700, margin: '32px 0 16px' }}>
-              Console de APIs
-            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '32px 0 16px' }}>
+              <h3 style={{ color: '#f1f5f9', fontSize: '1rem', fontWeight: 700, margin: 0 }}>
+                Console de APIs
+              </h3>
+              <a href={`${apiBase}/docs`} target="_blank" rel="noopener noreferrer" style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: '#3b82f6', color: '#fff', padding: '6px 12px',
+                borderRadius: 8, fontSize: '0.8rem', fontWeight: 600,
+                textDecoration: 'none', border: '1px solid #2563eb'
+              }}>
+                <Code2 size={14} /> Abrir Documentação (Swagger)
+              </a>
+            </div>
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'minmax(320px, 1fr) minmax(320px, 1fr)',

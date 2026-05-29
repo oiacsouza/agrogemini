@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll } from 'framer-motion';
 import { Leaf, FileSpreadsheet, Calculator, Eye, Activity, Smartphone, Sprout, CheckCircle2, ChevronDown, Globe, Sun, Moon } from 'lucide-react';
-import tractorImg from './assets/tractor.png';
-import laptopImg from './assets/laptop.png';
 import { translations } from './locales';
 import { MeshBackground } from './components/MeshBackground';
 import { ProcessingSkeleton } from './components/ProcessingSkeleton';
@@ -22,6 +20,16 @@ function normalizeUserType(value) {
   return String(value || '').trim().toUpperCase();
 }
 
+const APP_ROUTES = new Set([
+  'landing',
+  'login',
+  'register',
+  'admin',
+  'admin/users',
+  'produtor',
+  'farmer/reports',
+]);
+
 function App() {
   const [lang, setLang] = useState('pt');
   const [showLangMenu, setShowLangMenu] = useState(false);
@@ -33,7 +41,8 @@ function App() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      const nextScrolled = window.scrollY > 50;
+      setScrolled((previous) => previous === nextScrolled ? previous : nextScrolled);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -64,7 +73,16 @@ function App() {
   useEffect(() => {
     const onHashChange = () => {
       const hash = window.location.hash.replace('#', '') || 'landing';
-      setCurrentView(hash);
+      if (
+        APP_ROUTES.has(hash)
+        || hash.startsWith('lab/')
+        || hash === 'lab'
+        || hash.startsWith('farmer/report/')
+      ) {
+        setCurrentView(hash);
+      } else {
+        setCurrentView('landing');
+      }
     };
     window.addEventListener('hashchange', onHashChange);
     // Sync on mount
@@ -172,7 +190,7 @@ function App() {
     const activeRoute = currentView === 'lab' ? 'dashboard' : currentView.replace('lab/', '');
     return (
       <AuthGuard
-        requiredRoles={['UP', 'UC', 'ADM']}
+        requiredRoles={['UE', 'UP', 'UC', 'ADM']}
         onUnauthorized={() => navigate('login')}
       >
         <LabPortal 
@@ -461,7 +479,7 @@ function App() {
               <h4>{t.footer.platformTitle}</h4>
               <ul>
                 {t.footer.platformLinks.map((link, idx) => (
-                  <li key={idx}><a href="#">{link}</a></li>
+                  <li key={idx}><a href="#plataforma" onClick={(e) => e.preventDefault()}>{link}</a></li>
                 ))}
               </ul>
             </div>
@@ -470,7 +488,7 @@ function App() {
               <h4>{t.footer.companyTitle}</h4>
               <ul>
                 {t.footer.companyLinks.map((link, idx) => (
-                  <li key={idx}><a href="#">{link}</a></li>
+                  <li key={idx}><a href="#plataforma" onClick={(e) => e.preventDefault()}>{link}</a></li>
                 ))}
               </ul>
             </div>
@@ -486,7 +504,7 @@ function App() {
       <PlanModal
         isOpen={showPlanModal}
         onClose={() => setShowPlanModal(false)}
-        onSelectPlan={(planId) => {
+        onSelectPlan={() => {
           setShowPlanModal(false);
           navigate('register');
         }}

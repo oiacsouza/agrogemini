@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import React, { useState, useCallback, useEffect } from 'react';
 import { CheckCircle2, XCircle, Info, X } from 'lucide-react';
 
 let _addToast = null;
@@ -6,11 +7,18 @@ let _addToast = null;
 export function ToastContainer() {
   const [toasts, setToasts] = useState([]);
 
-  _addToast = useCallback((msg, type = 'success') => {
+  const addToast = useCallback((msg, type = 'success') => {
     const id = Date.now();
     setToasts(prev => [...prev, { id, msg, type }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
   }, []);
+
+  useEffect(() => {
+    _addToast = addToast;
+    return () => {
+      if (_addToast === addToast) _addToast = null;
+    };
+  }, [addToast]);
 
   const icons = { success: <CheckCircle2 size={18} />, error: <XCircle size={18} />, info: <Info size={18} /> };
   const colors = { success: { bg: '#10b981', border: '#059669' }, error: { bg: '#ef4444', border: '#dc2626' }, info: { bg: '#3b82f6', border: '#2563eb' } };

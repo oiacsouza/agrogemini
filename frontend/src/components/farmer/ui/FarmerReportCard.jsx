@@ -7,9 +7,9 @@ import { useFarmerTheme } from '../hooks/useFarmerTheme';
  * FarmerReportCard
  * Individual report entry inside a farm group.
  *
- * @param {{ report: object, t: object, isDark: boolean, onView: () => void }} props
+ * @param {{ report: object, t: object, isDark: boolean, onView: () => void, onDownload?: () => void }} props
  */
-export function FarmerReportCard({ report, t, isDark, onView }) {
+export function FarmerReportCard({ report, t, isDark, onView, onDownload }) {
   const fp = t.farmerPortal;
   const tk = useFarmerTheme(isDark);
 
@@ -70,8 +70,8 @@ export function FarmerReportCard({ report, t, isDark, onView }) {
           <Eye size={14} /> {fp.visualize}
         </button>
 
-        <IconBtn id={`fr-dl-${report.id}`}   icon={<Download size={15} />}  tk={tk} />
-        <IconBtn id={`fr-edit-${report.id}`} icon={<Pencil   size={15} />}  tk={tk} />
+        <IconBtn id={`fr-dl-${report.id}`} icon={<Download size={15} />} tk={tk} onClick={onDownload} disabled={!onDownload} />
+        <IconBtn id={`fr-edit-${report.id}`} icon={<Pencil size={15} />} tk={tk} />
       </div>
     </div>
   );
@@ -87,16 +87,20 @@ function Metadata({ icon, label, tk }) {
   );
 }
 
-function IconBtn({ id, icon, tk }) {
+function IconBtn({ id, icon, tk, onClick, disabled = false }) {
   return (
     <button
       id={id}
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
       style={{
         padding:      '9px 12px',
         background:   tk.inputBg,
         border:       `1.5px solid ${tk.inputBorder}`,
         borderRadius: 10,
-        cursor:       'pointer',
+        cursor:       disabled ? 'not-allowed' : 'pointer',
+        opacity:      disabled ? 0.45 : 1,
         display:      'flex',
         alignItems:   'center',
         color:        tk.textSecondary,

@@ -49,8 +49,31 @@ class LaboratorioService:
         return await self.get_by_id(lid)
 
     async def delete(self, lid: int):
-        await self.get_by_id(lid)
-        return await self.repo.delete(lid)
+        lab = await self.get_by_id(lid)
+        
+        # Prevent deleting a Matriz if it has Filiais
+        from app.models.laboratorio import Laboratorio, LaboratorioUsuario, TelefoneLaboratorio
+        from app.models.comercial import Assinatura
+        from sqlalchemy import delete
+        
+        filiais = await self.session.execute(select(Laboratorio).where(Laboratorio.laboratorio_pai_id == lid))
+        if filiais.first():
+            raise HTTPException(status_code=400, detail="Não é possível apagar uma matriz que possui filiais.")
+
+        try:
+            # Delete weak dependencies before deleting the lab
+            await self.session.execute(delete(LaboratorioUsuario).where(LaboratorioUsuario.laboratorio_id == lid))
+            await self.session.execute(delete(TelefoneLaboratorio).where(TelefoneLaboratorio.laboratorio_id == lid))
+            await self.session.execute(delete(Assinatura).where(Assinatura.laboratorio_id == lid))
+            
+            # The repository handles the lab deletion itself
+            return await self.repo.delete(lid)
+        except IntegrityError as e:
+            await self.session.rollback()
+            err_str = str(e).upper()
+            if "AMOSTRA" in err_str or "LAUDO" in err_str:
+                raise HTTPException(status_code=400, detail="Não é possível apagar o laboratório pois ele já possui amostras ou laudos gerados.")
+            raise HTTPException(status_code=400, detail="Não foi possível apagar o laboratório devido a vínculos existentes (ex: arquivos, importações).")
 
     # Employees
     async def get_usuarios(self, lab_id: int):
@@ -120,13 +143,20 @@ class LaboratorioService:
                     nome=normalized_nome,
                     sobrenome=normalized_sobrenome,
                     email=normalized_email,
-                    senha_hash=hash_password(secrets.token_urlsafe(18)),
+                    senha_hash=hash_password("Senha123!"),
                     tipo_usuario="UE",
                     ativo="Y",
                     plano_ativo="FREE",
                 )
                 self.session.add(user)
                 await self.session.flush()
+                
+                # Envio de email simulado
+                import logging
+                logging.getLogger("agrogemini.email").info(
+                    f"Email enviado para {normalized_email} informando a criação de conta com a senha padrão 'Senha123!'. "
+                    "Por favor, altere sua senha no primeiro acesso."
+                )
 
             existing_link = await self.session.execute(
                 select(LaboratorioUsuario)

@@ -16,6 +16,16 @@ class FazendaRepository:
         )
         return result.scalars().all()
 
+    async def get_by_user(self, usuario_id: int) -> Sequence[Fazenda]:
+        result = await self.session.execute(
+            select(Fazenda)
+            .join(FazendaUsuario, FazendaUsuario.fazenda_id == Fazenda.id)
+            .where(FazendaUsuario.usuario_id == usuario_id)
+            .where(FazendaUsuario.fim_vigencia.is_(None))
+            .order_by(Fazenda.nome)
+        )
+        return result.scalars().unique().all()
+
     async def get_by_id(self, fazenda_id: int) -> Optional[Fazenda]:
         result = await self.session.execute(
             select(Fazenda).where(Fazenda.id == fazenda_id)

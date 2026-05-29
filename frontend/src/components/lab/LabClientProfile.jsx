@@ -1,14 +1,90 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Mail, Phone, FileText, CheckCircle2, AlertCircle, TrendingUp } from 'lucide-react';
 import { Badge } from '../ui/Badge';
-import { useLab } from '../../context/LabContext';
 import { useLabTheme } from './useLabTheme';
+import { amostraService, laudoService } from '../../services/api';
+
+function formatDate(value) {
+  if (!value) return '-';
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? String(value).slice(0, 10) : parsed.toLocaleDateString('pt-BR');
+}
+
+function normalizeStatus(value) {
+  const status = String(value || '').toUpperCase();
+  if (['APROVADO', 'EMITIDO', 'LAUDO_GERADO', 'CONCLUIDO', 'CONCLUIDA'].includes(status)) return 'concluido';
+  if (['CANCELADO', 'REJEITADA', 'PENDENTE'].includes(status)) return 'alerta';
+  return 'processando';
+}
+
+function deriveHealth(status, index) {
+  if (status === 'concluido') return 86;
+  if (status === 'alerta') return 62;
+  return 74 + (index % 8);
+}
 
 export function LabClientProfile({ client, onBack, onViewDetail, t }) {
-  const { isDark } = useLab();
   const C = useLabTheme();
   const c = t.portal.clients;
   const ds = t.portal.dashboard.status;
+  const [reports, setReports] = useState(client?.reports || []);
+  const [loadingReports, setLoadingReports] = useState(false);
+  const [reportsError, setReportsError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadClientReports() {
+      if (!client?.id) return;
+      if (Array.isArray(client.reports) && client.reports.length > 0) {
+        setReports(client.reports);
+        return;
+      }
+
+      setLoadingReports(true);
+      setReportsError('');
+      try {
+        const samples = await amostraService.getByCliente(client.id);
+        const safeSamples = Array.isArray(samples) ? samples : [];
+        const laudoResults = await Promise.allSettled(
+          safeSamples.map(sample => laudoService.getByAmostra(sample.id))
+        );
+        const mapped = safeSamples.map((sample, index) => {
+          const laudo = laudoResults[index]?.status === 'fulfilled' ? laudoResults[index].value : null;
+          const status = normalizeStatus(laudo?.status || sample?.status);
+          return {
+            id: laudo?.id || sample.id,
+            sampleId: sample.id,
+            amostra_id: sample.id,
+            date: formatDate(laudo?.data_emissao || sample?.data_saida || sample?.data_entrada || sample?.criado_em),
+            field: laudo?.propriedade || sample?.talhao_identificacao || sample?.tipo_amostra || sample?.codigo_interno || 'Amostra',
+            status,
+            health: deriveHealth(status, index),
+            _raw: laudo || sample,
+          };
+        });
+        if (!cancelled) setReports(mapped);
+      } catch (err) {
+        if (!cancelled) {
+          setReports([]);
+          setReportsError(err?.detail || 'Nao foi possivel carregar os laudos do cliente.');
+        }
+      } finally {
+        if (!cancelled) setLoadingReports(false);
+      }
+    }
+
+    loadClientReports();
+    return () => { cancelled = true; };
+  }, [client]);
+
+  if (!client) {
+    return (
+      <div style={{ color: C.textMuted, padding: '2rem' }}>
+        Cliente nao selecionado.
+      </div>
+    );
+  }
 
   const getStatusStyle = (s) => ({
     concluido: { icon: <CheckCircle2 size={12} />, cls: { bg: '#dcfce7', color: '#15803d', border: '#bbf7d0' } },
@@ -56,7 +132,7 @@ export function LabClientProfile({ client, onBack, onViewDetail, t }) {
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.875rem', color: C.textMuted }}><Mail size={14} />{client.email}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.875rem', color: C.textMuted }}><Phone size={14} />{client.phone}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.875rem', color: C.textMuted }}><FileText size={14} />{client.totalReports} {c.laudos}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.875rem', color: C.textMuted }}><FileText size={14} />{reports.length || client.totalReports} {c.laudos}</span>
           </div>
         </div>
       </div>
@@ -79,7 +155,21 @@ export function LabClientProfile({ client, onBack, onViewDetail, t }) {
             </tr>
           </thead>
           <tbody>
-            {client.reports.map(r => {
+            {loadingReports && (
+              <tr>
+                <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: C.textMuted, fontSize: '0.875rem' }}>
+                  Carregando laudos do cliente...
+                </td>
+              </tr>
+            )}
+            {!loadingReports && reports.length === 0 && (
+              <tr>
+                <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: C.textMuted, fontSize: '0.875rem' }}>
+                  {reportsError || 'Nenhum laudo encontrado para este cliente.'}
+                </td>
+              </tr>
+            )}
+            {!loadingReports && reports.map(r => {
               const { icon, cls } = getStatusStyle(r.status);
               return (
                 <tr key={r.id} style={{ borderBottom: `1px solid ${C.border}` }}
@@ -94,7 +184,7 @@ export function LabClientProfile({ client, onBack, onViewDetail, t }) {
                   </td>
                   <td style={{ padding: '0.875rem 1.25rem' }}><HealthBar value={r.health} /></td>
                   <td style={{ padding: '0.875rem 1.25rem', textAlign: 'right' }}>
-                    <button onClick={() => onViewDetail(r)} style={{ color: '#10b981', fontWeight: 600, fontSize: '0.8125rem', background: 'none', border: 'none', cursor: 'pointer' }}>
+                    <button type="button" onClick={() => onViewDetail?.(r)} style={{ color: '#10b981', fontWeight: 600, fontSize: '0.8125rem', background: 'none', border: 'none', cursor: 'pointer' }}>
                       {c.viewDetail}
                     </button>
                   </td>

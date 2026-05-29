@@ -14,7 +14,7 @@ async def list_fazendas(
     db: AsyncSession = Depends(get_db_session),
     user=Depends(require_role("UE", "ADM")),
 ):
-    return await FazendaService(db).get_all()
+    return await FazendaService(db).get_for_user(user)
 
 
 @router.get("/{id}", response_model=FazendaResponse)
@@ -32,7 +32,7 @@ async def create_fazenda(
     db: AsyncSession = Depends(get_db_session),
     user=Depends(require_role("UE", "ADM")),
 ):
-    return await FazendaService(db).create(data)
+    return await FazendaService(db).create_for_user(data, user)
 
 
 @router.put("/{id}", response_model=FazendaResponse)

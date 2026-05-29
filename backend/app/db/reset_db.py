@@ -15,7 +15,7 @@ BEGIN
     END LOOP;
 
     -- Drop Sequences
-    FOR s IN (SELECT sequence_name FROM user_sequences) LOOP
+    FOR s IN (SELECT sequence_name FROM user_sequences WHERE sequence_name NOT LIKE 'ISEQ$$%') LOOP
         EXECUTE IMMEDIATE 'DROP SEQUENCE ' || s.sequence_name;
     END LOOP;
 

@@ -12,25 +12,18 @@ router = APIRouter(prefix="/api/v1/laudos", tags=["Laudos"])
 
 @router.get("/", response_model=list[LaudoResponse])
 async def list_laudos(
-    lab_id: int = Query(..., description="ID do laboratório"),
+    lab_id: int | None = Query(None, description="ID do laboratório"),
     limit: int = Query(100),
-    db: AsyncSession = Depends(get_db_session),
-    user=Depends(require_role("UP", "UC", "ADM")),
-):
-    access = LabAccessService(db)
-    return await LaudoService(db).get_all_by_labs(await access.metric_lab_ids_for_user(user, lab_id), limit)
-
-
-@router.get("/{id}", response_model=LaudoResponse)
-async def get_laudo(
-    id: int,
     db: AsyncSession = Depends(get_db_session),
     user=Depends(require_role("UE", "UP", "UC", "ADM")),
 ):
-    laudo = await LaudoService(db).get_by_id(id)
-    if user["tipo_usuario"] != "UE":
-        await LabAccessService(db).assert_lab_access(user, laudo.laboratorio_id)
-    return laudo
+    if user["tipo_usuario"] == "UE":
+        return await LaudoService(db).get_by_cliente(user["id"])
+        
+    access = LabAccessService(db)
+    if lab_id is not None:
+        return await LaudoService(db).get_all_by_labs(await access.metric_lab_ids_for_user(user, lab_id), limit)
+    return await LaudoService(db).get_all_by_labs(await access.visible_lab_ids_for_user(user), limit)
 
 
 @router.get("/amostra/{amostra_id}", response_model=LaudoResponse)
@@ -54,6 +47,18 @@ async def get_laudos_by_cliente(
     if user["tipo_usuario"] == "UE" and user["id"] != cliente_id:
         raise HTTPException(status_code=403, detail="Acesso negado")
     return await LaudoService(db).get_by_cliente(cliente_id)
+
+
+@router.get("/{id}", response_model=LaudoResponse)
+async def get_laudo(
+    id: int,
+    db: AsyncSession = Depends(get_db_session),
+    user=Depends(require_role("UE", "UP", "UC", "ADM")),
+):
+    laudo = await LaudoService(db).get_by_id(id)
+    if user["tipo_usuario"] != "UE":
+        await LabAccessService(db).assert_lab_access(user, laudo.laboratorio_id)
+    return laudo
 
 
 @router.post("/", response_model=LaudoResponse)

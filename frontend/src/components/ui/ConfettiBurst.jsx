@@ -8,27 +8,33 @@ export function ConfettiBurst({ active, onDone }) {
   useEffect(() => {
     if (!active) return;
 
-    const generated = Array.from({ length: 46 }).map((_, index) => ({
-      id: `${Date.now()}-${index}`,
-      color: COLORS[index % COLORS.length],
-      x: (Math.random() - 0.5) * 260,
-      y: -Math.random() * 30,
-      rotate: Math.random() * 360,
-      size: 6 + Math.random() * 6,
-      duration: 620 + Math.random() * 520,
-      delay: Math.random() * 120,
-    }));
+    const showTimer = window.setTimeout(() => {
+      const generated = Array.from({ length: 46 }).map((_, index) => ({
+        id: `${Date.now()}-${index}`,
+        color: COLORS[index % COLORS.length],
+        x: (Math.random() - 0.5) * 260,
+        y: -Math.random() * 30,
+        rotate: Math.random() * 360,
+        size: 6 + Math.random() * 6,
+        duration: 620 + Math.random() * 520,
+        delay: Math.random() * 120,
+      }));
 
-    setPieces(generated);
-    const timer = window.setTimeout(() => {
+      setPieces(generated);
+    }, 0);
+
+    const doneTimer = window.setTimeout(() => {
       setPieces([]);
       onDone?.();
     }, 1300);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(showTimer);
+      window.clearTimeout(doneTimer);
+    };
   }, [active, onDone]);
 
-  if (!pieces.length) return null;
+  if (!active || !pieces.length) return null;
 
   return (
     <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 10010, overflow: 'hidden' }}>
